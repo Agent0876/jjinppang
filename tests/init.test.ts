@@ -302,6 +302,7 @@ describe('Init Command & Project Scaffolding', () => {
     const { colors, symbols } = await import('../packages/cli/src/ui/colors.js');
     expect(colors.reset).toBe('\x1b[0m');
     expect(colors.bold).toBe('\x1b[1m');
+    expect(colors.brightWhite).toBe('\x1b[97m');
     expect(symbols.check).toContain('✔');
     expect(symbols.arrow).toContain('❯');
   });

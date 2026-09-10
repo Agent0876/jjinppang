@@ -72,7 +72,7 @@ export async function promptMultiSelect<T>(
       const label = isCurrent
         ? `${colors.bold}${colors.brightWhite}${opt.label}${colors.reset}`
         : opt.label;
-      const hint = opt.hint ? `  ${colors.dim}-${opt.hint}${colors.reset}` : '';
+      const hint = opt.hint ? `  ${colors.dim}• ${opt.hint}${colors.reset}` : '';
 
       process.stdout.write(`${pointer}${checkbox} ${label}${hint}\n`);
     }

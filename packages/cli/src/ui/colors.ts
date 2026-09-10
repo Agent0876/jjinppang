@@ -19,10 +19,13 @@ export const colors = {
   white: '\x1b[37m',
 
   // Bright
+  brightRed: '\x1b[91m',
   brightGreen: '\x1b[92m',
-  brightCyan: '\x1b[96m',
   brightYellow: '\x1b[93m',
+  brightBlue: '\x1b[94m',
   brightMagenta: '\x1b[95m',
+  brightCyan: '\x1b[96m',
+  brightWhite: '\x1b[97m',
 };
 
 export const symbols = {
