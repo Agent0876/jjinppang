@@ -299,9 +299,13 @@ Bundle Options:
   await bundleCommand(rawArgs, { root: process.cwd() }, bundleArgs);
 }
 
-// Auto-execute only if bin.ts is invoked directly
+// Auto-execute only if bin.ts or bin.js is invoked directly
 // @ts-ignore
-if (typeof Bun !== 'undefined' && import.meta.main && process.argv[1]?.endsWith('bin.ts')) {
+if (
+  typeof Bun !== 'undefined' &&
+  import.meta.main &&
+  (process.argv[1]?.endsWith('bin.ts') || process.argv[1]?.endsWith('bin.js'))
+) {
   runCli().catch((err) => {
     console.error(err);
     process.exit(1);
