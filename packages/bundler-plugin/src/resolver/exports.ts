@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import path from 'node:path';
 import type { Platform } from '../types.js';
 import { resolveFileWithPlatformExtensions } from './file-resolver.js';
