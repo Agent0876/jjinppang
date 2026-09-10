@@ -67,3 +67,16 @@ export interface InitArguments {
   dryRun?: boolean;
   force?: boolean;
 }
+
+export interface LintArguments {
+  fix?: boolean;
+  dir?: string;
+  config?: string;
+}
+
+export interface FormatArguments {
+  check?: boolean;
+  write?: boolean;
+  dir?: string;
+  config?: string;
+}

@@ -2,7 +2,15 @@ import type { Command } from '../types.js';
 import { bundleCommand } from './bundle.js';
 import { startCommand } from './start.js';
 import { initCommand } from './init.js';
-import { bundleCommandOptions, startCommandOptions, initCommandOptions } from './options.js';
+import { lintCommand } from './lint.js';
+import { formatCommand } from './format.js';
+import {
+  bundleCommandOptions,
+  startCommandOptions,
+  initCommandOptions,
+  lintCommandOptions,
+  formatCommandOptions,
+} from './options.js';
 
 export const commands: Command[] = [
   {
@@ -41,6 +49,30 @@ export const commands: Command[] = [
     func: initCommand,
     options: initCommandOptions,
   },
+  {
+    name: 'lint',
+    description: 'Ultra-fast linter powered by OXC (oxlint) for React Native.',
+    func: lintCommand,
+    options: lintCommandOptions,
+  },
+  {
+    name: 'bun-lint',
+    description: 'Ultra-fast linter powered by OXC (oxlint) for React Native.',
+    func: lintCommand,
+    options: lintCommandOptions,
+  },
+  {
+    name: 'format',
+    description: 'Ultra-fast code formatter powered by OXC (oxfmt) for React Native.',
+    func: formatCommand,
+    options: formatCommandOptions,
+  },
+  {
+    name: 'bun-format',
+    description: 'Ultra-fast code formatter powered by OXC (oxfmt) for React Native.',
+    func: formatCommand,
+    options: formatCommandOptions,
+  },
 ];
 
 export default commands;
@@ -51,4 +83,8 @@ export {
   startCommandOptions,
   initCommand,
   initCommandOptions,
+  lintCommand,
+  lintCommandOptions,
+  formatCommand,
+  formatCommandOptions,
 };

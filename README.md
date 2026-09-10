@@ -228,6 +228,49 @@ bun-rn bundle \
 
 ---
 
+## 🔍 Built-in Next.js CLI-Style `lint` & `format`
+
+Just like Next.js provides `next lint` out of the box with zero-configuration and automatic setup, `react-native-bun-build` comes with built-in `lint` and `format` commands powered by **OXC** (`oxlint` & `oxfmt`):
+
+### 1. `bun-rn lint` (or `npx react-native lint`)
+
+- **Zero-Config Auto-Setup**: If `.oxlintrc.json` is missing in your project, running `lint` automatically generates a React Native-optimized configuration before linting.
+- **Ultra-Fast Performance**: Completes linting across your entire project in ~10-20ms.
+- **Auto-Fix Support**: Use `--fix` to automatically resolve fixable lint rules.
+
+```bash
+# Run linter on current project (auto-generates .oxlintrc.json if missing)
+bun-rn lint
+# or via React Native CLI:
+npx react-native lint
+
+# Auto-fix issues
+bun-rn lint --fix
+
+# Lint a specific file or directory
+bun-rn lint src/components
+```
+
+### 2. `bun-rn format` (or `npx react-native format`)
+
+- **Zero-Config Auto-Setup**: If `.oxfmtrc.json` is missing in your project, running `format` automatically initializes a React Native-optimized formatter configuration.
+- **Check Mode**: Use `--check` in CI pipelines to verify formatting without modifying files.
+
+```bash
+# Format all code in place (auto-generates .oxfmtrc.json if missing)
+bun-rn format
+# or via React Native CLI:
+npx react-native format
+
+# Check formatting status without writing (ideal for CI)
+bun-rn format --check
+
+# Format a specific directory
+bun-rn format src/
+```
+
+---
+
 ## ⚠️ Known Limitations & Library Compatibility
 
 실제 React Native 네이티브 모듈 라이브러리 실측 테스트(`react-native-svg`, `react-native-reanimated`, `@react-native-async-storage/async-storage` 등)를 바탕으로 검증된 호환성 분류 및 기술적 제약사항입니다.

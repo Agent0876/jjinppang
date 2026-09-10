@@ -2,12 +2,22 @@ import { parseArgs } from 'node:util';
 import { bundleCommand } from './commands/bundle.js';
 import { startCommand } from './commands/start.js';
 import { initCommand } from './commands/init.js';
+import { lintCommand } from './commands/lint.js';
+import { formatCommand } from './commands/format.js';
 import {
   bundleParseArgsConfig,
   initParseArgsConfig,
   startParseArgsConfig,
+  lintParseArgsConfig,
+  formatParseArgsConfig,
 } from './commands/options.js';
-import type { BundleArguments, StartArguments, InitArguments } from './types.js';
+import type {
+  BundleArguments,
+  StartArguments,
+  InitArguments,
+  LintArguments,
+  FormatArguments,
+} from './types.js';
 
 export async function runCli(): Promise<void> {
   const rawArgs = process.argv.slice(2);
@@ -103,6 +113,76 @@ Options:
     return;
   }
 
+  // Handle 'lint' or 'bun-lint' command
+  if (commandName === 'lint' || commandName === 'bun-lint') {
+    const argsToParse = rawArgs.slice(1);
+    const { values, positionals } = parseArgs({
+      args: argsToParse,
+      options: lintParseArgsConfig,
+      allowPositionals: true,
+      strict: false,
+    });
+
+    if (values.help) {
+      console.log(`
+Usage: bun-rn lint [dir] [options]
+
+Runs ultra-fast linter powered by OXC (oxlint) for React Native with zero config.
+
+Options:
+  --fix                           Automatically fix lint issues
+  -c, --config <path>             Path to custom .oxlintrc.json
+  --dir <path>                    Target directory or file (default: .)
+  -h, --help                      Show help
+      `);
+      process.exit(0);
+    }
+
+    const lintArgs: LintArguments = {
+      fix: Boolean(values.fix),
+      config: values.config as string | undefined,
+      dir: (values.dir as string | undefined) || positionals[0],
+    };
+
+    await lintCommand(rawArgs, { root: process.cwd() }, lintArgs);
+    return;
+  }
+
+  // Handle 'format' or 'bun-format' command
+  if (commandName === 'format' || commandName === 'bun-format') {
+    const argsToParse = rawArgs.slice(1);
+    const { values, positionals } = parseArgs({
+      args: argsToParse,
+      options: formatParseArgsConfig,
+      allowPositionals: true,
+      strict: false,
+    });
+
+    if (values.help) {
+      console.log(`
+Usage: bun-rn format [dir] [options]
+
+Runs ultra-fast code formatter powered by OXC (oxfmt) for React Native with zero config.
+
+Options:
+  --check                         Check if files are formatted without writing
+  -c, --config <path>             Path to custom .oxfmtrc.json
+  --dir <path>                    Target directory or file (default: .)
+  -h, --help                      Show help
+      `);
+      process.exit(0);
+    }
+
+    const formatArgs: FormatArguments = {
+      check: Boolean(values.check),
+      config: values.config as string | undefined,
+      dir: (values.dir as string | undefined) || positionals[0],
+    };
+
+    await formatCommand(rawArgs, { root: process.cwd() }, formatArgs);
+    return;
+  }
+
   // Handle 'bundle' or 'bun-bundle' command (or default)
   const argsToParse =
     commandName === 'bundle' || commandName === 'bun-bundle' ? rawArgs.slice(1) : rawArgs;
@@ -127,6 +207,8 @@ Commands:
   init [name]                     Initialize a new RN project or configure an existing project
   start                           Start development server with HMR / Fast Refresh & Symbolicate
   bundle                          Build offline bundle for release or debug
+  lint [dir]                      Run ultra-fast OXC linter (oxlint) with zero config
+  format [dir]                    Run ultra-fast OXC formatter (oxfmt) with zero config
 
 Bundle Options:
   --entry-file <path>             Path to root JS/TS file (e.g. index.js)

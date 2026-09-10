@@ -167,3 +167,49 @@ export const initParseArgsConfig = {
   force: { type: 'boolean' as const, default: false },
   help: { type: 'boolean' as const, short: 'h', default: false },
 };
+
+export const lintCommandOptions: CommandOption[] = [
+  {
+    name: '--fix',
+    description: 'Automatically fix lint problems',
+    default: false,
+  },
+  {
+    name: '--config <path>',
+    description: 'Path to custom .oxlintrc.json configuration file',
+  },
+  {
+    name: '--dir <path>',
+    description: 'Target directory or file to lint',
+  },
+];
+
+export const lintParseArgsConfig = {
+  fix: { type: 'boolean' as const, default: false },
+  config: { type: 'string' as const, short: 'c' },
+  dir: { type: 'string' as const },
+  help: { type: 'boolean' as const, short: 'h', default: false },
+};
+
+export const formatCommandOptions: CommandOption[] = [
+  {
+    name: '--check',
+    description: 'Verify code formatting without writing changes',
+    default: false,
+  },
+  {
+    name: '--config <path>',
+    description: 'Path to custom .oxfmtrc.json configuration file',
+  },
+  {
+    name: '--dir <path>',
+    description: 'Target directory or file to format',
+  },
+];
+
+export const formatParseArgsConfig = {
+  check: { type: 'boolean' as const, default: false },
+  config: { type: 'string' as const, short: 'c' },
+  dir: { type: 'string' as const },
+  help: { type: 'boolean' as const, short: 'h', default: false },
+};
