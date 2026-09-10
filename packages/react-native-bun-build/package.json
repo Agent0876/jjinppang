@@ -1,21 +1,22 @@
 {
-  "name": "@react-native-bun-build/cli",
+  "name": "react-native-bun-build",
   "version": "0.1.0",
-  "description": "React Native CLI command plugin and standalone CLI for Bun bundler",
+  "description": "Ultra-fast custom bundler CLI for React Native bare projects powered by Bun",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/shinseungmin/react-native-bun-build.git",
-    "directory": "packages/cli"
+    "directory": "packages/react-native-bun-build"
   },
   "bin": {
-    "bun-rn": "bin/bun-rn.js",
-    "react-native-bun-build": "bin/bun-rn.js"
+    "bun-rn": "./bin/bun-rn.js",
+    "react-native-bun-build": "./bin/bun-rn.js"
   },
   "files": [
     "dist",
     "src",
     "bin",
+    "commands.js",
     "README.md",
     "LICENSE"
   ],
@@ -28,15 +29,13 @@
       "import": "./src/index.ts",
       "default": "./dist/index.js"
     },
-    "./commands": "./dist/commands/index.js"
+    "./commands": "./commands.js"
   },
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
+    "@react-native-bun-build/cli": "workspace:*",
     "@react-native-bun-build/core": "workspace:*"
-  },
-  "devDependencies": {
-    "@types/node": "^22.13.0"
   }
 }

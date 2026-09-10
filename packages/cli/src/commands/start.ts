@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 
 import path from 'node:path';
-import { startDevServer } from '@react-native-bun-build/bundler-plugin';
+import { startDevServer } from '@react-native-bun-build/core';
 import { loadConfigFile } from '../config.js';
 import type { CliConfig, StartArguments } from '../types.js';
 import { findBunExecutable } from './bundle.js';

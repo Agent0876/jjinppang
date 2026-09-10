@@ -3,9 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 // Import plugins directly
-import { createResolverPlugin } from '/Users/shinseungmin/react-native-bun-build/packages/bundler-plugin/src/resolver.ts';
-import { createAssetPlugin } from '/Users/shinseungmin/react-native-bun-build/packages/bundler-plugin/src/assets.ts';
-import { createBabelHybridPlugin } from '/Users/shinseungmin/react-native-bun-build/packages/bundler-plugin/src/babel-hybrid.ts';
+import { createResolverPlugin } from '/Users/shinseungmin/react-native-bun-build/packages/core/src/resolver/index.ts';
+import { createAssetPlugin } from '/Users/shinseungmin/react-native-bun-build/packages/core/src/assets/index.ts';
+import { createBabelHybridPlugin } from '/Users/shinseungmin/react-native-bun-build/packages/core/src/babel/index.ts';
 
 const projectRoot = '/Users/shinseungmin/react-native-bun-build/fixtures/TestApp';
 const entryFile = path.join(projectRoot, 'index.js');

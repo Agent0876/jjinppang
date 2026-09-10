@@ -185,8 +185,8 @@ require(${JSON.stringify(candidateEntry)});
       const url = new URL(req.url);
       const pathname = url.pathname;
 
-      // 1. WebSocket upgrade for /hot
-      if (pathname === '/hot') {
+      // 1. WebSocket upgrade for /hot and /inspector/debug
+      if (pathname === '/hot' || pathname === '/inspector/debug') {
         const upgraded = srv.upgrade(req, {
           data: {
             id: Math.random().toString(36).slice(2, 9),
@@ -206,6 +206,38 @@ require(${JSON.stringify(candidateEntry)});
             'Content-Type': 'text/plain',
             'X-React-Native-Project-Root': projectRoot,
           },
+        });
+      }
+
+      // 2.1 Chrome DevTools / Hermes Protocol Version
+      if (pathname === '/json/version') {
+        return new Response(
+          JSON.stringify({
+            Browser: 'React Native (Bun DevServer)',
+            'Protocol-Version': '1.1',
+          }),
+          {
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
+      }
+
+      // 2.2 Chrome DevTools / Hermes Target List
+      if (pathname === '/json' || pathname === '/json/list') {
+        const actualPort = srv.port ?? port;
+        const debugTargets = [
+          {
+            id: 'react-native-bun-app',
+            title: 'React Native Application',
+            description: 'Bun React Native Debug Target',
+            type: 'page',
+            devtoolsFrontendUrl: `devtools://devtools/bundled/js_app.html?experiments=true&v8only=true&ws=${host}:${actualPort}/inspector/debug`,
+            webSocketDebuggerUrl: `ws://${host}:${actualPort}/inspector/debug`,
+            faviconUrl: 'https://reactnative.dev/img/header_logo.svg',
+          },
+        ];
+        return new Response(JSON.stringify(debugTargets), {
+          headers: { 'Content-Type': 'application/json' },
         });
       }
 

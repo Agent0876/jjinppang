@@ -1,21 +1,16 @@
 {
-  "name": "@react-native-bun-build/cli",
+  "name": "@react-native-bun-build/core",
   "version": "0.1.0",
-  "description": "React Native CLI command plugin and standalone CLI for Bun bundler",
+  "description": "Core Bun.build bundling engine for React Native",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/shinseungmin/react-native-bun-build.git",
-    "directory": "packages/cli"
-  },
-  "bin": {
-    "bun-rn": "bin/bun-rn.js",
-    "react-native-bun-build": "bin/bun-rn.js"
+    "directory": "packages/core"
   },
   "files": [
     "dist",
     "src",
-    "bin",
     "README.md",
     "LICENSE"
   ],
@@ -28,15 +23,24 @@
       "import": "./src/index.ts",
       "default": "./dist/index.js"
     },
-    "./commands": "./dist/commands/index.js"
+    "./resolver": "./src/resolver/index.ts",
+    "./assets": "./src/assets/index.ts",
+    "./babel": "./src/babel/index.ts",
+    "./hermes": "./src/hermes/index.ts",
+    "./diagnostics": "./src/diagnostics/index.ts",
+    "./server": "./src/server/index.ts",
+    "./bundler": "./src/bundler/index.ts"
   },
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
-    "@react-native-bun-build/core": "workspace:*"
+    "@babel/core": "^7.26.9",
+    "image-size": "^1.2.0",
+    "source-map-js": "^1.2.1"
   },
   "devDependencies": {
+    "@types/babel__core": "^7.20.5",
     "@types/node": "^22.13.0"
   }
 }

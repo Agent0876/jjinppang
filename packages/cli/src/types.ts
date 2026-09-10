@@ -1,4 +1,4 @@
-import type { Platform } from '@react-native-bun-build/bundler-plugin';
+import type { Platform } from '@react-native-bun-build/core';
 
 export interface CommandOption<T = unknown> {
   name: string;

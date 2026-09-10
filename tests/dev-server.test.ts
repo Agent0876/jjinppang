@@ -6,7 +6,7 @@ import {
   Symbolicator,
   generateCodeFrame,
   type DevServerInstance,
-} from '../packages/bundler-plugin/src/index.js';
+} from '../packages/core/src/index.js';
 
 describe('Dev Server, Symbolicator & HMR Fast Refresh', () => {
   const testDir = path.join(__dirname, '.temp-dev-server-test');
@@ -248,6 +248,33 @@ console.log('App loaded:', App());
       expect(hasRegistered).toBe(true);
       expect(hasHeartbeat).toBe(true);
 
+      ws.close();
+    });
+
+    it('serves Chrome DevTools Protocol /json/version and /json list endpoints', async () => {
+      const verRes = await fetch(`http://localhost:${testPort}/json/version`);
+      expect(verRes.status).toBe(200);
+      const verJson = (await verRes.json()) as any;
+      expect(verJson.Browser).toContain('Bun DevServer');
+      expect(verJson['Protocol-Version']).toBe('1.1');
+
+      const jsonRes = await fetch(`http://localhost:${testPort}/json`);
+      expect(jsonRes.status).toBe(200);
+      const targets = (await jsonRes.json()) as any[];
+      expect(Array.isArray(targets)).toBe(true);
+      expect(targets.length).toBeGreaterThanOrEqual(1);
+      expect(targets[0].webSocketDebuggerUrl).toContain('/inspector/debug');
+    });
+
+    it('connects to /inspector/debug WebSocket endpoint', async () => {
+      const ws = new WebSocket(`ws://localhost:${testPort}/inspector/debug`);
+      const openPromise = new Promise<boolean>((resolve) => {
+        ws.onopen = () => resolve(true);
+        ws.onerror = () => resolve(false);
+      });
+
+      const opened = await openPromise;
+      expect(opened).toBe(true);
       ws.close();
     });
   });

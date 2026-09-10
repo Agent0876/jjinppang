@@ -5,7 +5,7 @@ import {
   resolveFileWithPlatformExtensions,
   resolveDirectory,
   resolveSpecifier,
-} from '../packages/bundler-plugin/src/resolver.js';
+} from '../packages/core/src/resolver/index.js';
 
 const TEST_DIR = path.join(__dirname, '.temp-resolver-test');
 

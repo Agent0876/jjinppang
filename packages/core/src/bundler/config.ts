@@ -4,7 +4,7 @@ import type { ReactNativeBunBuildConfig } from '../types.js';
  * Type-safe helper to define configuration for react-native-bun-build
  * @example
  * ```ts
- * import { defineConfig } from '@react-native-bun-build/bundler-plugin';
+ * import { defineConfig } from '@react-native-bun-build/core';
  *
  * export default defineConfig({
  *   hermes: { enabled: true },

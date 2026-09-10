@@ -9,8 +9,8 @@ import {
   copyAssetsToDestination,
   getAndroidDrawableFolder,
   getAndroidResourceIdentifier,
-} from '../packages/bundler-plugin/src/assets.js';
-import type { AssetMetadata } from '../packages/bundler-plugin/src/types.js';
+} from '../packages/core/src/assets/index.js';
+import type { AssetMetadata } from '../packages/core/src/types.js';
 
 const TEST_DIR = path.join(__dirname, '.temp-assets-test');
 

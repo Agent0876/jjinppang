@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { CliConfig, InitArguments } from '../types.js';
 import { type InitResult, initExistingProject, initNewProject } from '../scaffold/index.js';
+import { promptConfirm, promptSelect, promptText, renderHeader } from '../ui/index.js';
 
-// Re-export all scaffolding utilities for 100% backward compatibility
 export * from '../scaffold/index.js';
 
 /**
@@ -48,7 +48,7 @@ export async function initCommand(
   args: InitArguments
 ): Promise<void> {
   const currentDir = config.root || process.cwd();
-  const projectName =
+  let projectName =
     args.projectName || argv.find((a) => !a.startsWith('-') && a !== 'init' && a !== 'bun-init');
 
   // Check if current directory has a React Native package.json
@@ -71,10 +71,56 @@ export async function initCommand(
     }
   }
 
-  // Determine mode:
-  // If explicitly --existing, or if no projectName given and current directory is RN -> existing project mode.
-  // If projectName is provided and not --existing -> new project mode.
-  const isExistingMode = Boolean(args.existing) || (!projectName && isCurrentRN);
+  // Interactive Wizard if run without arguments in an interactive terminal
+  const isInteractive =
+    !projectName && !args.existing && Boolean(process.stdin.isTTY && !process.env.CI);
+
+  let isExistingMode = Boolean(args.existing) || (!projectName && isCurrentRN);
+
+  if (isInteractive) {
+    renderHeader();
+
+    if (isCurrentRN) {
+      const mode = await promptSelect(
+        'Detected React Native in current directory. What would you like to do?',
+        [
+          { label: 'Configure react-native-bun-build in this current project', value: 'existing' },
+          { label: 'Create a new React Native project in a subfolder', value: 'new' },
+        ]
+      );
+      isExistingMode = mode === 'existing';
+    } else {
+      isExistingMode = false;
+    }
+
+    if (!isExistingMode) {
+      projectName = await promptText('Enter your new project name', 'MyAwesomeApp');
+    }
+
+    if (!args.pm) {
+      args.pm = await promptSelect('Select your package manager', [
+        { label: 'bun', value: 'bun', hint: 'Ultra-fast native runtime (recommended)' },
+        { label: 'pnpm', value: 'pnpm', hint: 'Fast, disk space efficient' },
+        { label: 'yarn', value: 'yarn', hint: 'Classic or Modern Yarn' },
+        { label: 'npm', value: 'npm', hint: 'Standard Node package manager' },
+      ]);
+    }
+
+    if (args.oxc === undefined) {
+      args.oxc = await promptConfirm(
+        'Configure OXC (oxlint & oxfmt) for ultra-fast linting and formatting?',
+        true
+      );
+    }
+
+    if (!isExistingMode && process.platform === 'darwin' && args.skipPods === undefined) {
+      const installPods = await promptConfirm(
+        'Run CocoaPods (pod install) for iOS dependencies now?',
+        false
+      );
+      args.skipPods = !installPods;
+    }
+  }
 
   let result: InitResult;
 

@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeAll, afterAll } from 'bun:test';
 import fs from 'node:fs';
 import path from 'node:path';
-import { bundle, defineConfig } from '../packages/bundler-plugin/src/index.js';
+import { bundle, defineConfig } from '../packages/core/src/index.js';
 
 const TEST_DIR = path.join(__dirname, '.temp-bundle-e2e-test');
 

@@ -240,4 +240,12 @@ describe('Init Command & Project Scaffolding', () => {
     expect(fs.existsSync(path.join(TEST_DIR, 'react-native.config.js'))).toBe(true);
     expect(fs.existsSync(path.join(TEST_DIR, 'react-native-bun-build.config.js'))).toBe(true);
   });
+
+  test('TUI colors and symbols format terminal strings', async () => {
+    const { colors, symbols } = await import('../packages/cli/src/ui/colors.js');
+    expect(colors.reset).toBe('\x1b[0m');
+    expect(colors.bold).toBe('\x1b[1m');
+    expect(symbols.check).toContain('✔');
+    expect(symbols.arrow).toContain('❯');
+  });
 });

@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import {
-  shouldTransformWithBabel,
-  getLoaderForPath,
-} from '../packages/bundler-plugin/src/babel-hybrid.js';
+import { shouldTransformWithBabel, getLoaderForPath } from '../packages/core/src/babel/index.js';
 
 describe('Babel Hybrid Plugin', () => {
   it('detects react-native-reanimated and worklet patterns', () => {

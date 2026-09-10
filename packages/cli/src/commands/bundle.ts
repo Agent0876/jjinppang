@@ -2,8 +2,8 @@ import { execSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { bundle } from '@react-native-bun-build/bundler-plugin';
-import type { BundlerOptions } from '@react-native-bun-build/bundler-plugin';
+import { bundle } from '@react-native-bun-build/core';
+import type { BundlerOptions } from '@react-native-bun-build/core';
 import { loadConfigFile } from '../config.js';
 import type { BundleArguments, CliConfig } from '../types.js';
 

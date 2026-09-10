@@ -1,36 +1,13 @@
 {
-  "name": "react-native-bun-build",
-  "version": "0.1.0",
+  "name": "react-native-bun-build-monorepo",
+  "private": true,
   "description": "Ultra-fast custom bundler CLI for React Native bare projects powered by Bun",
-  "keywords": [
-    "bun",
-    "bundler",
-    "cli",
-    "hermes",
-    "metro",
-    "react-native"
-  ],
   "license": "MIT",
-  "author": "",
-  "bin": {
-    "bun-rn": "./packages/cli/bin/bun-rn.js",
-    "react-native-bun-build": "./packages/cli/bin/bun-rn.js"
-  },
   "workspaces": [
     "packages/*"
   ],
-  "main": "./packages/cli/dist/index.js",
-  "exports": {
-    ".": {
-      "import": "./packages/cli/dist/index.js",
-      "require": "./packages/cli/dist/index.js",
-      "default": "./packages/cli/dist/index.js"
-    },
-    "./commands": "./commands.js",
-    "./package.json": "./package.json"
-  },
   "scripts": {
-    "build": "bun build packages/bundler-plugin/src/index.ts --outdir packages/bundler-plugin/dist --target node && bun build packages/cli/src/index.ts --outdir packages/cli/dist --target node && bun build packages/cli/src/commands/index.ts --outfile packages/cli/dist/commands/index.js --target node && bun build packages/cli/src/bin.ts --outfile packages/cli/dist/bin.js --target node",
+    "build": "bun build packages/core/src/index.ts --outdir packages/core/dist --target node && bun build packages/cli/src/index.ts --outdir packages/cli/dist --target node && bun build packages/cli/src/commands/index.ts --outfile packages/cli/dist/commands/index.js --target node && bun build packages/cli/src/bin.ts --outfile packages/cli/dist/bin.js --target node && bun build packages/react-native-bun-build/src/index.ts --outdir packages/react-native-bun-build/dist --target node",
     "test": "bun test tests/",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
@@ -38,9 +15,13 @@
     "format:check": "oxfmt --check",
     "check": "oxlint && oxfmt --check && bun test tests/",
     "benchmark": "bun run scripts/benchmark.ts",
-    "benchmark:dev": "bun run scripts/benchmark-dev-server.ts"
+    "benchmark:dev": "bun run scripts/benchmark-dev-server.ts",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "bun run build && changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^3.0.2",
     "@types/babel__core": "^7.20.5",
     "@types/node": "^22.20.2",
     "bun-types": "^1.4.2",

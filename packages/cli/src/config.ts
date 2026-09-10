@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { ReactNativeBunBuildConfig } from '@react-native-bun-build/bundler-plugin';
+import type { ReactNativeBunBuildConfig } from '@react-native-bun-build/core';
 
 export const CONFIG_FILE_NAMES = [
   'react-native-bun-build.config.js',
