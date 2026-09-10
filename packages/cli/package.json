@@ -1,0 +1,19 @@
+{
+  "name": "@react-native-bun-build/cli",
+  "version": "0.1.0",
+  "description": "React Native CLI command plugin and standalone CLI for Bun bundler",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
+  "bin": {
+    "bun-rn": "bin/bun-rn.js",
+    "react-native-bun-build": "bin/bun-rn.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@react-native-bun-build/bundler-plugin": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.0"
+  }
+}
