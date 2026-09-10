@@ -1,8 +1,12 @@
-import fs from 'node:fs';
 import path from 'node:path';
 import type { CliConfig, InitArguments, TargetPlatform } from '../types.js';
-import { type InitResult, initExistingProject, initNewProject } from '../scaffold/index.js';
-import { promptConfirm, promptSelect, promptText, renderHeader } from '../ui/index.js';
+import {
+  type InitResult,
+  initExistingProject,
+  initNewProject,
+  detectPackageManager,
+} from '../scaffold/index.js';
+import { promptMultiSelect, renderHeader } from '../ui/index.js';
 
 export * from '../scaffold/index.js';
 
@@ -60,153 +64,51 @@ export async function initCommand(
   args: InitArguments
 ): Promise<void> {
   const currentDir = config.root || process.cwd();
-  let projectName =
+  const projectName =
     args.projectName || argv.find((a) => !a.startsWith('-') && a !== 'init' && a !== 'bun-init');
 
-  // Check if current directory has a React Native package.json
-  const currentPkgPath = path.join(currentDir, 'package.json');
-  const hasCurrentPkg = fs.existsSync(currentPkgPath);
-  let isCurrentRN = false;
-  if (hasCurrentPkg) {
-    try {
-      const parsed = JSON.parse(fs.readFileSync(currentPkgPath, 'utf8'));
-      isCurrentRN = Boolean(
-        parsed.dependencies?.['react-native'] ||
-        parsed.devDependencies?.['react-native'] ||
-        parsed.dependencies?.['react-native-macos'] ||
-        parsed.devDependencies?.['react-native-macos'] ||
-        parsed.dependencies?.['react-native-windows'] ||
-        parsed.devDependencies?.['react-native-windows']
-      );
-    } catch {
-      // ignore
-    }
-  }
-
-  // Interactive Wizard if run without arguments in an interactive terminal
-  const isInteractive =
-    !projectName && !args.existing && Boolean(process.stdin.isTTY && !process.env.CI);
-
-  let isExistingMode = Boolean(args.existing) || (!projectName && isCurrentRN);
+  // Interactive Platform Selection if platforms wasn't specified and terminal is interactive
+  const isInteractive = !args.platforms && Boolean(process.stdin.isTTY && !process.env.CI);
 
   if (isInteractive) {
     renderHeader();
 
-    if (isCurrentRN) {
-      const mode = await promptSelect(
-        'Detected React Native in current directory. What would you like to do?',
-        [
-          { label: 'Configure react-native-bun-build in this current project', value: 'existing' },
-          { label: 'Create a new React Native project in a subfolder', value: 'new' },
-        ]
-      );
-      isExistingMode = mode === 'existing';
-    } else {
-      isExistingMode = false;
-    }
-
-    if (!isExistingMode) {
-      projectName = await promptText('Enter your new project name', 'MyAwesomeApp');
-    }
-
-    if (!args.platforms) {
-      args.platforms = await promptSelect('Which platforms will you develop for?', [
+    // The ONLY question asked: platforms via Spacebar multi-select
+    args.platforms = await promptMultiSelect<TargetPlatform>(
+      'Which platforms will you develop for?',
+      [
+        { label: 'iOS', value: 'ios', hint: 'Apple iOS (iPhone & iPad)', selected: true },
+        { label: 'Android', value: 'android', hint: 'Google Android', selected: true },
         {
-          label: 'iOS & Android (Mobile)',
-          value: ['ios', 'android'] as TargetPlatform[],
-          hint: 'Standard mobile app development (recommended)',
+          label: 'macOS',
+          value: 'macos',
+          hint: 'Native macOS Desktop (react-native-macos)',
+          selected: false,
         },
         {
-          label: 'All Platforms (iOS, Android, macOS, Windows)',
-          value: ['ios', 'android', 'macos', 'windows'] as TargetPlatform[],
-          hint: 'Full mobile + desktop coverage',
+          label: 'Windows',
+          value: 'windows',
+          hint: 'Native Windows Desktop (react-native-windows)',
+          selected: false,
         },
-        {
-          label: 'iOS, Android & macOS',
-          value: ['ios', 'android', 'macos'] as TargetPlatform[],
-          hint: 'Apple ecosystem + Android',
-        },
-        {
-          label: 'iOS, Android & Windows',
-          value: ['ios', 'android', 'windows'] as TargetPlatform[],
-          hint: 'Mobile + Windows desktop',
-        },
-        {
-          label: 'iOS only',
-          value: ['ios'] as TargetPlatform[],
-          hint: 'iPhone and iPad apps only',
-        },
-        {
-          label: 'Android only',
-          value: ['android'] as TargetPlatform[],
-          hint: 'Android devices only',
-        },
-        {
-          label: 'macOS Desktop only',
-          value: ['macos'] as TargetPlatform[],
-          hint: 'Native macOS apps with react-native-macos',
-        },
-        {
-          label: 'Windows Desktop only',
-          value: ['windows'] as TargetPlatform[],
-          hint: 'Native Windows apps with react-native-windows',
-        },
-      ]);
-    }
-
-    if (!args.pm) {
-      args.pm = await promptSelect('Select your package manager', [
-        { label: 'bun', value: 'bun', hint: 'Ultra-fast native runtime (recommended)' },
-        { label: 'pnpm', value: 'pnpm', hint: 'Fast, disk space efficient' },
-        { label: 'yarn', value: 'yarn', hint: 'Classic or Modern Yarn' },
-        { label: 'npm', value: 'npm', hint: 'Standard Node package manager' },
-      ]);
-    }
-
-    if (args.oxc === undefined) {
-      args.oxc = await promptConfirm(
-        'Configure OXC (oxlint & oxfmt) for ultra-fast linting and formatting?',
-        true
-      );
-    }
-
-    const chosenPlatforms = Array.isArray(args.platforms)
-      ? args.platforms
-      : String(args.platforms || '').split(',');
-    const hasApplePlatform =
-      chosenPlatforms.includes('ios') ||
-      chosenPlatforms.includes('macos') ||
-      chosenPlatforms.includes('all');
-
-    if (
-      !isExistingMode &&
-      process.platform === 'darwin' &&
-      hasApplePlatform &&
-      args.skipPods === undefined
-    ) {
-      const installPods = await promptConfirm(
-        'Run CocoaPods (pod install) for iOS/macOS dependencies now?',
-        false
-      );
-      args.skipPods = !installPods;
-    }
+      ]
+    );
   }
+
+  // Automatic smart defaults - nothing else asked!
+  args.pm = args.pm || detectPackageManager(currentDir);
+  args.oxc = args.oxc ?? true;
+  args.skipPods = args.skipPods ?? true;
+  args.platforms = args.platforms || ['ios', 'android'];
 
   let result: InitResult;
 
-  if (isExistingMode) {
-    result = await initExistingProject(currentDir, args);
-  } else {
-    if (!projectName) {
-      console.error(
-        `\n❌ Error: Please specify a project name to create, or run inside an existing React Native project.\n` +
-          `Usage:\n` +
-          `  bun-rn init MyAwesomeApp\n` +
-          `  bun-rn init --existing\n`
-      );
-      process.exit(1);
-    }
+  if (projectName) {
     result = await initNewProject(projectName, currentDir, args);
+  } else {
+    // If no project name specified, configure current directory
+    args.force = true;
+    result = await initExistingProject(currentDir, args);
   }
 
   printSuccessBanner(result);

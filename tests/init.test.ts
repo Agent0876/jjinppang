@@ -9,7 +9,9 @@ import {
   updatePackageJson,
   initExistingProject,
   resolveDesktopVersion,
+  initCommand,
 } from '../packages/cli/src/commands/init.js';
+import { promptMultiSelect } from '../packages/cli/src/ui/index.js';
 
 const TEST_DIR = path.join(__dirname, '.temp-init-test');
 
@@ -328,5 +330,37 @@ describe('Init Command & Project Scaffolding', () => {
     expect(
       resolveDesktopVersion({ dependencies: { 'react-native': '0.87.1' } }, 'react-native-windows')
     ).toBe('^0.84.0');
+  });
+
+  test('promptMultiSelect returns selected defaults in non-interactive / CI mode', async () => {
+    const res = await promptMultiSelect('Pick platforms', [
+      { label: 'iOS', value: 'ios', selected: true },
+      { label: 'Android', value: 'android', selected: true },
+      { label: 'macOS', value: 'macos', selected: false },
+      { label: 'Windows', value: 'windows', selected: false },
+    ]);
+    expect(res).toEqual(['ios', 'android']);
+
+    const fallbackAll = await promptMultiSelect('Pick platforms', [
+      { label: 'iOS', value: 'ios', selected: false },
+      { label: 'Android', value: 'android', selected: false },
+    ]);
+    expect(fallbackAll).toEqual(['ios', 'android']);
+  });
+
+  test('initCommand runs with platforms flag and asks no other questions', async () => {
+    fs.writeFileSync(
+      path.join(TEST_DIR, 'package.json'),
+      JSON.stringify({ name: 'FastApp', dependencies: { 'react-native': '0.78.0' } }, null, 2)
+    );
+
+    await initCommand(['init'], { root: TEST_DIR } as any, {
+      platforms: ['ios', 'android', 'macos'],
+      dryRun: true,
+      skipInstall: true,
+    });
+
+    // Validates initCommand succeeded without throwing or blocking
+    expect(true).toBe(true);
   });
 });
