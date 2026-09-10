@@ -16,11 +16,13 @@
 - 🚀 **Built-in Development Server (`start`)**: High-performance dev server powered by `Bun.serve()` serving dynamic bundles and external source maps.
 - 🔥 **Real-Time HMR & Fast Refresh**: Full WebSocket `/hot` protocol implementation compatible with React Native's HMRClient, enabling instant code updates with state preservation.
 - 🗺️ **Full `/symbolicate` & `/open-stack-frame` Support**: Maps bundled runtime errors and LogBox/RedBox stack traces back to exact source file lines with code frames and opens them directly in your editor.
-- 📱 **Full Platform-Specific File Resolution**:
+- 📱🖥️ **Full Multiplatform Resolution (iOS, Android, macOS, Windows)**:
   1. `.{platform}.tsx` / `.{platform}.ts` / `.{platform}.jsx` / `.{platform}.js`
-  2. `.native.tsx` / `.native.ts` / `.native.jsx` / `.native.js`
-  3. Standard fallback extensions (`.tsx`, `.ts`, `.jsx`, `.js`, `.json`)
-  4. Monorepo and symlinked package support with automatic `react-native` package condition resolution.
+  2. macOS smart fallback: automatically checks `.ios.tsx` / `.ios.ts` / `.ios.jsx` / `.ios.js` before `.native.*`
+  3. `.native.tsx` / `.native.ts` / `.native.jsx` / `.native.js`
+  4. Standard fallback extensions (`.tsx`, `.ts`, `.jsx`, `.js`, `.json`)
+  5. Automatic desktop core module redirect: `react-native` imports dynamically resolve to `react-native-macos` on macOS and `react-native-windows` on Windows.
+  6. Monorepo and symlinked package support with automatic `react-native` package condition resolution.
 
 - 🎨 **Asset Transformation Pipeline**:
   - Intercepts images and fonts (`.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.svg`, `.ttf`, `.otf`).
@@ -51,7 +53,38 @@ npm install --save-dev react-native-bun-build
 
 ---
 
-## 🚀 Quick Start
+## ⚡ Quick Setup with `init`
+
+`react-native-bun-build` provides an automated `init` command that configures your project in seconds:
+
+### 1. Existing React Native Project (Zero-to-Bun in 5s)
+
+Run inside your existing React Native project:
+
+```bash
+bunx react-native-bun-build init
+# or if globally installed / using bun-rn:
+bun-rn init
+```
+
+**What it does automatically:**
+
+- ✅ Patches or creates `react-native.config.js` to register Bun bundler commands.
+- ✅ Inspects dependencies (like `react-native-reanimated`) and creates tailored `react-native-bun-build.config.js`.
+- ✅ Configures ultra-fast Rust-based **OXC** (`oxlint` & `oxfmt`) toolchain (`.oxlintrc.json`, `.oxfmtrc.json`).
+- ✅ Adds handy scripts (`start:bun`, `bundle:bun`, `lint`, `format`, `check`) to `package.json`.
+
+### 2. Scaffold a Brand New Project
+
+Create a new, high-performance React Native app pre-configured with Bun, Hermes, and OXC:
+
+```bash
+bunx react-native-bun-build init MyAwesomeApp
+```
+
+---
+
+## 🚀 Quick Start (Manual Setup)
 
 ### 1. Register with React Native CLI
 
@@ -109,13 +142,15 @@ project.ext.react = [
 
 ---
 
-## ⚙️ Configuration (`react-native-bun-build.config.js`)
+## ⚙️ Configuration (`react-native-bun-build.config.ts` / `.js`)
 
-You can optionally place a `react-native-bun-build.config.js` in your project root:
+You can optionally place a `react-native-bun-build.config.ts` or `react-native-bun-build.config.js` in your project root with full TypeScript autocompletion:
 
-```javascript
-// react-native-bun-build.config.js
-module.exports = {
+```typescript
+// react-native-bun-build.config.ts
+import { defineConfig } from 'react-native-bun-build';
+
+export default defineConfig({
   // Custom asset extensions to process
   assetExtensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'ttf', 'otf'],
 
@@ -145,7 +180,7 @@ module.exports = {
 
   // Override minification
   minify: true,
-};
+});
 ```
 
 ---
@@ -181,7 +216,7 @@ bun-rn bundle \
 | Argument                     | Description                                             | Default       |
 | :--------------------------- | :------------------------------------------------------ | :------------ |
 | `--entry-file <path>`        | Path to root JS/TS file                                 | _(required)_  |
-| `--platform <string>`        | Target platform (`ios` or `android`)                    | `ios`         |
+| `--platform <string>`        | Target platform (`ios`, `android`, `macos`, `windows`)  | `ios`         |
 | `--dev [boolean]`            | Development mode (if false, minifies & Hermes compiles) | `true`        |
 | `--bundle-output <path>`     | Destination file path for generated bundle              | _(required)_  |
 | `--bundle-encoding <string>` | Output file encoding                                    | `utf8`        |
@@ -199,13 +234,15 @@ bun-rn bundle \
 
 ### 📋 Library Compatibility Matrix (실측 검증 완료)
 
-| 라이브러리                                      | 네이티브 모듈 유형       |     번들러 파이프라인 경로      |                         상태 / 비고                          |
-| :---------------------------------------------- | :----------------------- | :-----------------------------: | :----------------------------------------------------------: |
-| **`react-native-svg`**                          | Fabric / TurboModule     | ⚡ **Bun Native (Zero-Config)** |    ✅ Babel 없이 Bun 단독으로 100% 정상 번들링 및 렌더링     |
-| **`@react-native-async-storage/async-storage`** | TurboModule / CJS Bridge | ⚡ **Bun Native (Zero-Config)** |               ✅ 비동기 스토리지 I/O 정상 동작               |
-| **`react-native-safe-area-context`**            | Fabric / TurboModule     | ⚡ **Bun Native (Zero-Config)** |               ✅ Insets 및 Provider 정상 동작                |
-| **`react-native-reanimated`**                   | JSI / C++ Worklet Engine |    🧬 **Babel Hybrid 필수**     |  ✅ `'worklet'` AST 변환을 위해 Babel 하이브리드 필수 경유   |
-| **`react-native` / `@react-native/*`**          | Core Engine              |    🧬 **Babel Hybrid 필수**     | ✅ `.js` 내부의 Flow 타입 구문 제거를 위해 자동 Babel 라우팅 |
+| 라이브러리                                      | 네이티브 모듈 유형       |      번들러 파이프라인 경로       |                         상태 / 비고                          |
+| :---------------------------------------------- | :----------------------- | :-------------------------------: | :----------------------------------------------------------: |
+| **`react-native-macos`**                        | macOS Desktop Platform   | ⚡ **Bun Native + Auto Redirect** |   ✅ `--platform macos` 시 `react-native` 자동 리다이렉션    |
+| **`react-native-windows`**                      | Windows Desktop Platform | ⚡ **Bun Native + Auto Redirect** |  ✅ `--platform windows` 시 `react-native` 자동 리다이렉션   |
+| **`react-native-svg`**                          | Fabric / TurboModule     |  ⚡ **Bun Native (Zero-Config)**  |    ✅ Babel 없이 Bun 단독으로 100% 정상 번들링 및 렌더링     |
+| **`@react-native-async-storage/async-storage`** | TurboModule / CJS Bridge |  ⚡ **Bun Native (Zero-Config)**  |               ✅ 비동기 스토리지 I/O 정상 동작               |
+| **`react-native-safe-area-context`**            | Fabric / TurboModule     |  ⚡ **Bun Native (Zero-Config)**  |               ✅ Insets 및 Provider 정상 동작                |
+| **`react-native-reanimated`**                   | JSI / C++ Worklet Engine |     🧬 **Babel Hybrid 필수**      |  ✅ `'worklet'` AST 변환을 위해 Babel 하이브리드 필수 경유   |
+| **`react-native` / `@react-native/*`**          | Core Engine              |     🧬 **Babel Hybrid 필수**      | ✅ `.js` 내부의 Flow 타입 구문 제거를 위해 자동 Babel 라우팅 |
 
 ---
 

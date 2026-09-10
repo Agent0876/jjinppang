@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeAll, afterAll } from 'bun:test';
 import fs from 'node:fs';
 import path from 'node:path';
-import { bundle } from '../packages/bundler-plugin/src/bundler.js';
+import { bundle, defineConfig } from '../packages/bundler-plugin/src/index.js';
 
 const TEST_DIR = path.join(__dirname, '.temp-bundle-e2e-test');
 
@@ -57,6 +57,14 @@ describe('End-to-End Bun Bundling', () => {
     fs.writeFileSync(
       path.join(TEST_DIR, 'PlatformText.android.js'),
       'export const message = "Platform: Android";'
+    );
+    fs.writeFileSync(
+      path.join(TEST_DIR, 'PlatformText.macos.js'),
+      'export const message = "Platform: macOS";'
+    );
+    fs.writeFileSync(
+      path.join(TEST_DIR, 'PlatformText.windows.js'),
+      'export const message = "Platform: Windows";'
     );
 
     fs.writeFileSync(
@@ -136,5 +144,73 @@ AppRegistry.registerComponent('App', () => App);
     // Check Android drawable assets
     expect(fs.existsSync(path.join(assetsDest, 'drawable-mdpi', 'assets_icon.png'))).toBe(true);
     expect(fs.existsSync(path.join(assetsDest, 'drawable-xhdpi', 'assets_icon.png'))).toBe(true);
+  });
+
+  it('bundles macOS application with macos platform resolution and assets', async () => {
+    const bundleOutput = path.join(TEST_DIR, 'dist', 'macos', 'index.macos.jsbundle');
+    const assetsDest = path.join(TEST_DIR, 'dist', 'macos', 'assets');
+
+    const result = await bundle({
+      projectRoot: TEST_DIR,
+      entryFile: 'index.js',
+      platform: 'macos',
+      dev: false,
+      minify: false,
+      bundleOutput,
+      assetsDest,
+      hermes: { enabled: false },
+    });
+
+    expect(result.durationMs).toBeGreaterThanOrEqual(0);
+    expect(fs.existsSync(bundleOutput)).toBe(true);
+
+    const bundleContent = fs.readFileSync(bundleOutput, 'utf8');
+    expect(bundleContent).toContain('Platform: macOS');
+    expect(bundleContent).not.toContain('Platform: iOS');
+    expect(bundleContent).not.toContain('Platform: Windows');
+
+    // Check macOS preserves directory asset structure
+    expect(fs.existsSync(path.join(assetsDest, 'assets', 'icon.png'))).toBe(true);
+    expect(fs.existsSync(path.join(assetsDest, 'assets', 'icon@2x.png'))).toBe(true);
+  });
+
+  it('bundles Windows application with windows platform resolution and assets', async () => {
+    const bundleOutput = path.join(TEST_DIR, 'dist', 'windows', 'index.windows.bundle');
+    const assetsDest = path.join(TEST_DIR, 'dist', 'windows', 'assets');
+
+    const result = await bundle({
+      projectRoot: TEST_DIR,
+      entryFile: 'index.js',
+      platform: 'windows',
+      dev: false,
+      minify: false,
+      bundleOutput,
+      assetsDest,
+      hermes: { enabled: false },
+    });
+
+    expect(result.durationMs).toBeGreaterThanOrEqual(0);
+    expect(fs.existsSync(bundleOutput)).toBe(true);
+
+    const bundleContent = fs.readFileSync(bundleOutput, 'utf8');
+    expect(bundleContent).toContain('Platform: Windows');
+    expect(bundleContent).not.toContain('Platform: iOS');
+    expect(bundleContent).not.toContain('Platform: macOS');
+
+    // Check Windows preserves asset directory structure
+    expect(fs.existsSync(path.join(assetsDest, 'assets', 'icon.png'))).toBe(true);
+    expect(fs.existsSync(path.join(assetsDest, 'assets', 'icon@2x.png'))).toBe(true);
+  });
+
+  it('supports defineConfig helper for user configuration files', () => {
+    const config = defineConfig({
+      hermes: { enabled: true },
+      assetExtensions: ['png', 'jpg'],
+      minify: true,
+    });
+
+    expect(config.hermes?.enabled).toBe(true);
+    expect(config.assetExtensions).toEqual(['png', 'jpg']);
+    expect(config.minify).toBe(true);
   });
 });

@@ -1,4 +1,4 @@
-export type Platform = 'ios' | 'android';
+export type Platform = 'ios' | 'android' | 'macos' | 'windows';
 
 export interface AssetFile {
   scale: number;

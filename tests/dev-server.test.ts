@@ -157,6 +157,20 @@ console.log('App loaded:', App());
       expect(mapRes.status).toBe(200);
       const mapJson = await mapRes.json();
       expect(mapJson.version).toBe(3);
+
+      // Request macos dynamic bundle
+      const macosRes = await fetch(
+        `http://localhost:${testPort}/index.bundle?platform=macos&dev=true`
+      );
+      expect(macosRes.status).toBe(200);
+      expect(macosRes.headers.get('content-type')).toContain('javascript');
+
+      // Request windows dynamic bundle
+      const windowsRes = await fetch(
+        `http://localhost:${testPort}/index.bundle?platform=windows&dev=true`
+      );
+      expect(windowsRes.status).toBe(200);
+      expect(windowsRes.headers.get('content-type')).toContain('javascript');
     });
 
     it('handles POST /symbolicate endpoint with valid response', async () => {

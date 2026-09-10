@@ -7,7 +7,7 @@ export const bundleCommandOptions: CommandOption[] = [
   },
   {
     name: '--platform <string>',
-    description: 'Either "ios" or "android"',
+    description: 'Target platform ("ios", "android", "macos", or "windows")',
     default: 'ios',
   },
   {
@@ -61,6 +61,21 @@ export const bundleCommandOptions: CommandOption[] = [
   },
 ];
 
+export const bundleParseArgsConfig = {
+  'entry-file': { type: 'string' as const },
+  platform: { type: 'string' as const, default: 'ios' },
+  dev: { type: 'string' as const, default: 'true' },
+  minify: { type: 'string' as const },
+  'bundle-output': { type: 'string' as const },
+  'bundle-encoding': { type: 'string' as const, default: 'utf8' },
+  'sourcemap-output': { type: 'string' as const },
+  'sourcemap-sources-root': { type: 'string' as const },
+  'assets-dest': { type: 'string' as const },
+  'reset-cache': { type: 'boolean' as const, default: false },
+  config: { type: 'string' as const },
+  help: { type: 'boolean' as const, short: 'h', default: false },
+};
+
 export const startCommandOptions: CommandOption[] = [
   {
     name: '--port <number>',
@@ -86,3 +101,69 @@ export const startCommandOptions: CommandOption[] = [
     description: 'Path to the root of the project',
   },
 ];
+
+export const startParseArgsConfig = {
+  port: { type: 'string' as const, default: '8081' },
+  host: { type: 'string' as const, default: 'localhost' },
+  'reset-cache': { type: 'boolean' as const, default: false },
+  resetCache: { type: 'boolean' as const, default: false },
+  config: { type: 'string' as const },
+  projectRoot: { type: 'string' as const },
+  help: { type: 'boolean' as const, short: 'h', default: false },
+};
+
+export const initCommandOptions: CommandOption[] = [
+  {
+    name: '--existing',
+    description: 'Configure react-native-bun-build in current existing React Native project',
+    default: false,
+  },
+  {
+    name: '--pm <string>',
+    description: 'Package manager to use (bun, npm, yarn, pnpm)',
+  },
+  {
+    name: '--skip-install',
+    description: 'Skip installing dependencies',
+    default: false,
+  },
+  {
+    name: '--skip-pods',
+    description: 'Skip CocoaPods pod install on macOS/iOS',
+    default: false,
+  },
+  {
+    name: '--template <string>',
+    description: 'Custom React Native template to use for new project creation',
+  },
+  {
+    name: '--oxc [boolean]',
+    description: 'Configure OXC (oxlint & oxfmt) for ultra-fast linting and formatting',
+    default: true,
+  },
+  {
+    name: '--dry-run',
+    description: 'Display changes that would be made without modifying files',
+    default: false,
+  },
+  {
+    name: '--force',
+    description: 'Force overwrite existing configuration files',
+    default: false,
+  },
+];
+
+export const initParseArgsConfig = {
+  existing: { type: 'boolean' as const, default: false },
+  pm: { type: 'string' as const },
+  'skip-install': { type: 'boolean' as const, default: false },
+  skipInstall: { type: 'boolean' as const, default: false },
+  'skip-pods': { type: 'boolean' as const, default: false },
+  skipPods: { type: 'boolean' as const, default: false },
+  template: { type: 'string' as const },
+  oxc: { type: 'string' as const, default: 'true' },
+  'dry-run': { type: 'boolean' as const, default: false },
+  dryRun: { type: 'boolean' as const, default: false },
+  force: { type: 'boolean' as const, default: false },
+  help: { type: 'boolean' as const, short: 'h', default: false },
+};

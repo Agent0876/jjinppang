@@ -55,3 +55,15 @@ export interface StartArguments {
   config?: string;
   projectRoot?: string;
 }
+
+export interface InitArguments {
+  projectName?: string;
+  existing?: boolean;
+  pm?: 'bun' | 'npm' | 'yarn' | 'pnpm';
+  skipInstall?: boolean;
+  skipPods?: boolean;
+  template?: string;
+  oxc?: boolean;
+  dryRun?: boolean;
+  force?: boolean;
+}

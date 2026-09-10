@@ -1,7 +1,13 @@
 import { parseArgs } from 'node:util';
 import { bundleCommand } from './commands/bundle.js';
 import { startCommand } from './commands/start.js';
-import type { BundleArguments, StartArguments } from './types.js';
+import { initCommand } from './commands/init.js';
+import {
+  bundleParseArgsConfig,
+  initParseArgsConfig,
+  startParseArgsConfig,
+} from './commands/options.js';
+import type { BundleArguments, StartArguments, InitArguments } from './types.js';
 
 export async function runCli(): Promise<void> {
   const rawArgs = process.argv.slice(2);
@@ -12,20 +18,58 @@ export async function runCli(): Promise<void> {
     process.exit(0);
   }
 
+  // Handle 'init' or 'bun-init' command
+  if (commandName === 'init' || commandName === 'bun-init') {
+    const argsToParse = rawArgs.slice(1);
+    const { values, positionals } = parseArgs({
+      args: argsToParse,
+      options: initParseArgsConfig,
+      allowPositionals: true,
+      strict: false,
+    });
+
+    if (values.help) {
+      console.log(`
+Usage: bun-rn init [projectName] [options]
+
+Initializes a new React Native project with Bun or configures an existing project.
+
+Options:
+  --existing                      Configure react-native-bun-build in current project
+  --pm <bun|npm|yarn|pnpm>        Package manager to use (default: auto-detect)
+  --skip-install                  Skip installing dependencies
+  --skip-pods                     Skip CocoaPods pod install on macOS/iOS
+  --template <name>               Template to use for new project creation
+  --oxc <boolean>                 Configure OXC (oxlint & oxfmt) (default: true)
+  --dry-run                       Display planned changes without writing files
+  --force                         Force overwrite existing configuration files
+  -h, --help                      Show help
+      `);
+      process.exit(0);
+    }
+
+    const initArgs: InitArguments = {
+      projectName: positionals[0],
+      existing: Boolean(values.existing),
+      pm: values.pm as 'bun' | 'npm' | 'yarn' | 'pnpm' | undefined,
+      skipInstall: Boolean(values['skip-install'] || values.skipInstall),
+      skipPods: Boolean(values['skip-pods'] || values.skipPods),
+      template: values.template as string | undefined,
+      oxc: values.oxc !== 'false' && (values.oxc as unknown) !== false,
+      dryRun: Boolean(values['dry-run'] || values.dryRun),
+      force: Boolean(values.force),
+    };
+
+    await initCommand(rawArgs, { root: process.cwd() }, initArgs);
+    return;
+  }
+
   // Handle 'start' or 'bun-start' command
   if (commandName === 'start' || commandName === 'bun-start') {
     const argsToParse = rawArgs.slice(1);
     const { values } = parseArgs({
       args: argsToParse,
-      options: {
-        port: { type: 'string', default: '8081' },
-        host: { type: 'string', default: 'localhost' },
-        'reset-cache': { type: 'boolean', default: false },
-        resetCache: { type: 'boolean', default: false },
-        config: { type: 'string' },
-        projectRoot: { type: 'string' },
-        help: { type: 'boolean', short: 'h', default: false },
-      },
+      options: startParseArgsConfig,
       allowPositionals: true,
       strict: false,
     });
@@ -65,20 +109,7 @@ Options:
 
   const { values, positionals } = parseArgs({
     args: argsToParse,
-    options: {
-      'entry-file': { type: 'string' },
-      platform: { type: 'string', default: 'ios' },
-      dev: { type: 'string', default: 'true' },
-      minify: { type: 'string' },
-      'bundle-output': { type: 'string' },
-      'bundle-encoding': { type: 'string', default: 'utf8' },
-      'sourcemap-output': { type: 'string' },
-      'sourcemap-sources-root': { type: 'string' },
-      'assets-dest': { type: 'string' },
-      'reset-cache': { type: 'boolean', default: false },
-      config: { type: 'string' },
-      help: { type: 'boolean', short: 'h', default: false },
-    },
+    options: bundleParseArgsConfig,
     allowPositionals: true,
     strict: false,
   });
@@ -93,12 +124,13 @@ Usage: bun-rn <command> [options]
 Ultra-fast custom bundler CLI for React Native bare projects powered by Bun.
 
 Commands:
+  init [name]                     Initialize a new RN project or configure an existing project
   start                           Start development server with HMR / Fast Refresh & Symbolicate
   bundle                          Build offline bundle for release or debug
 
 Bundle Options:
   --entry-file <path>             Path to root JS/TS file (e.g. index.js)
-  --platform <string>             Target platform ("ios" or "android", default: "ios")
+  --platform <string>             Target platform ("ios", "android", "macos", "windows", default: "ios")
   --dev <boolean>                 Development mode (true/false, default: true)
   --minify <boolean>              Explicitly enable/disable minification
   --bundle-output <path>          Path where generated bundle is stored
@@ -117,7 +149,7 @@ Bundle Options:
 
   const bundleArgs: BundleArguments = {
     entryFile: values['entry-file'] as string,
-    platform: (values.platform as 'ios' | 'android') || 'ios',
+    platform: (values.platform as 'ios' | 'android' | 'macos' | 'windows') || 'ios',
     dev,
     minify,
     bundleOutput: values['bundle-output'] as string,
@@ -129,4 +161,13 @@ Bundle Options:
   };
 
   await bundleCommand(rawArgs, { root: process.cwd() }, bundleArgs);
+}
+
+// Auto-execute only if bin.ts is invoked directly
+// @ts-ignore
+if (typeof Bun !== 'undefined' && import.meta.main && process.argv[1]?.endsWith('bin.ts')) {
+  runCli().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
 }

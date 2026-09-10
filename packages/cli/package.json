@@ -7,6 +7,7 @@
     "bun-rn": "bin/bun-rn.js",
     "react-native-bun-build": "bin/bun-rn.js"
   },
+  "type": "module",
   "main": "src/index.ts",
   "module": "src/index.ts",
   "types": "src/index.ts",

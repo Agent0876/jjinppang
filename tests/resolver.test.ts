@@ -31,8 +31,13 @@ describe('React Native Platform Resolver', () => {
     // PkgWithRNField/src/custom.js
     fs.writeFileSync(path.join(TEST_DIR, 'Component.ios.tsx'), 'export default "ios";');
     fs.writeFileSync(path.join(TEST_DIR, 'Component.android.tsx'), 'export default "android";');
+    fs.writeFileSync(path.join(TEST_DIR, 'Component.macos.tsx'), 'export default "macos";');
+    fs.writeFileSync(path.join(TEST_DIR, 'Component.windows.tsx'), 'export default "windows";');
     fs.writeFileSync(path.join(TEST_DIR, 'Component.native.tsx'), 'export default "native";');
     fs.writeFileSync(path.join(TEST_DIR, 'Component.tsx'), 'export default "default";');
+
+    fs.writeFileSync(path.join(TEST_DIR, 'AppleOnly.ios.tsx'), 'export default "apple-ios";');
+    fs.writeFileSync(path.join(TEST_DIR, 'AppleOnly.tsx'), 'export default "apple-default";');
 
     fs.writeFileSync(
       path.join(TEST_DIR, 'Fallback.native.js'),
@@ -60,6 +65,33 @@ describe('React Native Platform Resolver', () => {
     );
     fs.writeFileSync(path.join(pkgSrcDir, 'custom.ios.js'), 'export default "pkg-ios";');
     fs.writeFileSync(path.join(pkgSrcDir, 'custom.js'), 'export default "pkg-default";');
+
+    // Setup dummy desktop packages in node_modules for redirection tests
+    const nmDir = path.join(TEST_DIR, 'node_modules');
+    const rnmDir = path.join(nmDir, 'react-native-macos');
+    const rnwDir = path.join(nmDir, 'react-native-windows');
+    const rnDir = path.join(nmDir, 'react-native');
+    fs.mkdirSync(rnmDir, { recursive: true });
+    fs.mkdirSync(rnwDir, { recursive: true });
+    fs.mkdirSync(rnDir, { recursive: true });
+
+    fs.writeFileSync(
+      path.join(rnmDir, 'package.json'),
+      JSON.stringify({ name: 'react-native-macos', main: 'index.js' })
+    );
+    fs.writeFileSync(path.join(rnmDir, 'index.js'), 'export const platform = "macos";');
+
+    fs.writeFileSync(
+      path.join(rnwDir, 'package.json'),
+      JSON.stringify({ name: 'react-native-windows', main: 'index.js' })
+    );
+    fs.writeFileSync(path.join(rnwDir, 'index.js'), 'export const platform = "windows";');
+
+    fs.writeFileSync(
+      path.join(rnDir, 'package.json'),
+      JSON.stringify({ name: 'react-native', main: 'index.js' })
+    );
+    fs.writeFileSync(path.join(rnDir, 'index.js'), 'export const platform = "core";');
   });
 
   afterAll(() => {
@@ -129,5 +161,43 @@ describe('React Native Platform Resolver', () => {
       },
     });
     expect(resolved).toBe(fs.realpathSync(path.join(TEST_DIR, 'Component.ios.tsx')));
+  });
+
+  it('resolves .macos.tsx when platform is macos', () => {
+    const target = path.join(TEST_DIR, 'Component');
+    const resolved = resolveFileWithPlatformExtensions(target, 'macos');
+    expect(resolved).toBe(fs.realpathSync(path.join(TEST_DIR, 'Component.macos.tsx')));
+  });
+
+  it('resolves .windows.tsx when platform is windows', () => {
+    const target = path.join(TEST_DIR, 'Component');
+    const resolved = resolveFileWithPlatformExtensions(target, 'windows');
+    expect(resolved).toBe(fs.realpathSync(path.join(TEST_DIR, 'Component.windows.tsx')));
+  });
+
+  it('falls back to .ios.tsx on macos when .macos.tsx does not exist', () => {
+    const target = path.join(TEST_DIR, 'AppleOnly');
+    const resolved = resolveFileWithPlatformExtensions(target, 'macos');
+    expect(resolved).toBe(fs.realpathSync(path.join(TEST_DIR, 'AppleOnly.ios.tsx')));
+  });
+
+  it('redirects react-native to react-native-macos when platform is macos', () => {
+    const resolved = resolveSpecifier('react-native', TEST_DIR, {
+      platform: 'macos',
+      projectRoot: TEST_DIR,
+    });
+    expect(resolved).toBe(
+      fs.realpathSync(path.join(TEST_DIR, 'node_modules/react-native-macos/index.js'))
+    );
+  });
+
+  it('redirects react-native to react-native-windows when platform is windows', () => {
+    const resolved = resolveSpecifier('react-native', TEST_DIR, {
+      platform: 'windows',
+      projectRoot: TEST_DIR,
+    });
+    expect(resolved).toBe(
+      fs.realpathSync(path.join(TEST_DIR, 'node_modules/react-native-windows/index.js'))
+    );
   });
 });
