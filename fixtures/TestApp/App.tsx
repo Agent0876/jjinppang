@@ -20,7 +20,9 @@ import Animated, {
   withSequence,
   Easing,
 } from 'react-native-reanimated';
-import { useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Text } from 'react-native';
+import { useEffect, useState } from 'react';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -36,12 +38,24 @@ function App() {
 function AppContent() {
   const safeAreaInsets = useSafeAreaInsets();
   const rotation = useSharedValue(0);
+  const [storageStatus, setStorageStatus] = useState('Checking AsyncStorage...');
 
   useEffect(() => {
     rotation.value = withRepeat(
       withTiming(360, { duration: 2000, easing: Easing.linear }),
       -1
     );
+
+    async function testStorage() {
+      try {
+        await AsyncStorage.setItem('bun_test_key', 'Bun Native + AsyncStorage OK!');
+        const val = await AsyncStorage.getItem('bun_test_key');
+        setStorageStatus(val || 'No value');
+      } catch (e) {
+        setStorageStatus(`AsyncStorage Error: ${e}`);
+      }
+    }
+    testStorage();
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -60,6 +74,9 @@ function AppContent() {
             <Path d="M 35 50 L 45 60 L 65 40" stroke="#ffffff" strokeWidth="4" fill="none" strokeLinecap="round" />
           </Svg>
         </Animated.View>
+        <Text style={{ marginTop: 12, fontSize: 14, fontWeight: '600', color: '#3730a3' }}>
+          {storageStatus}
+        </Text>
       </View>
       <NewAppScreen
         templateFileName="App.tsx"

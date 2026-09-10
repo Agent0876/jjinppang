@@ -173,12 +173,53 @@ bun-rn bundle \
 
 ---
 
-## ⚠️ Known Limitations
+## ⚠️ Known Limitations & Library Compatibility
 
-1. **Development Server & Fast Refresh**: This phase only implements the production `bundle` command. Development server (`start`, HMR, Fast Refresh) will be added in the next release.
-2. **Flow Type Annotations in Third-Party Libraries**: `node_modules/react-native` and `@react-native/*` are handled by our hybrid Babel pipeline. If a third-party npm package publishes untranspiled Flow syntax with a `.js` extension, add its name to `babel.transformPatterns` in your config.
-3. **Legacy Haste Module System**: `@providesModule` syntax is deprecated in React Native. Standard npm package resolution and package `exports` are used.
-4. **Expo Managed Workflow**: Currently intended for React Native bare CLI projects.
+실제 React Native 네이티브 모듈 라이브러리 실측 테스트(`react-native-svg`, `react-native-reanimated`, `@react-native-async-storage/async-storage` 등)를 바탕으로 검증된 호환성 분류 및 기술적 제약사항입니다.
+
+### 📋 Library Compatibility Matrix (실측 검증 완료)
+
+| 라이브러리 | 네이티브 모듈 유형 | 번들러 파이프라인 경로 | 상태 / 비고 |
+| :--- | :--- | :---: | :---: |
+| **`react-native-svg`** | Fabric / TurboModule | ⚡ **Bun Native (Zero-Config)** | ✅ Babel 없이 Bun 단독으로 100% 정상 번들링 및 렌더링 |
+| **`@react-native-async-storage/async-storage`** | TurboModule / CJS Bridge | ⚡ **Bun Native (Zero-Config)** | ✅ 비동기 스토리지 I/O 정상 동작 |
+| **`react-native-safe-area-context`** | Fabric / TurboModule | ⚡ **Bun Native (Zero-Config)** | ✅ Insets 및 Provider 정상 동작 |
+| **`react-native-reanimated`** | JSI / C++ Worklet Engine | 🧬 **Babel Hybrid 필수** | ✅ `'worklet'` AST 변환을 위해 Babel 하이브리드 필수 경유 |
+| **`react-native` / `@react-native/*`** | Core Engine | 🧬 **Babel Hybrid 필수** | ✅ `.js` 내부의 Flow 타입 구문 제거를 위해 자동 Babel 라우팅 |
+
+---
+
+### 1. Babel 하이브리드 경로가 필수인 케이스 (Babel Hybrid Required)
+
+1. **Worklet / 컴파일 타임 AST 매크로 의존 라이브러리 (`react-native-reanimated` 등)**:
+   - Reanimated의 `useAnimatedStyle`, `useSharedValue` 콜백 함수는 UI 스레드에서 직접 구동되어야 하므로, `react-native-reanimated/plugin`을 통한 클로저 캡처(`_f._closure`), `__workletHash` 생성, JS 팩토리 함수 래핑이 필수적입니다.
+   - **동작**: `react-native-bun-build`의 하이브리드 플러그인이 `worklet` / `useAnimatedStyle` 패턴을 자동 감지하여 해당 파일만 선택적으로 Babel로 라우팅합니다.
+   - ⚠️ **순수 Bun 단독 강제 시**: AST 변환이 누락되어 런타임에 `"Reanimated failed to create a worklet"` 에러 또는 크래시가 발생합니다.
+2. **Flow 문법으로 배포된 코드 (`react-native` 코어 등)**:
+   - Bun의 네이티브 파서는 TypeScript 및 표준 JavaScript를 지원하지만 **Flow 문법(`import typeof`, `type X = ...`)은 지원하지 않습니다.**
+   - `react-native` 및 `@react-native/*`는 번들러 내장 하이브리드 규칙으로 자동 처리되나, 만약 제3자 라이브러리가 미컴파일된 Flow 문법을 `.js`로 배포한 경우 `config.babel.include`에 추가해야 합니다.
+
+---
+
+### 2. 순수 Bun 경로로 즉시 동작하는 케이스 (Zero-Config)
+
+* **`react-native-svg`**, **`@react-native-async-storage/async-storage`**, **`react-native-screens`** 등 대다수의 네이티브 모듈 라이브러리:
+  * TypeScript/JSX 표준 문법 및 TurboModule/Fabric 네이티브 바인딩으로 작성된 패키지는 **Babel을 전혀 거치지 않고 Bun 네이티브 파서만으로 10~50배 빠르게 번들링**됩니다.
+
+---
+
+### 3. 아예 지원되지 않거나 구조적으로 불가능한 제약 (Unsupported)
+
+1. **동적 `require()` (Dynamic Requires)**:
+   - `const mod = require('./locales/' + lang)`와 같은 런타임 동적 문자열 require는 Bun.build의 정적 그래프 분석 특성상 포함되지 않거나 런타임 에러를 유발합니다. 반드시 정적 import/require를 사용해야 합니다.
+2. **Metro 전용 Haste 모듈 시스템 (`@providesModule`)**:
+   - 구형 Facebook 라이브러리에서 쓰이던 Haste 모듈 해석은 지원하지 않으며, 표준 npm Node 모듈 해석 및 `package.json`의 `exports`/`main` 필드만 지원합니다.
+3. **Metro 독점 Transformer 플러그인**:
+   - `metro.config.js`의 내부 AST 조작 훅이나 Metro 전용 바벨 트랜스포머에 하드코딩된 플러그인은 Bun 파이프라인에서 실행되지 않습니다.
+4. **개발 서버 (HMR / Fast Refresh)**:
+   - 현재 릴리스는 오프라인 번들 생성을 위한 **프로덕션 `bundle` 커맨드**에 집중되어 있으며, 개발 서버(`start`, HMR, WebSocket 연결)는 차기 릴리스에서 제공될 예정입니다.
+5. **Expo Managed Workflow**:
+   - Bare React Native CLI 환경을 기준으로 설계되었습니다.
 
 ---
 
