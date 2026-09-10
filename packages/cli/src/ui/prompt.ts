@@ -173,9 +173,133 @@ export async function promptMultiSelect<T>(
 }
 
 /**
+ * Single-choice prompt selection with Arrow key navigation
+ * - Up / Down (or j / k) to navigate
+ * - Enter to confirm
+ * - Also supports 1..9 number keys
+ */
+export async function promptSelect<T>(
+  question: string,
+  options: { label: string; value: T; hint?: string }[],
+  defaultIndex = 0
+): Promise<T> {
+  if (!process.stdin.isTTY || process.env.CI) {
+    return (options[defaultIndex] ?? options[0]).value;
+  }
+
+  let cursor = defaultIndex >= 0 && defaultIndex < options.length ? defaultIndex : 0;
+  let hasRendered = false;
+
+  const render = () => {
+    if (hasRendered) {
+      readline.moveCursor(process.stdout, 0, -options.length);
+    } else {
+      console.log(
+        `${symbols.arrow} ${colors.bold}${question}${colors.reset} ${colors.dim}(Use arrow keys, Enter to confirm)${colors.reset}`
+      );
+      hasRendered = true;
+    }
+
+    for (let i = 0; i < options.length; i++) {
+      const opt = options[i];
+      const isCurrent = i === cursor;
+
+      readline.cursorTo(process.stdout, 0);
+      readline.clearLine(process.stdout, 0);
+
+      const pointer = isCurrent ? `${colors.brightCyan}❯${colors.reset} ` : '  ';
+      const label = isCurrent
+        ? `${colors.bold}${colors.brightWhite}${opt.label}${colors.reset}`
+        : `${colors.dim}${opt.label}${colors.reset}`;
+      const hint = opt.hint ? `  ${colors.dim}• ${opt.hint}${colors.reset}` : '';
+
+      process.stdout.write(`${pointer}${label}${hint}\n`);
+    }
+  };
+
+  return new Promise<T>((resolve) => {
+    process.stdout.write('\x1b[?25l'); // Hide cursor
+
+    readline.emitKeypressEvents(process.stdin);
+    const wasRaw = process.stdin.isRaw;
+    if (process.stdin.isTTY && typeof process.stdin.setRawMode === 'function') {
+      process.stdin.setRawMode(true);
+    }
+    process.stdin.resume();
+
+    render();
+
+    const cleanup = () => {
+      process.stdout.write('\x1b[?25h'); // Restore cursor
+      if (process.stdin.isTTY && typeof process.stdin.setRawMode === 'function') {
+        process.stdin.setRawMode(Boolean(wasRaw));
+      }
+      process.stdin.removeListener('keypress', onKeypress);
+      process.stdin.pause();
+    };
+
+    const onKeypress = (str: string, key: KeyPressEvent) => {
+      const isUp = key?.name === 'up' || key?.name === 'k';
+      const isDown = key?.name === 'down' || key?.name === 'j';
+      const isEnter =
+        key?.name === 'return' || key?.name === 'enter' || str === '\r' || str === '\n';
+      const isCtrlC = (key?.ctrl && key?.name === 'c') || str === '\u0003';
+
+      if (isCtrlC) {
+        cleanup();
+        process.exit(130);
+      }
+
+      if (isUp) {
+        cursor = cursor === 0 ? options.length - 1 : cursor - 1;
+        render();
+        return;
+      }
+
+      if (isDown) {
+        cursor = cursor === options.length - 1 ? 0 : cursor + 1;
+        render();
+        return;
+      }
+
+      if (str && /^[1-9]$/.test(str)) {
+        const numIdx = parseInt(str, 10) - 1;
+        if (numIdx >= 0 && numIdx < options.length) {
+          cursor = numIdx;
+          render();
+          return;
+        }
+      }
+
+      if (isEnter) {
+        cleanup();
+
+        // Collapse prompt into clean summary line
+        readline.moveCursor(process.stdout, 0, -(options.length + 1));
+        readline.cursorTo(process.stdout, 0);
+        readline.clearScreenDown(process.stdout);
+
+        const chosen = options[cursor] ?? options[defaultIndex];
+        console.log(
+          `${symbols.check} ${colors.bold}${question}${colors.reset} ${colors.brightCyan}› ${chosen.label}${colors.reset}\n`
+        );
+
+        resolve(chosen.value);
+      }
+    };
+
+    process.stdin.on('keypress', onKeypress);
+  });
+}
+
+/**
  * Ask a free-text question
  */
 export async function promptText(question: string, defaultValue = ''): Promise<string> {
+  if (!process.stdin.isTTY || process.env.CI) {
+    return defaultValue;
+  }
+
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -190,54 +314,17 @@ export async function promptText(question: string, defaultValue = ''): Promise<s
     rl.question(promptStr, (answer) => {
       rl.close();
       const result = answer.trim() || defaultValue;
-      console.log(`  ${symbols.check} ${colors.dim}${result}${colors.reset}\n`);
+
+      readline.moveCursor(process.stdout, 0, -1);
+      readline.cursorTo(process.stdout, 0);
+      readline.clearLine(process.stdout, 0);
+
+      console.log(
+        `${symbols.check} ${colors.bold}${question}${colors.reset} ${colors.brightCyan}› ${result}${colors.reset}\n`
+      );
+
       resolve(result);
     });
-  });
-}
-
-/**
- * Single-choice prompt selection
- */
-export async function promptSelect<T>(
-  question: string,
-  options: { label: string; value: T; hint?: string }[],
-  defaultIndex = 0
-): Promise<T> {
-  console.log(`${symbols.arrow} ${colors.bold}${question}${colors.reset}`);
-
-  options.forEach((opt, idx) => {
-    const isDefault = idx === defaultIndex;
-    const num = `${colors.cyan}${idx + 1}${colors.reset}`;
-    const tag = isDefault ? ` ${colors.brightGreen}(recommended)${colors.reset}` : '';
-    const hint = opt.hint ? ` ${colors.dim}-${opt.hint}${colors.reset}` : '';
-    console.log(`    ${num}. ${opt.label}${tag}${hint}`);
-  });
-
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
-  return new Promise((resolve) => {
-    rl.question(
-      `  ${colors.dim}Choose [1-${options.length}] (default: ${defaultIndex + 1}): ${colors.reset}`,
-      (answer) => {
-        rl.close();
-        const trimmed = answer.trim();
-        let selectedIndex = defaultIndex;
-        if (trimmed) {
-          const parsed = parseInt(trimmed, 10);
-          if (!isNaN(parsed) && parsed >= 1 && parsed <= options.length) {
-            selectedIndex = parsed - 1;
-          }
-        }
-
-        const chosen = options[selectedIndex] ?? options[defaultIndex];
-        console.log(`  ${symbols.check} ${colors.dim}${chosen.label}${colors.reset}\n`);
-        resolve(chosen.value);
-      }
-    );
   });
 }
 
@@ -245,13 +332,17 @@ export async function promptSelect<T>(
  * Yes / No confirmation prompt
  */
 export async function promptConfirm(question: string, defaultYes = true): Promise<boolean> {
+  if (!process.stdin.isTTY || process.env.CI) {
+    return defaultYes;
+  }
+
+  const choicesStr = defaultYes ? `(Y/n)` : `(y/N)`;
+  const promptStr = `${symbols.arrow} ${colors.bold}${question}${colors.reset} ${colors.dim}${choicesStr}${colors.reset} `;
+
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
   });
-
-  const choicesStr = defaultYes ? `[Y/n]` : `[y/N]`;
-  const promptStr = `${symbols.arrow} ${colors.bold}${question}${colors.reset} ${colors.dim}${choicesStr}${colors.reset} `;
 
   return new Promise((resolve) => {
     rl.question(promptStr, (answer) => {
@@ -264,7 +355,16 @@ export async function promptConfirm(question: string, defaultYes = true): Promis
         result = false;
       }
 
-      console.log(`  ${symbols.check} ${colors.dim}${result ? 'Yes' : 'No'}${colors.reset}\n`);
+      readline.moveCursor(process.stdout, 0, -1);
+      readline.cursorTo(process.stdout, 0);
+      readline.clearLine(process.stdout, 0);
+
+      console.log(
+        `${symbols.check} ${colors.bold}${question}${colors.reset} ${colors.brightCyan}› ${
+          result ? 'Yes' : 'No'
+        }${colors.reset}\n`
+      );
+
       resolve(result);
     });
   });

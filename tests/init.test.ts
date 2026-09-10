@@ -11,7 +11,12 @@ import {
   resolveDesktopVersion,
   initCommand,
 } from '../packages/cli/src/commands/init.js';
-import { promptMultiSelect } from '../packages/cli/src/ui/index.js';
+import {
+  promptMultiSelect,
+  promptSelect,
+  promptConfirm,
+  promptText,
+} from '../packages/cli/src/ui/index.js';
 
 const TEST_DIR = path.join(__dirname, '.temp-init-test');
 
@@ -349,16 +354,39 @@ describe('Init Command & Project Scaffolding', () => {
     expect(fallbackAll).toEqual(['ios', 'android']);
   });
 
+  test('promptSelect, promptConfirm, promptText return defaults in non-interactive / CI mode', async () => {
+    const selected = await promptSelect(
+      'Pick package manager',
+      [
+        { label: 'bun', value: 'bun' },
+        { label: 'pnpm', value: 'pnpm' },
+      ],
+      1
+    );
+    expect(selected).toBe('pnpm');
+
+    const confirmed = await promptConfirm('Enable OXC?', true);
+    expect(confirmed).toBe(true);
+
+    const declined = await promptConfirm('Run pods?', false);
+    expect(declined).toBe(false);
+
+    const text = await promptText('App Name', 'DefaultApp');
+    expect(text).toBe('DefaultApp');
+  });
+
   test('initCommand runs with platforms flag and asks no other questions', async () => {
     fs.writeFileSync(
       path.join(TEST_DIR, 'package.json'),
       JSON.stringify({ name: 'FastApp', dependencies: { 'react-native': '0.78.0' } }, null, 2)
     );
 
-    await initCommand(['init'], { root: TEST_DIR } as any, {
+    await initCommand(['init', '--platforms', 'ios,android,macos'], { root: TEST_DIR } as any, {
       platforms: ['ios', 'android', 'macos'],
       dryRun: true,
       skipInstall: true,
+      oxc: true,
+      pm: 'bun',
     });
 
     // Validates initCommand succeeded without throwing or blocking
