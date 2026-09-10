@@ -94,7 +94,6 @@ export async function initCommand(
     (Array.isArray(args.platforms) && args.platforms.length > 0) ||
     (typeof args.platforms === 'string' && args.platforms.length > 0);
 
-  const hasPmFlag = argv.some((a) => a.startsWith('--pm')) || Boolean(args.pm);
   const hasOxcFlag = argv.some((a) => a.startsWith('--oxc') || a.startsWith('--no-oxc'));
   const hasSkipInstallFlag = argv.some(
     (a) => a.includes('skip-install') || a.includes('skipInstall')
@@ -159,22 +158,8 @@ export async function initCommand(
       );
     }
 
-    // 3. Package Manager Selection
-    if (!hasPmFlag) {
-      const detectedPm = detectPackageManager(currentDir);
-      const pmOptions = [
-        { label: 'bun', value: 'bun' as const, hint: 'Ultra-fast native runtime (recommended)' },
-        { label: 'pnpm', value: 'pnpm' as const, hint: 'Fast, disk space efficient' },
-        { label: 'yarn', value: 'yarn' as const, hint: 'Classic or Modern Yarn' },
-        { label: 'npm', value: 'npm' as const, hint: 'Standard Node package manager' },
-      ];
-      const defaultIdx = pmOptions.findIndex((o) => o.value === detectedPm);
-      args.pm = await promptSelect(
-        'Select your package manager',
-        pmOptions,
-        defaultIdx !== -1 ? defaultIdx : 0
-      );
-    }
+    // Auto-detect package manager (defaults to bun, no prompt needed)
+    args.pm = args.pm || detectPackageManager(currentDir);
 
     // 4. OXC Setup (oxlint & oxfmt)
     if (!hasOxcFlag) {
