@@ -26,6 +26,22 @@ interface KeyPressEvent {
 }
 
 /**
+ * Format a hint to safely fit within terminal width without wrapping
+ */
+function formatSafeHint(
+  label: string,
+  hint: string | undefined,
+  termWidth: number,
+  extraOffset = 6
+): string {
+  if (!hint) return '';
+  const available = termWidth - label.length - extraOffset;
+  if (available <= 5) return '';
+  const text = hint.length > available ? `${hint.slice(0, available - 1)}…` : hint;
+  return `  ${colors.dim}• ${text}${colors.reset}`;
+}
+
+/**
  * Interactive Checkbox Multi-Selection Prompt
  * - Arrow Up / Down (or j / k) to navigate
  * - Space to toggle selection
@@ -46,11 +62,16 @@ export async function promptMultiSelect<T>(
   const selectedState = options.map((o) => Boolean(o.selected));
   let cursor = 0;
   let hasRendered = false;
+  let lastLinesCount = 0;
 
   const render = () => {
-    if (hasRendered) {
-      readline.moveCursor(process.stdout, 0, -options.length);
-    } else {
+    const termWidth = process.stdout.columns || 80;
+
+    if (hasRendered && lastLinesCount > 0) {
+      readline.moveCursor(process.stdout, 0, -lastLinesCount);
+      readline.cursorTo(process.stdout, 0);
+      readline.clearScreenDown(process.stdout);
+    } else if (!hasRendered) {
       console.log(
         `${symbols.arrow} ${colors.bold}${question}${colors.reset} ${colors.dim}(Space to toggle, Enter to confirm)${colors.reset}`
       );
@@ -62,9 +83,6 @@ export async function promptMultiSelect<T>(
       const isCurrent = i === cursor;
       const isChecked = selectedState[i];
 
-      readline.cursorTo(process.stdout, 0);
-      readline.clearLine(process.stdout, 0);
-
       const pointer = isCurrent ? `${colors.brightCyan}❯${colors.reset} ` : '  ';
       const checkbox = isChecked
         ? `${colors.brightGreen}[✔]${colors.reset}`
@@ -72,10 +90,14 @@ export async function promptMultiSelect<T>(
       const label = isCurrent
         ? `${colors.bold}${colors.brightWhite}${opt.label}${colors.reset}`
         : opt.label;
-      const hint = opt.hint ? `  ${colors.dim}• ${opt.hint}${colors.reset}` : '';
+      const hint = formatSafeHint(opt.label, opt.hint, termWidth, 10);
 
+      readline.cursorTo(process.stdout, 0);
+      readline.clearLine(process.stdout, 0);
       process.stdout.write(`${pointer}${checkbox} ${label}${hint}\n`);
     }
+
+    lastLinesCount = options.length;
   };
 
   return new Promise<T[]>((resolve) => {
@@ -152,7 +174,7 @@ export async function promptMultiSelect<T>(
         cleanup();
 
         // Collapse prompt into a clean summary line
-        readline.moveCursor(process.stdout, 0, -(options.length + 1));
+        readline.moveCursor(process.stdout, 0, -(lastLinesCount + 1));
         readline.cursorTo(process.stdout, 0);
         readline.clearScreenDown(process.stdout);
 
@@ -189,11 +211,16 @@ export async function promptSelect<T>(
 
   let cursor = defaultIndex >= 0 && defaultIndex < options.length ? defaultIndex : 0;
   let hasRendered = false;
+  let lastLinesCount = 0;
 
   const render = () => {
-    if (hasRendered) {
-      readline.moveCursor(process.stdout, 0, -options.length);
-    } else {
+    const termWidth = process.stdout.columns || 80;
+
+    if (hasRendered && lastLinesCount > 0) {
+      readline.moveCursor(process.stdout, 0, -lastLinesCount);
+      readline.cursorTo(process.stdout, 0);
+      readline.clearScreenDown(process.stdout);
+    } else if (!hasRendered) {
       console.log(
         `${symbols.arrow} ${colors.bold}${question}${colors.reset} ${colors.dim}(Use arrow keys, Enter to confirm)${colors.reset}`
       );
@@ -204,17 +231,18 @@ export async function promptSelect<T>(
       const opt = options[i];
       const isCurrent = i === cursor;
 
-      readline.cursorTo(process.stdout, 0);
-      readline.clearLine(process.stdout, 0);
-
       const pointer = isCurrent ? `${colors.brightCyan}❯${colors.reset} ` : '  ';
       const label = isCurrent
         ? `${colors.bold}${colors.brightWhite}${opt.label}${colors.reset}`
         : `${colors.dim}${opt.label}${colors.reset}`;
-      const hint = opt.hint ? `  ${colors.dim}• ${opt.hint}${colors.reset}` : '';
+      const hint = formatSafeHint(opt.label, opt.hint, termWidth, 6);
 
+      readline.cursorTo(process.stdout, 0);
+      readline.clearLine(process.stdout, 0);
       process.stdout.write(`${pointer}${label}${hint}\n`);
     }
+
+    lastLinesCount = options.length;
   };
 
   return new Promise<T>((resolve) => {
@@ -275,7 +303,7 @@ export async function promptSelect<T>(
         cleanup();
 
         // Collapse prompt into clean summary line
-        readline.moveCursor(process.stdout, 0, -(options.length + 1));
+        readline.moveCursor(process.stdout, 0, -(lastLinesCount + 1));
         readline.cursorTo(process.stdout, 0);
         readline.clearScreenDown(process.stdout);
 

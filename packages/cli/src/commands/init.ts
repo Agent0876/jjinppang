@@ -118,12 +118,12 @@ export async function initCommand(
           {
             label: `Current directory (${currentDirName})`,
             value: 'existing',
-            hint: 'Configure react-native-bun-build in this existing directory',
+            hint: 'Configure here',
           },
           {
             label: 'New project in a subfolder',
             value: 'new',
-            hint: 'Create a new React Native project',
+            hint: 'Create in subfolder',
           },
         ]);
         isExistingMode = mode === 'existing';
