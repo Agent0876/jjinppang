@@ -124,3 +124,5 @@ fixtures/TestApp/android/app/build/
 fixtures/TestApp/android/.gradle/
 fixtures/TestApp/dist/
 dist/
+.temp-*
+tests/.temp-*

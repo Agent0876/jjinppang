@@ -11,6 +11,7 @@ import {
   formatParseArgsConfig,
 } from '../packages/cli/src/commands/options.js';
 import { commands } from '../packages/cli/src/commands/index.js';
+import { getCliVersion } from '../packages/cli/src/bin.js';
 
 const TEST_DIR = path.join(__dirname, '.temp-lint-format-test');
 
@@ -159,5 +160,26 @@ describe('Built-in Lint & Format Commands (Next.js CLI Style)', () => {
     expect(formatHelp.status).toBe(0);
     expect(formatHelp.stdout).toContain('Usage: bun-rn format');
     expect(formatHelp.stdout).toContain('--check');
+  });
+
+  test('CLI dynamically reads version from package.json with --version and -v', () => {
+    const pkgPath = path.resolve(__dirname, '../packages/react-native-bun-build/package.json');
+    const expectedVersion = JSON.parse(fs.readFileSync(pkgPath, 'utf8')).version;
+
+    expect(getCliVersion()).toBe(expectedVersion);
+
+    const cliBin = path.resolve(__dirname, '../packages/react-native-bun-build/bin/bun-rn.js');
+
+    const versionLong = spawnSync('bun', [cliBin, '--version'], {
+      encoding: 'utf8',
+    });
+    expect(versionLong.status).toBe(0);
+    expect(versionLong.stdout.trim()).toBe(`react-native-bun-build v${expectedVersion}`);
+
+    const versionShort = spawnSync('bun', [cliBin, '-v'], {
+      encoding: 'utf8',
+    });
+    expect(versionShort.status).toBe(0);
+    expect(versionShort.stdout.trim()).toBe(`react-native-bun-build v${expectedVersion}`);
   });
 });

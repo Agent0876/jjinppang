@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { bundleCommand } from './commands/bundle.js';
 import { startCommand } from './commands/start.js';
@@ -19,12 +22,63 @@ import type {
   FormatArguments,
 } from './types.js';
 
+/**
+ * Dynamically resolves the CLI version from package.json
+ */
+export function getCliVersion(): string {
+  try {
+    const searchDirs: string[] = [];
+
+    if (process.argv[1]) {
+      searchDirs.push(path.dirname(path.resolve(process.argv[1])));
+    }
+
+    try {
+      searchDirs.push(path.dirname(fileURLToPath(import.meta.url)));
+    } catch {
+      // ignore
+    }
+
+    if (typeof __dirname !== 'undefined') {
+      searchDirs.push(__dirname);
+    }
+
+    for (const startDir of searchDirs) {
+      let curr = startDir;
+      for (let i = 0; i < 5; i++) {
+        const pkgPath = path.join(curr, 'package.json');
+        if (fs.existsSync(pkgPath)) {
+          try {
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+            if (
+              pkg.name === 'react-native-bun-build' ||
+              pkg.name === '@react-native-bun-build/cli'
+            ) {
+              if (pkg.version) return pkg.version;
+            }
+          } catch {
+            // ignore
+          }
+        }
+        const parent = path.dirname(curr);
+        if (parent === curr) break;
+        curr = parent;
+      }
+    }
+  } catch {
+    // fallback
+  }
+
+  return '0.1.0';
+}
+
 export async function runCli(): Promise<void> {
   const rawArgs = process.argv.slice(2);
   const commandName = rawArgs[0];
 
   if (rawArgs.includes('-v') || rawArgs.includes('--version')) {
-    console.log(`react-native-bun-build v0.1.0`);
+    const version = getCliVersion();
+    console.log(`react-native-bun-build v${version}`);
     process.exit(0);
   }
 
