@@ -10,14 +10,9 @@ export interface CommandOption<T = unknown> {
 export interface Command<T = any> {
   name: string;
   description?: string;
-  func: (
-    argv: string[],
-    config: CliConfig,
-    args: T
-  ) => Promise<void> | void;
+  func: (argv: string[], config: CliConfig, args: T) => Promise<void> | void;
   options?: CommandOption[];
 }
-
 
 export interface CliProjectConfig {
   root: string;
@@ -60,4 +55,3 @@ export interface StartArguments {
   config?: string;
   projectRoot?: string;
 }
-

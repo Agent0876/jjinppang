@@ -18,16 +18,7 @@ export interface HMRServerOptions {
 }
 
 const HEARTBEAT_INTERVAL_MS = 20_000;
-const WATCH_EXTENSIONS = new Set([
-  '.js',
-  '.jsx',
-  '.ts',
-  '.tsx',
-  '.json',
-  '.png',
-  '.jpg',
-  '.jpeg',
-]);
+const WATCH_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx', '.json', '.png', '.jpg', '.jpeg']);
 
 const IGNORED_SEGMENTS = [
   'node_modules',
@@ -199,52 +190,48 @@ export class HMRServer {
 
   private startWatcher(): void {
     try {
-      this.watcher = fs.watch(
-        this.projectRoot,
-        { recursive: true },
-        (_eventType, filename) => {
-          if (!filename) return;
+      this.watcher = fs.watch(this.projectRoot, { recursive: true }, (_eventType, filename) => {
+        if (!filename) return;
 
-          // Check ignored paths
-          for (const segment of IGNORED_SEGMENTS) {
-            if (filename.includes(segment)) return;
-          }
-
-          const ext = path.extname(filename).toLowerCase();
-          if (!WATCH_EXTENSIONS.has(ext)) return;
-
-          const fullPath = path.resolve(this.projectRoot, filename);
-          this.pendingChangedFiles.add(fullPath);
-
-          if (this.debounceTimer) {
-            clearTimeout(this.debounceTimer);
-          }
-
-          this.debounceTimer = setTimeout(async () => {
-            const files = Array.from(this.pendingChangedFiles);
-            this.pendingChangedFiles.clear();
-            if (files.length === 0) return;
-
-            console.log(
-              `[HMR] File change detected: ${files
-                .map((f) => path.relative(this.projectRoot, f))
-                .join(', ')}`
-            );
-
-            if (this.onFileChangeCallback) {
-              try {
-                for (const file of files) {
-                  await this.onFileChangeCallback(file);
-                }
-              } catch (err) {
-                console.error('[HMR] Error during file change callback:', err);
-              }
-            }
-
-            await this.triggerUpdate(files);
-          }, 100);
+        // Check ignored paths
+        for (const segment of IGNORED_SEGMENTS) {
+          if (filename.includes(segment)) return;
         }
-      );
+
+        const ext = path.extname(filename).toLowerCase();
+        if (!WATCH_EXTENSIONS.has(ext)) return;
+
+        const fullPath = path.resolve(this.projectRoot, filename);
+        this.pendingChangedFiles.add(fullPath);
+
+        if (this.debounceTimer) {
+          clearTimeout(this.debounceTimer);
+        }
+
+        this.debounceTimer = setTimeout(async () => {
+          const files = Array.from(this.pendingChangedFiles);
+          this.pendingChangedFiles.clear();
+          if (files.length === 0) return;
+
+          console.log(
+            `[HMR] File change detected: ${files
+              .map((f) => path.relative(this.projectRoot, f))
+              .join(', ')}`
+          );
+
+          if (this.onFileChangeCallback) {
+            try {
+              for (const file of files) {
+                await this.onFileChangeCallback(file);
+              }
+            } catch (err) {
+              console.error('[HMR] Error during file change callback:', err);
+            }
+          }
+
+          await this.triggerUpdate(files);
+        }, 100);
+      });
     } catch (err) {
       console.warn('[HMR] Failed to start recursive file watcher:', err);
     }

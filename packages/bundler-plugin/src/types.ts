@@ -119,4 +119,3 @@ export type HMRMessage =
   | { type: 'update'; body: HMRUpdate }
   | { type: 'update-done'; body?: { changeId?: string } }
   | { type: 'error'; body: { type: string; message: string; [key: string]: unknown } };
-

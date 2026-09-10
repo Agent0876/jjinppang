@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ]
+  },
+  "env": {
+    "builtin": true,
+    "node": true
+  },
+  "ignorePatterns": [
+    "dist/**",
+    "node_modules/**",
+    "fixtures/TestApp/android/**",
+    "fixtures/TestApp/ios/**",
+    "fixtures/TestApp/node_modules/**",
+    "fixtures/TestApp/dist/**",
+    ".bun-rn-temp/**",
+    "bun.lock"
+  ]
+}

@@ -6,7 +6,6 @@ import type { HermesOptions } from './types.js';
 
 export function getHermescPlatformDir(): string {
   const platform = os.platform();
-  const arch = os.arch();
 
   if (platform === 'darwin') {
     return 'osx-bin';
@@ -21,10 +20,7 @@ export function getHermescPlatformDir(): string {
 /**
  * Searches for the hermesc executable binary
  */
-export function findHermescPath(
-  projectRoot: string,
-  options?: HermesOptions
-): string | null {
+export function findHermescPath(projectRoot: string, options?: HermesOptions): string | null {
   // 1. Explicit option or environment variable
   if (options?.hermescPath && fs.existsSync(options.hermescPath)) {
     return options.hermescPath;
@@ -98,13 +94,7 @@ export function compileWithHermes(params: CompileWithHermesParams): boolean {
   const hbcOutput = `${bundleOutput}.hbc`;
   const hbcMapOutput = `${bundleOutput}.hbc.map`;
 
-  const flags: string[] = [
-    '-emit-binary',
-    '-out',
-    hbcOutput,
-    bundleOutput,
-    '-O',
-  ];
+  const flags: string[] = ['-emit-binary', '-out', hbcOutput, bundleOutput, '-O'];
 
   if (sourcemapOutput) {
     flags.push('-output-source-map');
@@ -153,17 +143,18 @@ export function composeSourceMaps(
 ): void {
   const composeScriptCandidates = [
     path.join(projectRoot, 'node_modules/react-native/scripts/compose-source-maps.js'),
-    path.join(projectRoot, 'node_modules/@react-native/community-cli-plugin/dist/commands/bundle/composeSourceMaps.js'),
+    path.join(
+      projectRoot,
+      'node_modules/@react-native/community-cli-plugin/dist/commands/bundle/composeSourceMaps.js'
+    ),
   ];
 
   for (const script of composeScriptCandidates) {
     if (fs.existsSync(script)) {
       try {
-        const res = spawnSync(
-          process.execPath,
-          [script, packagerMap, hermesMap, '-o', outputMap],
-          { stdio: 'pipe' }
-        );
+        const res = spawnSync(process.execPath, [script, packagerMap, hermesMap, '-o', outputMap], {
+          stdio: 'pipe',
+        });
         if (res.status === 0) {
           return;
         }

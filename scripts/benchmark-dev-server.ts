@@ -55,7 +55,6 @@ async function getProcessRssMb(port: number, fallbackPid?: number): Promise<numb
   }
 }
 
-
 async function benchmarkHmr(port: number, runs = 3): Promise<number> {
   const ws = new WebSocket(`ws://localhost:${port}/hot`);
   const openPromise = new Promise<void>((resolve, reject) => {
@@ -191,7 +190,6 @@ async function benchmarkServer(
     const memoryRssMb = await getProcessRssMb(port, proc.pid);
     console.log(`6. Server Process RSS Memory: ${memoryRssMb} MB`);
 
-
     return {
       serverName: name,
       startupMs,
@@ -221,10 +219,14 @@ export async function runDevServerBenchmark(): Promise<{
   }
   try {
     metroResults = await benchmarkServer('Metro (Node.js)', 8082, () => {
-      return spawn('npx', ['react-native', 'start', '--port', '8082', '--no-interactive', '--reset-cache'], {
-        cwd: TEST_APP_DIR,
-        stdio: ['ignore', 'pipe', 'pipe'],
-      });
+      return spawn(
+        'npx',
+        ['react-native', 'start', '--port', '8082', '--no-interactive', '--reset-cache'],
+        {
+          cwd: TEST_APP_DIR,
+          stdio: ['ignore', 'pipe', 'pipe'],
+        }
+      );
     });
   } finally {
     if (fs.existsSync(CONFIG_BAK_PATH)) {
@@ -239,7 +241,6 @@ export async function runDevServerBenchmark(): Promise<{
       stdio: ['ignore', 'pipe', 'pipe'],
     });
   });
-
 
   return { metro: metroResults, bun: bunResults };
 }
@@ -299,7 +300,9 @@ if (import.meta.main) {
       ]);
 
       const benchmarkMdPath = path.resolve(__dirname, '../BENCHMARK.md');
-      let currentMd = fs.existsSync(benchmarkMdPath) ? fs.readFileSync(benchmarkMdPath, 'utf8') : '';
+      let currentMd = fs.existsSync(benchmarkMdPath)
+        ? fs.readFileSync(benchmarkMdPath, 'utf8')
+        : '';
 
       const devBenchmarkSection = `
 ---
@@ -329,7 +332,9 @@ if (import.meta.main) {
 `;
 
       if (currentMd.includes('## 4. 개발 서버 및 HMR / DX 벤치마크')) {
-        currentMd = currentMd.split('## 4. 개발 서버 및 HMR / DX 벤치마크')[0] + devBenchmarkSection.trimStart();
+        currentMd =
+          currentMd.split('## 4. 개발 서버 및 HMR / DX 벤치마크')[0] +
+          devBenchmarkSection.trimStart();
       } else {
         currentMd = currentMd.trimEnd() + '\n' + devBenchmarkSection;
       }
@@ -342,4 +347,3 @@ if (import.meta.main) {
       process.exit(1);
     });
 }
-

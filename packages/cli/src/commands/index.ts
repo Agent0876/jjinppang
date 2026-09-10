@@ -32,4 +32,3 @@ export const commands: Command[] = [
 
 export default commands;
 export { bundleCommand, bundleCommandOptions, startCommand, startCommandOptions };
-

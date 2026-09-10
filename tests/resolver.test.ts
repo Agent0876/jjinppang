@@ -34,7 +34,10 @@ describe('React Native Platform Resolver', () => {
     fs.writeFileSync(path.join(TEST_DIR, 'Component.native.tsx'), 'export default "native";');
     fs.writeFileSync(path.join(TEST_DIR, 'Component.tsx'), 'export default "default";');
 
-    fs.writeFileSync(path.join(TEST_DIR, 'Fallback.native.js'), 'export default "native-fallback";');
+    fs.writeFileSync(
+      path.join(TEST_DIR, 'Fallback.native.js'),
+      'export default "native-fallback";'
+    );
     fs.writeFileSync(path.join(TEST_DIR, 'Fallback.js'), 'export default "js-fallback";');
 
     fs.writeFileSync(path.join(TEST_DIR, 'OnlyDefault.js'), 'export default "only-default";');

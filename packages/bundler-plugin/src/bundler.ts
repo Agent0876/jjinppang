@@ -105,9 +105,7 @@ require(${JSON.stringify(entryFile)});
       sourcemap: sourcemapOutput ? 'external' : 'none',
       define: {
         __DEV__: JSON.stringify(options.dev),
-        'process.env.NODE_ENV': JSON.stringify(
-          options.dev ? 'development' : 'production'
-        ),
+        'process.env.NODE_ENV': JSON.stringify(options.dev ? 'development' : 'production'),
       },
       plugins: [resolverPlugin, assetPlugin, babelPlugin],
     });
@@ -134,14 +132,10 @@ require(${JSON.stringify(entryFile)});
 
   // Write bundle and sourcemap outputs
   const jsOutput = buildResult.outputs.find((out) => out.kind === 'entry-point');
-  const sourcemapArtifact = buildResult.outputs.find(
-    (out) => out.kind === 'sourcemap'
-  );
+  const sourcemapArtifact = buildResult.outputs.find((out) => out.kind === 'sourcemap');
 
   if (!jsOutput) {
-    throw new Error(
-      `[react-native-bun-build] No entrypoint output produced by Bun.build`
-    );
+    throw new Error(`[react-native-bun-build] No entrypoint output produced by Bun.build`);
   }
 
   const prelude = `var __DEV__ = ${options.dev ? 'true' : 'false'};\nvar global = typeof global !== 'undefined' ? global : globalThis;\nglobal.__DEV__ = __DEV__;\n`;
@@ -160,19 +154,13 @@ require(${JSON.stringify(entryFile)});
 
   // Copy assets if requested
   if (assetsDest && collectedAssets.length > 0) {
-    copyAssetsToDestination(
-      collectedAssets,
-      assetsDest,
-      options.platform,
-      projectRoot
-    );
+    copyAssetsToDestination(collectedAssets, assetsDest, options.platform, projectRoot);
   }
 
   // Hermes Bytecode Compilation
   let hermesCompiled = false;
   const shouldCompileHermes =
-    (!options.dev && options.hermes?.enabled !== false) ||
-    options.hermes?.enabled === true;
+    (!options.dev && options.hermes?.enabled !== false) || options.hermes?.enabled === true;
 
   if (shouldCompileHermes) {
     hermesCompiled = compileWithHermes({

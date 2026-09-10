@@ -13,13 +13,13 @@ export const bundleCommandOptions: CommandOption[] = [
   {
     name: '--dev [boolean]',
     description: 'If false, warnings are disabled and the bundle is minified',
-    parse: (val: string) => val === 'true' || val === true as unknown as string,
+    parse: (val: string) => val === 'true' || val === (true as unknown as string),
     default: true,
   },
   {
     name: '--minify [boolean]',
     description: 'Allows overriding whether bundle is minified',
-    parse: (val: string) => val === 'true' || val === true as unknown as string,
+    parse: (val: string) => val === 'true' || val === (true as unknown as string),
   },
   {
     name: '--bundle-output <path>',
@@ -86,4 +86,3 @@ export const startCommandOptions: CommandOption[] = [
     description: 'Path to the root of the project',
   },
 ];
-

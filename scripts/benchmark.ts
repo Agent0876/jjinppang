@@ -85,7 +85,9 @@ async function main() {
         const cmd = `npx react-native bundle --entry-file index.js --platform ${scenario.platform} --dev false --bundle-output ${scenario.metroOutput} --assets-dest ${scenario.metroAssets} --reset-cache`;
         const duration = runCommand(cmd, TEST_APP_DIR);
         metroTimes.push(duration);
-        metroSize = fs.existsSync(scenario.metroOutput) ? fs.statSync(scenario.metroOutput).size : 0;
+        metroSize = fs.existsSync(scenario.metroOutput)
+          ? fs.statSync(scenario.metroOutput).size
+          : 0;
         console.log(`${duration}ms`);
       } finally {
         if (fs.existsSync(configBakPath)) {
@@ -94,9 +96,7 @@ async function main() {
       }
     }
 
-    const metroAvgTime = Math.round(
-      metroTimes.reduce((a, b) => a + b, 0) / metroTimes.length
-    );
+    const metroAvgTime = Math.round(metroTimes.reduce((a, b) => a + b, 0) / metroTimes.length);
     results.push({
       tool: 'Metro',
       platform: scenario.platform,
@@ -118,9 +118,7 @@ async function main() {
       console.log(`${duration}ms`);
     }
 
-    const bunAvgTime = Math.round(
-      bunTimes.reduce((a, b) => a + b, 0) / bunTimes.length
-    );
+    const bunAvgTime = Math.round(bunTimes.reduce((a, b) => a + b, 0) / bunTimes.length);
     results.push({
       tool: 'react-native-bun-build (Bun)',
       platform: scenario.platform,

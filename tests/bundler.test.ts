@@ -72,10 +72,7 @@ AppRegistry.registerComponent('App', () => App);
 `
     );
 
-    fs.writeFileSync(
-      path.join(TEST_DIR, 'index.js'),
-      `import './App';`
-    );
+    fs.writeFileSync(path.join(TEST_DIR, 'index.js'), `import './App';`);
   });
 
   afterAll(() => {
@@ -120,7 +117,7 @@ AppRegistry.registerComponent('App', () => App);
     const bundleOutput = path.join(TEST_DIR, 'dist', 'android', 'index.android.bundle');
     const assetsDest = path.join(TEST_DIR, 'dist', 'android', 'res');
 
-    const result = await bundle({
+    const _result = await bundle({
       projectRoot: TEST_DIR,
       entryFile: 'index.js',
       platform: 'android',
@@ -137,11 +134,7 @@ AppRegistry.registerComponent('App', () => App);
     expect(bundleContent).not.toContain('Platform: iOS');
 
     // Check Android drawable assets
-    expect(
-      fs.existsSync(path.join(assetsDest, 'drawable-mdpi', 'assets_icon.png'))
-    ).toBe(true);
-    expect(
-      fs.existsSync(path.join(assetsDest, 'drawable-xhdpi', 'assets_icon.png'))
-    ).toBe(true);
+    expect(fs.existsSync(path.join(assetsDest, 'drawable-mdpi', 'assets_icon.png'))).toBe(true);
+    expect(fs.existsSync(path.join(assetsDest, 'drawable-xhdpi', 'assets_icon.png'))).toBe(true);
   });
 });

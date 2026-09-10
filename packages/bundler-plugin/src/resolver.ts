@@ -85,10 +85,7 @@ export function resolveFileWithPlatformExtensions(
  * Resolve directory import by checking package.json (react-native, main, etc.)
  * or index files with platform extensions.
  */
-export function resolveDirectory(
-  dirPath: string,
-  platform: Platform
-): string | null {
+export function resolveDirectory(dirPath: string, platform: Platform): string | null {
   if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory()) {
     return null;
   }
@@ -151,8 +148,7 @@ function resolvePackageExport(
     if (subpath === '.') {
       const target = path.resolve(packageDir, exportsField);
       return (
-        resolveFileWithPlatformExtensions(target, platform) ||
-        resolveDirectory(target, platform)
+        resolveFileWithPlatformExtensions(target, platform) || resolveDirectory(target, platform)
       );
     }
     return null;
@@ -162,7 +158,13 @@ function resolvePackageExport(
     const exportsObj = exportsField as Record<string, unknown>;
 
     // Case 1: Root conditional export: { "react-native": "...", "import": "...", "default": "..." }
-    if (subpath === '.' && ('react-native' in exportsObj || 'import' in exportsObj || 'require' in exportsObj || 'default' in exportsObj)) {
+    if (
+      subpath === '.' &&
+      ('react-native' in exportsObj ||
+        'import' in exportsObj ||
+        'require' in exportsObj ||
+        'default' in exportsObj)
+    ) {
       const condition =
         exportsObj['react-native'] ??
         exportsObj['import'] ??
@@ -171,8 +173,7 @@ function resolvePackageExport(
       if (typeof condition === 'string') {
         const target = path.resolve(packageDir, condition);
         return (
-          resolveFileWithPlatformExtensions(target, platform) ||
-          resolveDirectory(target, platform)
+          resolveFileWithPlatformExtensions(target, platform) || resolveDirectory(target, platform)
         );
       }
       if (typeof condition === 'object' && condition !== null) {
@@ -186,8 +187,7 @@ function resolvePackageExport(
       if (typeof exportTarget === 'string') {
         const target = path.resolve(packageDir, exportTarget);
         return (
-          resolveFileWithPlatformExtensions(target, platform) ||
-          resolveDirectory(target, platform)
+          resolveFileWithPlatformExtensions(target, platform) || resolveDirectory(target, platform)
         );
       }
       if (typeof exportTarget === 'object') {
@@ -202,10 +202,7 @@ function resolvePackageExport(
 /**
  * Searches for a node_modules package by walking up from startDir
  */
-export function findNodeModulesPackage(
-  startDir: string,
-  pkgName: string
-): string | null {
+export function findNodeModulesPackage(startDir: string, pkgName: string): string | null {
   let currentDir = path.resolve(startDir);
   const root = path.parse(currentDir).root;
 
@@ -259,12 +256,7 @@ export function resolvePackageImport(
     try {
       const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
       if (pkg.exports) {
-        const resolved = resolvePackageExport(
-          pkg.exports,
-          './' + subpath,
-          pkgDir,
-          platform
-        );
+        const resolved = resolvePackageExport(pkg.exports, './' + subpath, pkgDir, platform);
         if (resolved) return resolved;
       }
     } catch {

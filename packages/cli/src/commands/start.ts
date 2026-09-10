@@ -1,4 +1,5 @@
-import { spawn, spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
+
 import path from 'node:path';
 import { startDevServer } from '@react-native-bun-build/bundler-plugin';
 import { loadConfigFile } from '../config.js';

@@ -64,10 +64,7 @@ export function shouldTransformWithBabel(
   }
 
   // 4. Check transformPatterns (user patterns + default patterns like reanimated/flow)
-  const patterns = [
-    ...(options.transformPatterns ?? []),
-    ...DEFAULT_BABEL_PATTERNS,
-  ];
+  const patterns = [...(options.transformPatterns ?? []), ...DEFAULT_BABEL_PATTERNS];
 
   for (const pattern of patterns) {
     if (typeof pattern === 'string') {
@@ -130,9 +127,7 @@ export function getLoaderForPath(filePath: string): string {
 /**
  * Creates Bun.build plugin for hybrid Babel transformation
  */
-export function createBabelHybridPlugin(
-  options: BabelHybridPluginOptions
-): BunPlugin {
+export function createBabelHybridPlugin(options: BabelHybridPluginOptions): BunPlugin {
   const configFile = findBabelConfigFile(options.projectRoot);
   const cache = new Map<string, string>();
 
@@ -144,16 +139,12 @@ export function createBabelHybridPlugin(
 
         // Skip other node_modules unless matched by path pattern or explicitly included
         const isNodeModules = filePath.includes('/node_modules/');
-        const matchesDefaultPath = DEFAULT_BABEL_PATH_PATTERNS.some((p) =>
-          p.test(filePath)
-        );
+        const matchesDefaultPath = DEFAULT_BABEL_PATH_PATTERNS.some((p) => p.test(filePath));
 
         if (isNodeModules && !matchesDefaultPath) {
           const isExplicitlyIncluded =
             options.include?.some((pattern) =>
-              typeof pattern === 'string'
-                ? filePath.includes(pattern)
-                : pattern.test(filePath)
+              typeof pattern === 'string' ? filePath.includes(pattern) : pattern.test(filePath)
             ) ?? false;
           if (!isExplicitlyIncluded && !filePath.includes('react-native-reanimated')) {
             return undefined;

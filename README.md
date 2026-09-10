@@ -81,7 +81,6 @@ npx react-native bundle --entry-file index.js --platform ios --dev false --bundl
 npx react-native bundle --entry-file index.js --platform android --dev false --bundle-output dist/index.android.bundle --assets-dest dist/res
 ```
 
-
 ---
 
 ## 🛠 Native Build Integration
@@ -96,7 +95,7 @@ export BUNDLE_COMMAND=bun-bundle
 ../node_modules/react-native/scripts/react-native-xcode.sh
 ```
 
-*(If you replace `bundle` in `react-native.config.js`, no Xcode modification is necessary).*
+_(If you replace `bundle` in `react-native.config.js`, no Xcode modification is necessary)._
 
 ### Android (Gradle)
 
@@ -129,10 +128,7 @@ module.exports = {
   // Babel hybrid configuration
   babel: {
     // Patterns that trigger Babel transformation (worklets, macros, etc.)
-    transformPatterns: [
-      /react-native-reanimated/,
-      /custom-macro/,
-    ],
+    transformPatterns: [/react-native-reanimated/, /custom-macro/],
     // Force include/exclude specific paths
     include: [],
     exclude: [],
@@ -182,19 +178,18 @@ bun-rn bundle \
 
 ### Bundle CLI Arguments
 
-
-| Argument | Description | Default |
-| :--- | :--- | :--- |
-| `--entry-file <path>` | Path to root JS/TS file | *(required)* |
-| `--platform <string>` | Target platform (`ios` or `android`) | `ios` |
-| `--dev [boolean]` | Development mode (if false, minifies & Hermes compiles) | `true` |
-| `--bundle-output <path>` | Destination file path for generated bundle | *(required)* |
-| `--bundle-encoding <string>` | Output file encoding | `utf8` |
-| `--assets-dest <path>` | Directory path to store resolved assets | `undefined` |
-| `--sourcemap-output <path>` | Path to save output sourcemap | `undefined` |
-| `--minify [boolean]` | Explicitly override minification | `!dev` |
-| `--config <path>` | Path to custom config file | Auto-detected |
-| `--reset-cache` | Clear caches before build | `false` |
+| Argument                     | Description                                             | Default       |
+| :--------------------------- | :------------------------------------------------------ | :------------ |
+| `--entry-file <path>`        | Path to root JS/TS file                                 | _(required)_  |
+| `--platform <string>`        | Target platform (`ios` or `android`)                    | `ios`         |
+| `--dev [boolean]`            | Development mode (if false, minifies & Hermes compiles) | `true`        |
+| `--bundle-output <path>`     | Destination file path for generated bundle              | _(required)_  |
+| `--bundle-encoding <string>` | Output file encoding                                    | `utf8`        |
+| `--assets-dest <path>`       | Directory path to store resolved assets                 | `undefined`   |
+| `--sourcemap-output <path>`  | Path to save output sourcemap                           | `undefined`   |
+| `--minify [boolean]`         | Explicitly override minification                        | `!dev`        |
+| `--config <path>`            | Path to custom config file                              | Auto-detected |
+| `--reset-cache`              | Clear caches before build                               | `false`       |
 
 ---
 
@@ -204,13 +199,13 @@ bun-rn bundle \
 
 ### 📋 Library Compatibility Matrix (실측 검증 완료)
 
-| 라이브러리 | 네이티브 모듈 유형 | 번들러 파이프라인 경로 | 상태 / 비고 |
-| :--- | :--- | :---: | :---: |
-| **`react-native-svg`** | Fabric / TurboModule | ⚡ **Bun Native (Zero-Config)** | ✅ Babel 없이 Bun 단독으로 100% 정상 번들링 및 렌더링 |
-| **`@react-native-async-storage/async-storage`** | TurboModule / CJS Bridge | ⚡ **Bun Native (Zero-Config)** | ✅ 비동기 스토리지 I/O 정상 동작 |
-| **`react-native-safe-area-context`** | Fabric / TurboModule | ⚡ **Bun Native (Zero-Config)** | ✅ Insets 및 Provider 정상 동작 |
-| **`react-native-reanimated`** | JSI / C++ Worklet Engine | 🧬 **Babel Hybrid 필수** | ✅ `'worklet'` AST 변환을 위해 Babel 하이브리드 필수 경유 |
-| **`react-native` / `@react-native/*`** | Core Engine | 🧬 **Babel Hybrid 필수** | ✅ `.js` 내부의 Flow 타입 구문 제거를 위해 자동 Babel 라우팅 |
+| 라이브러리                                      | 네이티브 모듈 유형       |     번들러 파이프라인 경로      |                         상태 / 비고                          |
+| :---------------------------------------------- | :----------------------- | :-----------------------------: | :----------------------------------------------------------: |
+| **`react-native-svg`**                          | Fabric / TurboModule     | ⚡ **Bun Native (Zero-Config)** |    ✅ Babel 없이 Bun 단독으로 100% 정상 번들링 및 렌더링     |
+| **`@react-native-async-storage/async-storage`** | TurboModule / CJS Bridge | ⚡ **Bun Native (Zero-Config)** |               ✅ 비동기 스토리지 I/O 정상 동작               |
+| **`react-native-safe-area-context`**            | Fabric / TurboModule     | ⚡ **Bun Native (Zero-Config)** |               ✅ Insets 및 Provider 정상 동작                |
+| **`react-native-reanimated`**                   | JSI / C++ Worklet Engine |    🧬 **Babel Hybrid 필수**     |  ✅ `'worklet'` AST 변환을 위해 Babel 하이브리드 필수 경유   |
+| **`react-native` / `@react-native/*`**          | Core Engine              |    🧬 **Babel Hybrid 필수**     | ✅ `.js` 내부의 Flow 타입 구문 제거를 위해 자동 Babel 라우팅 |
 
 ---
 
@@ -228,8 +223,8 @@ bun-rn bundle \
 
 ### 2. 순수 Bun 경로로 즉시 동작하는 케이스 (Zero-Config)
 
-* **`react-native-svg`**, **`@react-native-async-storage/async-storage`**, **`react-native-screens`** 등 대다수의 네이티브 모듈 라이브러리:
-  * TypeScript/JSX 표준 문법 및 TurboModule/Fabric 네이티브 바인딩으로 작성된 패키지는 **Babel을 전혀 거치지 않고 Bun 네이티브 파서만으로 10~50배 빠르게 번들링**됩니다.
+- **`react-native-svg`**, **`@react-native-async-storage/async-storage`**, **`react-native-screens`** 등 대다수의 네이티브 모듈 라이브러리:
+  - TypeScript/JSX 표준 문법 및 TurboModule/Fabric 네이티브 바인딩으로 작성된 패키지는 **Babel을 전혀 거치지 않고 Bun 네이티브 파서만으로 10~50배 빠르게 번들링**됩니다.
 
 ---
 
@@ -241,10 +236,34 @@ bun-rn bundle \
    - 구형 Facebook 라이브러리에서 쓰이던 Haste 모듈 해석은 지원하지 않으며, 표준 npm Node 모듈 해석 및 `package.json`의 `exports`/`main` 필드만 지원합니다.
 3. **Metro 독점 Transformer 플러그인**:
    - `metro.config.js`의 내부 AST 조작 훅이나 Metro 전용 바벨 트랜스포머에 하드코딩된 플러그인은 Bun 파이프라인에서 실행되지 않습니다.
-4. **개발 서버 (HMR / Fast Refresh)**:
-   - 현재 릴리스는 오프라인 번들 생성을 위한 **프로덕션 `bundle` 커맨드**에 집중되어 있으며, 개발 서버(`start`, HMR, WebSocket 연결)는 차기 릴리스에서 제공될 예정입니다.
-5. **Expo Managed Workflow**:
+4. **Expo Managed Workflow**:
    - Bare React Native CLI 환경을 기준으로 설계되었습니다.
+
+---
+
+## ⚡ Code Quality & Tooling (OXC)
+
+이 프로젝트는 초고속 Rust 기반 도구인 **[OXC (Oxidation Compiler)](https://oxc.rs)** 생태계를 채택하여 린팅과 포맷팅을 수행합니다.
+
+- **`oxlint`**: ESLint 대비 최대 50~100배 빠른 Rust 기반 린터 (~10ms 이내 완료).
+- **`oxfmt`**: Prettier 호환 고속 Rust 포맷터.
+
+```bash
+# 코드 린트 검사
+bun run lint
+
+# 코드 린트 자동 수정
+bun run lint:fix
+
+# 코드 포맷팅 적용
+bun run format
+
+# 코드 포맷팅 상태 확인
+bun run format:check
+
+# 전체 검사 (린트 + 포맷 + 테스트)
+bun run check
+```
 
 ---
 

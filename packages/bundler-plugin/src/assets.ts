@@ -55,11 +55,7 @@ export function parseAssetFilename(filename: string): { name: string; scale: num
 /**
  * Finds all scale variants in the same directory for a given base asset name
  */
-export function findAssetScaleVariants(
-  dir: string,
-  baseName: string,
-  ext: string
-): AssetFile[] {
+export function findAssetScaleVariants(dir: string, baseName: string, ext: string): AssetFile[] {
   if (!fs.existsSync(dir)) return [];
 
   const files = fs.readdirSync(dir);
@@ -222,10 +218,7 @@ export function getAndroidDrawableFolder(scale: number): string {
  * Sanitizes asset name and relative path for Android resource identifiers
  * (matching Metro's getAndroidResourceIdentifier)
  */
-export function getAndroidResourceIdentifier(
-  projectRoot: string,
-  filePath: string
-): string {
+export function getAndroidResourceIdentifier(projectRoot: string, filePath: string): string {
   const relativePath = path.relative(projectRoot, filePath).replace(/\\/g, '/');
   // Remove extension and scale
   const withoutExt = relativePath.replace(/(@[\d.]+x)?\.[a-zA-Z0-9]+$/, '');
@@ -269,9 +262,7 @@ export function copyAssetsToDestination(
         fs.copyFileSync(variant.path, targetPath);
       } else if (platform === 'android') {
         // Android: drawables for images, raw for fonts/others
-        const isDrawable = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(
-          asset.type.toLowerCase()
-        );
+        const isDrawable = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(asset.type.toLowerCase());
 
         const resourceId = getAndroidResourceIdentifier(projectRoot, variant.path);
 

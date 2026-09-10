@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import {
   shouldTransformWithBabel,
-  findBabelConfigFile,
   getLoaderForPath,
 } from '../packages/bundler-plugin/src/babel-hybrid.js';
 

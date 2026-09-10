@@ -190,24 +190,17 @@ describe('React Native Asset Pipeline', () => {
       files: [{ scale: 1, path: path.join(fontsDir, 'CustomFont.ttf') }],
     };
 
-    copyAssetsToDestination(
-      [imageAsset, fontAsset],
-      destAndroid,
-      'android',
-      TEST_DIR
-    );
+    copyAssetsToDestination([imageAsset, fontAsset], destAndroid, 'android', TEST_DIR);
 
     // 1x image should go to drawable-mdpi
-    expect(
-      fs.existsSync(path.join(destAndroid, 'drawable-mdpi', 'src_images_logo.png'))
-    ).toBe(true);
+    expect(fs.existsSync(path.join(destAndroid, 'drawable-mdpi', 'src_images_logo.png'))).toBe(
+      true
+    );
     // 2x image should go to drawable-xhdpi
-    expect(
-      fs.existsSync(path.join(destAndroid, 'drawable-xhdpi', 'src_images_logo.png'))
-    ).toBe(true);
+    expect(fs.existsSync(path.join(destAndroid, 'drawable-xhdpi', 'src_images_logo.png'))).toBe(
+      true
+    );
     // font should go to raw/
-    expect(
-      fs.existsSync(path.join(destAndroid, 'raw', 'src_fonts_customfont.ttf'))
-    ).toBe(true);
+    expect(fs.existsSync(path.join(destAndroid, 'raw', 'src_fonts_customfont.ttf'))).toBe(true);
   });
 });

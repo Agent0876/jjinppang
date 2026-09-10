@@ -1,12 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { SourceMapConsumer } from 'source-map-js';
-import type {
-  CodeFrame,
-  StackFrame,
-  SymbolicateRequest,
-  SymbolicateResponse,
-} from './types.js';
+import type { CodeFrame, StackFrame, SymbolicateRequest, SymbolicateResponse } from './types.js';
 
 /**
  * Generates an ANSI / formatted code frame around a specific line and column in a source file
@@ -36,9 +31,7 @@ export function generateCodeFrame(
       formattedLines.push(`${marker} ${lineNumStr} | ${lineContent}`);
 
       if (isTarget) {
-        const indent = ' '.repeat(
-          marker.length + 1 + maxLineNumWidth + 3 + Math.max(0, column)
-        );
+        const indent = ' '.repeat(marker.length + 1 + maxLineNumWidth + 3 + Math.max(0, column));
         formattedLines.push(`${indent}^`);
       }
     }
@@ -153,18 +146,11 @@ export class Symbolicator {
    * Symbolicates a full stack trace and computes code frame
    */
   symbolicate(request: SymbolicateRequest): SymbolicateResponse {
-    const symbolicatedStack = request.stack.map((frame) =>
-      this.symbolicateFrame(frame)
-    );
+    const symbolicatedStack = request.stack.map((frame) => this.symbolicateFrame(frame));
 
     let targetFrame: StackFrame | null = null;
     for (const frame of symbolicatedStack) {
-      if (
-        !frame.collapse &&
-        frame.file &&
-        frame.lineNumber != null &&
-        fs.existsSync(frame.file)
-      ) {
+      if (!frame.collapse && frame.file && frame.lineNumber != null && fs.existsSync(frame.file)) {
         targetFrame = frame;
         break;
       }

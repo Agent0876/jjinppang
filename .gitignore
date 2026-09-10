@@ -111,3 +111,16 @@ dist
 
 # TernJS port file
 .tern-port
+
+# React Native & Bun bundler artifacts
+.bun-rn-temp/
+*.bundle
+*.jsbundle
+*.hbc
+*.map
+fixtures/TestApp/ios/Pods/
+fixtures/TestApp/ios/build/
+fixtures/TestApp/android/app/build/
+fixtures/TestApp/android/.gradle/
+fixtures/TestApp/dist/
+dist/

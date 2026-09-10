@@ -61,9 +61,7 @@ Options:
 
   // Handle 'bundle' or 'bun-bundle' command (or default)
   const argsToParse =
-    commandName === 'bundle' || commandName === 'bun-bundle'
-      ? rawArgs.slice(1)
-      : rawArgs;
+    commandName === 'bundle' || commandName === 'bun-bundle' ? rawArgs.slice(1) : rawArgs;
 
   const { values, positionals } = parseArgs({
     args: argsToParse,

@@ -17,7 +17,10 @@ export function findBunExecutable(): string {
 
   try {
     const whichCmd = os.platform() === 'win32' ? 'where bun' : 'which bun';
-    const found = execSync(whichCmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }).trim();
+    const found = execSync(whichCmd, {
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'ignore'],
+    }).trim();
     if (found && fs.existsSync(found)) {
       return found;
     }
@@ -68,7 +71,8 @@ export async function bundleCommand(
     if (args.bundleOutput) forwardArgs.push('--bundle-output', args.bundleOutput);
     if (args.bundleEncoding) forwardArgs.push('--bundle-encoding', args.bundleEncoding);
     if (args.sourcemapOutput) forwardArgs.push('--sourcemap-output', args.sourcemapOutput);
-    if (args.sourcemapSourcesRoot) forwardArgs.push('--sourcemap-sources-root', args.sourcemapSourcesRoot);
+    if (args.sourcemapSourcesRoot)
+      forwardArgs.push('--sourcemap-sources-root', args.sourcemapSourcesRoot);
     if (args.assetsDest) forwardArgs.push('--assets-dest', args.assetsDest);
     if (args.resetCache) forwardArgs.push('--reset-cache');
     if (args.config) forwardArgs.push('--config', args.config);
@@ -94,15 +98,11 @@ export async function bundleCommand(
   const fileConfig = await loadConfigFile(projectRoot, args.config);
 
   if (!args.entryFile) {
-    throw new Error(
-      `[react-native-bun-build] Missing required option: --entry-file <path>`
-    );
+    throw new Error(`[react-native-bun-build] Missing required option: --entry-file <path>`);
   }
 
   if (!args.bundleOutput) {
-    throw new Error(
-      `[react-native-bun-build] Missing required option: --bundle-output <path>`
-    );
+    throw new Error(`[react-native-bun-build] Missing required option: --bundle-output <path>`);
   }
 
   const platform = args.platform || 'ios';
@@ -114,7 +114,9 @@ export async function bundleCommand(
         ? fileConfig.minify
         : !dev;
 
-  console.log(`[react-native-bun-build] Bundling for ${platform} (${dev ? 'development' : 'production'})...`);
+  console.log(
+    `[react-native-bun-build] Bundling for ${platform} (${dev ? 'development' : 'production'})...`
+  );
   console.log(`[react-native-bun-build] Entry: ${args.entryFile}`);
   console.log(`[react-native-bun-build] Output: ${args.bundleOutput}`);
 

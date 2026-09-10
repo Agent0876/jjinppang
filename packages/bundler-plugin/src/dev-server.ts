@@ -2,11 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import type { Server } from 'bun';
-import type {
-  DevServerOptions,
-  Platform,
-  SymbolicateRequest,
-} from './types.js';
+import type { DevServerOptions, Platform, SymbolicateRequest } from './types.js';
 import { createResolverPlugin } from './resolver.js';
 import { createAssetPlugin } from './assets.js';
 import { createBabelHybridPlugin } from './babel-hybrid.js';
@@ -30,9 +26,7 @@ interface CachedBundle {
 /**
  * Starts the React Native Dev Server powered by Bun.serve()
  */
-export async function startDevServer(
-  options: DevServerOptions
-): Promise<DevServerInstance> {
+export async function startDevServer(options: DevServerOptions): Promise<DevServerInstance> {
   const projectRoot = path.resolve(options.projectRoot);
   const host = options.host ?? 'localhost';
   const port = options.port ?? 8081;
@@ -48,7 +42,6 @@ export async function startDevServer(
       } catch {}
     }
   }
-
 
   const hmrServer = new HMRServer({
     projectRoot,
@@ -143,9 +136,7 @@ require(${JSON.stringify(candidateEntry)});
         sourcemap: 'external',
         define: {
           __DEV__: JSON.stringify(dev),
-          'process.env.NODE_ENV': JSON.stringify(
-            dev ? 'development' : 'production'
-          ),
+          'process.env.NODE_ENV': JSON.stringify(dev ? 'development' : 'production'),
         },
         plugins: [resolverPlugin, assetPlugin, babelPlugin],
       });
@@ -164,12 +155,8 @@ require(${JSON.stringify(candidateEntry)});
       throw new Error(`Bun build error:\n${errors}`);
     }
 
-    const jsOutput = buildResult.outputs.find(
-      (out) => out.kind === 'entry-point'
-    );
-    const sourcemapArtifact = buildResult.outputs.find(
-      (out) => out.kind === 'sourcemap'
-    );
+    const jsOutput = buildResult.outputs.find((out) => out.kind === 'entry-point');
+    const sourcemapArtifact = buildResult.outputs.find((out) => out.kind === 'sourcemap');
 
     if (!jsOutput) {
       throw new Error('No entry-point output produced by Bun.build');
@@ -227,20 +214,20 @@ require(${JSON.stringify(candidateEntry)});
         try {
           const body = (await req.json()) as SymbolicateRequest;
           if (!body || !Array.isArray(body.stack)) {
-            return new Response(
-              JSON.stringify({ error: 'Invalid stack trace format' }),
-              { status: 400, headers: { 'Content-Type': 'application/json' } }
-            );
+            return new Response(JSON.stringify({ error: 'Invalid stack trace format' }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' },
+            });
           }
           const result = symbolicator.symbolicate(body);
           return new Response(JSON.stringify(result), {
             headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: any) {
-          return new Response(
-            JSON.stringify({ error: err.message || 'Symbolication failed' }),
-            { status: 500, headers: { 'Content-Type': 'application/json' } }
-          );
+          return new Response(JSON.stringify({ error: err.message || 'Symbolication failed' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+          });
         }
       }
 
@@ -305,14 +292,8 @@ require(${JSON.stringify(candidateEntry)});
           });
         }
 
-
         try {
-          const { code, map, buildTimeMs } = await buildBundle(
-            entryName,
-            platform,
-            dev,
-            minify
-          );
+          const { code, map, buildTimeMs } = await buildBundle(entryName, platform, dev, minify);
 
           bundleCache.set(cacheKey, { code, map, timestamp: Date.now() });
           bundleCache.set(pathname, { code, map, timestamp: Date.now() });
@@ -396,4 +377,3 @@ require(${JSON.stringify(candidateEntry)});
     },
   };
 }
-

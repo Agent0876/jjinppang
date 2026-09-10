@@ -1,7 +1,7 @@
 let commands;
 try {
   commands = require('react-native-bun-build/commands');
-} catch (e) {
+} catch {
   commands = require('../../commands.js');
 }
 
