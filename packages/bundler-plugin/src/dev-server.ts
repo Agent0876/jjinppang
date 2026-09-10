@@ -40,6 +40,16 @@ export async function startDevServer(
   const symbolicator = new Symbolicator(projectRoot);
   const bundleCache = new Map<string, CachedBundle>();
 
+  if (options.resetCache) {
+    const tempDir = path.join(projectRoot, '.bun-rn-temp');
+    if (fs.existsSync(tempDir)) {
+      try {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+      } catch {}
+    }
+  }
+
+
   const hmrServer = new HMRServer({
     projectRoot,
     host,
@@ -286,7 +296,7 @@ require(${JSON.stringify(candidateEntry)});
         const cacheKey = `${pathname}?platform=${platform}&dev=${dev}&minify=${minify}`;
         const cached = bundleCache.get(cacheKey);
 
-        if (cached && !options.resetCache) {
+        if (cached) {
           return new Response(cached.code, {
             headers: {
               'Content-Type': 'application/javascript; charset=UTF-8',
@@ -294,6 +304,7 @@ require(${JSON.stringify(candidateEntry)});
             },
           });
         }
+
 
         try {
           const { code, map, buildTimeMs } = await buildBundle(

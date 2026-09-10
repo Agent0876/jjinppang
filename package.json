@@ -19,8 +19,10 @@
   "scripts": {
     "build": "bun build packages/bundler-plugin/src/index.ts --outdir packages/bundler-plugin/dist --target node && bun build packages/cli/src/index.ts --outdir packages/cli/dist --target node && bun build packages/cli/src/commands/index.ts --outfile packages/cli/dist/commands/index.js --target node && bun build packages/cli/src/bin.ts --outfile packages/cli/dist/bin.js --target node",
     "test": "bun test tests/",
-    "benchmark": "bun run scripts/benchmark.ts"
+    "benchmark": "bun run scripts/benchmark.ts",
+    "benchmark:dev": "bun run scripts/benchmark-dev-server.ts"
   },
+
   "workspaces": [
     "packages/*"
   ],

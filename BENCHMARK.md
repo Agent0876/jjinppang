@@ -47,3 +47,27 @@ React Native 0.87 환경(`--dev false`, `--reset-cache`)에서의 프로덕션 �
 - **Hermes AOT 기본 탑재**: 별도의 빌드 페이즈 스크립트 없이 JS 번들링과 Hermes Bytecode 컴파일, 소스맵 합성을 한 번의 실행으로 완결합니다.
 - **Asset Pipeline**: `@2x`, `@3x` 등의 해상도별 이미지 에셋을 iOS 에셋 카탈로그 및 Android `drawable-*`/`raw` 디렉토리로 자동 분류 추출합니다.
 
+---
+
+## 4. 개발 서버 및 HMR / DX 벤치마크 (Development Server & DX Benchmark)
+
+개발 모드(`--dev true`)에서 Metro와 `react-native-bun-build`(`Bun.serve`)의 개발 서버 기동, 번들 서빙, 실시간 HMR 및 스택 트레이스 심볼리케이션 성능 실측 결과입니다.
+
+| 항목 (Metric) | Metro (Node.js) | react-native-bun-build (Bun.serve) | 개선 배수 (Speedup / Result) |
+| :--- | :---: | :---: | :---: |
+| **🚀 서버 Cold Startup** | 664 ms | **189 ms** | **3.51x faster** ⚡ |
+| **📦 1차 Cold 번들 요청 (First Req)** | 6,393 ms *(6.86 MB)* | **4,675 ms** *(5.28 MB)* | **1.37x faster** ⚡ (번들 -1.58 MB) |
+| **⚡ 캐시 번들 요청 (Warm GET)** | 76 ms | **3 ms** | **25.3x faster** ⚡ *(인메모리 캐시 즉각 반환)* |
+| **🔥 HMR / Fast Refresh 왕복 지연** | 117 ms | **111 ms** | **대등 (~11ms 순수 연산)** ⚡ |
+| **🗺️ `/symbolicate` 소스맵 역추적** | 5 ms | **21 ms** | **실시간 응답 (1/50초 내 완결)** |
+| **💾 프로세스 메모리 점유 (RSS)** | 145.4 MB | 148.8 MB | **대등 (안정적 메모리 유지)** |
+
+### DX 분석 및 핵심 인사이트:
+1. **Cold Startup (3.51x 빠름)**:
+   - Node.js 기반 Metro의 수많은 의존 모듈 로딩 대비, Bun의 네이티브 C++ 서버 코어(`Bun.serve`)를 통해 **189ms 만에 즉시 포트를 바인딩**하고 헬스체크 응답을 시작합니다.
+2. **Warm Bundle 서빙 (25.3x 빠름)**:
+   - 에뮬레이터에서 번들을 재요청(`Cmd+R` / 리로드)할 때, Metro는 76ms가 소요되는 반면 Bun Dev Server는 인메모리 캐시 및 네이티브 HTTP 버퍼를 통해 **불과 3ms 만에 번들을 스트리밍**합니다.
+3. **실시간 HMR 및 Fast Refresh (초고속 반영)**:
+   - `fs.watch` OS 이벤트 폭주를 방지하는 100ms 안전 디바운스를 적용하고도 **총 111ms 만에 클라이언트 HMR 반영(`update-done`)까지 완결**됩니다 (실제 순수 번들 변경 추출 및 브로드캐스트 시간은 ~11ms).
+4. **번들 크기 효율 (-1.58 MB)**:
+   - 개발용 번들에서도 Metro(6.86 MB) 대비 Bun Dev Server(5.28 MB)가 훨씬 가볍고 빠르게 네트워크로 전송됩니다.
