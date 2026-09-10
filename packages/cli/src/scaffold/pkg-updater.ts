@@ -15,6 +15,47 @@ export interface UpdatePackageJsonResult {
 }
 
 /**
+ * Resolves the appropriate version for desktop platforms (react-native-macos / react-native-windows)
+ * aligned with the project's react-native version or using the latest npm release.
+ */
+export function resolveDesktopVersion(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pkgJson: any,
+  pkgName: 'react-native-macos' | 'react-native-windows'
+): string {
+  const rnVersion =
+    pkgJson.dependencies?.['react-native'] || pkgJson.devDependencies?.['react-native'];
+
+  if (pkgName === 'react-native-macos') {
+    if (rnVersion && typeof rnVersion === 'string') {
+      const match = rnVersion.match(/0\.(\d+)/);
+      if (match) {
+        const minor = parseInt(match[1], 10);
+        if (minor <= 81) {
+          return `^0.${minor}.0`;
+        }
+      }
+    }
+    return '^0.81.9';
+  }
+
+  if (pkgName === 'react-native-windows') {
+    if (rnVersion && typeof rnVersion === 'string') {
+      const match = rnVersion.match(/0\.(\d+)/);
+      if (match) {
+        const minor = parseInt(match[1], 10);
+        if (minor <= 84) {
+          return `^0.${minor}.0`;
+        }
+      }
+    }
+    return '^0.84.0';
+  }
+
+  return '^0.87.1';
+}
+
+/**
  * Updates package.json scripts and dependencies for react-native-bun-build & OXC
  */
 export function updatePackageJson(
@@ -61,7 +102,10 @@ export function updatePackageJson(
       !pkgJson.dependencies?.['react-native-macos'] &&
       !pkgJson.devDependencies?.['react-native-macos']
     ) {
-      pkgJson.devDependencies['react-native-macos'] = '^0.76.0';
+      pkgJson.devDependencies['react-native-macos'] = resolveDesktopVersion(
+        pkgJson,
+        'react-native-macos'
+      );
     }
   }
 
@@ -73,7 +117,10 @@ export function updatePackageJson(
       !pkgJson.dependencies?.['react-native-windows'] &&
       !pkgJson.devDependencies?.['react-native-windows']
     ) {
-      pkgJson.devDependencies['react-native-windows'] = '^0.76.0';
+      pkgJson.devDependencies['react-native-windows'] = resolveDesktopVersion(
+        pkgJson,
+        'react-native-windows'
+      );
     }
   }
 

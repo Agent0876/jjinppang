@@ -8,6 +8,7 @@ import {
   setupOxc,
   updatePackageJson,
   initExistingProject,
+  resolveDesktopVersion,
 } from '../packages/cli/src/commands/init.js';
 
 const TEST_DIR = path.join(__dirname, '.temp-init-test');
@@ -174,8 +175,22 @@ describe('Init Command & Project Scaffolding', () => {
     expect(pkgJson.scripts['bundle:macos']).toContain('bun-rn bundle');
     expect(pkgJson.scripts['windows']).toBe('react-native run-windows');
     expect(pkgJson.scripts['bundle:windows']).toContain('bun-rn bundle');
-    expect(pkgJson.devDependencies['react-native-macos']).toBeDefined();
-    expect(pkgJson.devDependencies['react-native-windows']).toBeDefined();
+    expect(pkgJson.devDependencies['react-native-macos']).toBe('^0.81.9');
+    expect(pkgJson.devDependencies['react-native-windows']).toBe('^0.84.0');
+
+    // Test dynamic alignment with project's react-native version
+    expect(
+      resolveDesktopVersion({ dependencies: { 'react-native': '^0.78.0' } }, 'react-native-macos')
+    ).toBe('^0.78.0');
+    expect(
+      resolveDesktopVersion({ dependencies: { 'react-native': '^0.80.0' } }, 'react-native-windows')
+    ).toBe('^0.80.0');
+    expect(
+      resolveDesktopVersion({ dependencies: { 'react-native': '0.87.1' } }, 'react-native-macos')
+    ).toBe('^0.81.9');
+    expect(
+      resolveDesktopVersion({ dependencies: { 'react-native': '0.87.1' } }, 'react-native-windows')
+    ).toBe('^0.84.0');
   });
 
   test('initExistingProject runs end-to-end configuration successfully', async () => {
@@ -260,7 +275,7 @@ describe('Init Command & Project Scaffolding', () => {
         {
           name: 'MyDesktopMacApp',
           dependencies: {
-            'react-native-macos': '^0.76.0',
+            'react-native-macos': '^0.81.9',
           },
         },
         null,
@@ -287,5 +302,31 @@ describe('Init Command & Project Scaffolding', () => {
     expect(colors.bold).toBe('\x1b[1m');
     expect(symbols.check).toContain('✔');
     expect(symbols.arrow).toContain('❯');
+  });
+
+  test('resolveDesktopVersion dynamically resolves up-to-date versions', () => {
+    // macOS resolution
+    expect(resolveDesktopVersion({}, 'react-native-macos')).toBe('^0.81.9');
+    expect(
+      resolveDesktopVersion({ dependencies: { 'react-native': '^0.77.1' } }, 'react-native-macos')
+    ).toBe('^0.77.0');
+    expect(
+      resolveDesktopVersion({ dependencies: { 'react-native': '0.81.3' } }, 'react-native-macos')
+    ).toBe('^0.81.0');
+    expect(
+      resolveDesktopVersion({ dependencies: { 'react-native': '0.87.1' } }, 'react-native-macos')
+    ).toBe('^0.81.9');
+
+    // Windows resolution
+    expect(resolveDesktopVersion({}, 'react-native-windows')).toBe('^0.84.0');
+    expect(
+      resolveDesktopVersion({ dependencies: { 'react-native': '^0.78.2' } }, 'react-native-windows')
+    ).toBe('^0.78.0');
+    expect(
+      resolveDesktopVersion({ dependencies: { 'react-native': '0.84.0' } }, 'react-native-windows')
+    ).toBe('^0.84.0');
+    expect(
+      resolveDesktopVersion({ dependencies: { 'react-native': '0.87.1' } }, 'react-native-windows')
+    ).toBe('^0.84.0');
   });
 });
