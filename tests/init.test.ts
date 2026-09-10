@@ -132,15 +132,50 @@ describe('Init Command & Project Scaffolding', () => {
       })
     );
 
-    const { pkgJson } = updatePackageJson(TEST_DIR, { oxc: true, dryRun: false });
+    const { pkgJson } = updatePackageJson(TEST_DIR, {
+      oxc: true,
+      platforms: ['ios', 'android'],
+      dryRun: false,
+    });
     expect(pkgJson.devDependencies['react-native-bun-build']).toBe('^0.1.0');
     expect(pkgJson.devDependencies['oxlint']).toBeDefined();
     expect(pkgJson.devDependencies['oxfmt']).toBeDefined();
+    expect(pkgJson.scripts['start']).toBe('bun-rn start');
     expect(pkgJson.scripts['start:bun']).toBe('bun-rn start');
-    expect(pkgJson.scripts['bundle:bun']).toBe('bun-rn bundle');
-    expect(pkgJson.scripts['lint']).toBe('oxlint');
-    expect(pkgJson.scripts['format']).toBe('oxfmt');
-    expect(pkgJson.scripts['check']).toContain('oxlint');
+    expect(pkgJson.scripts['bundle']).toBe('bun-rn bundle');
+    expect(pkgJson.scripts['bundle:ios']).toContain('bun-rn bundle');
+    expect(pkgJson.scripts['bundle:android']).toContain('bun-rn bundle');
+    expect(pkgJson.scripts['lint']).toBe('bun-rn lint');
+    expect(pkgJson.scripts['lint:fix']).toBe('bun-rn lint --fix');
+    expect(pkgJson.scripts['format']).toBe('bun-rn format');
+    expect(pkgJson.scripts['format:check']).toBe('bun-rn format --check');
+    expect(pkgJson.scripts['test']).toBe('bun-rn test');
+    expect(pkgJson.scripts['check']).toBe('bun-rn lint && bun-rn format --check && bun-rn test');
+  });
+
+  test('updatePackageJson configures macOS and Windows desktop scripts and dependencies', () => {
+    const pkgPath = path.join(TEST_DIR, 'package.json');
+    fs.writeFileSync(
+      pkgPath,
+      JSON.stringify({
+        name: 'DesktopApp',
+        version: '1.0.0',
+        dependencies: {},
+      })
+    );
+
+    const { pkgJson } = updatePackageJson(TEST_DIR, {
+      platforms: ['macos', 'windows'],
+      oxc: false,
+      dryRun: false,
+    });
+
+    expect(pkgJson.scripts['macos']).toBe('react-native run-macos');
+    expect(pkgJson.scripts['bundle:macos']).toContain('bun-rn bundle');
+    expect(pkgJson.scripts['windows']).toBe('react-native run-windows');
+    expect(pkgJson.scripts['bundle:windows']).toContain('bun-rn bundle');
+    expect(pkgJson.devDependencies['react-native-macos']).toBeDefined();
+    expect(pkgJson.devDependencies['react-native-windows']).toBeDefined();
   });
 
   test('initExistingProject runs end-to-end configuration successfully', async () => {
@@ -179,7 +214,12 @@ describe('Init Command & Project Scaffolding', () => {
 
     const updatedPkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
     expect(updatedPkg.devDependencies['react-native-bun-build']).toBeDefined();
+    expect(updatedPkg.scripts['start']).toBe('bun-rn start');
     expect(updatedPkg.scripts['start:bun']).toBe('bun-rn start');
+    expect(updatedPkg.scripts['lint']).toBe('bun-rn lint');
+    expect(updatedPkg.scripts['format']).toBe('bun-rn format');
+    expect(updatedPkg.scripts['test']).toBe('bun-rn test');
+    expect(updatedPkg.scripts['bundle']).toBe('bun-rn bundle');
   });
 
   test('initExistingProject dryRun does not write any files', async () => {

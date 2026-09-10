@@ -147,6 +147,11 @@ export const initCommandOptions: CommandOption[] = [
     default: false,
   },
   {
+    name: '--platforms <string>',
+    description: 'Target platforms to configure ("ios,android", "all", "macos", "windows")',
+    default: 'ios,android',
+  },
+  {
     name: '--force',
     description: 'Force overwrite existing configuration files',
     default: false,
@@ -156,6 +161,7 @@ export const initCommandOptions: CommandOption[] = [
 export const initParseArgsConfig = {
   existing: { type: 'boolean' as const, default: false },
   pm: { type: 'string' as const },
+  platforms: { type: 'string' as const },
   'skip-install': { type: 'boolean' as const, default: false },
   skipInstall: { type: 'boolean' as const, default: false },
   'skip-pods': { type: 'boolean' as const, default: false },

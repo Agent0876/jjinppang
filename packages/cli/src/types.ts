@@ -56,10 +56,13 @@ export interface StartArguments {
   projectRoot?: string;
 }
 
+export type TargetPlatform = 'ios' | 'android' | 'macos' | 'windows';
+
 export interface InitArguments {
   projectName?: string;
   existing?: boolean;
   pm?: 'bun' | 'npm' | 'yarn' | 'pnpm';
+  platforms?: TargetPlatform[] | string;
   skipInstall?: boolean;
   skipPods?: boolean;
   template?: string;

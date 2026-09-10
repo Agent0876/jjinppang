@@ -69,17 +69,21 @@ bun-rn init
 
 **What it does automatically:**
 
+- ✅ Lets you choose target platforms (`iOS`, `Android`, `macOS`, `Windows`, or `All Platforms`).
+- ✅ Replaces and configures all `package.json` scripts to use native `bun-rn` commands (`start`, `bundle`, `test`, `lint`, `format`, `check`).
+- ✅ Automatically adds desktop dependencies (`react-native-macos`, `react-native-windows`) when desktop platforms are targeted.
 - ✅ Patches or creates `react-native.config.js` to register Bun bundler commands.
 - ✅ Inspects dependencies (like `react-native-reanimated`) and creates tailored `react-native-bun-build.config.js`.
 - ✅ Configures ultra-fast Rust-based **OXC** (`oxlint` & `oxfmt`) toolchain (`.oxlintrc.json`, `.oxfmtrc.json`).
-- ✅ Adds handy scripts (`start:bun`, `bundle:bun`, `lint`, `format`, `check`) to `package.json`.
 
 ### 2. Scaffold a Brand New Project
 
-Create a new, high-performance React Native app pre-configured with Bun, Hermes, and OXC:
+Create a new, high-performance React Native app pre-configured with Bun, Hermes, target platforms, and OXC:
 
 ```bash
-bunx react-native-bun-build init MyAwesomeApp
+bun-rn init MyAwesomeApp
+# or specify platforms non-interactively:
+bun-rn init MyAwesomeApp --platforms all
 ```
 
 ---

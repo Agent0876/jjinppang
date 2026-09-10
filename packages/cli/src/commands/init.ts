@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { CliConfig, InitArguments } from '../types.js';
+import type { CliConfig, InitArguments, TargetPlatform } from '../types.js';
 import { type InitResult, initExistingProject, initNewProject } from '../scaffold/index.js';
 import { promptConfirm, promptSelect, promptText, renderHeader } from '../ui/index.js';
 
@@ -13,6 +13,7 @@ function printSuccessBanner(result: InitResult): void {
   const isNew = result.mode === 'new';
   const pm = result.packageManager;
   const pmRun = pm === 'npm' ? 'npm run' : pm;
+  const platforms = result.platforms || ['ios', 'android'];
 
   console.log(`
 ┌─────────────────────────────────────────────────────────────┐
@@ -21,20 +22,31 @@ function printSuccessBanner(result: InitResult): void {
 
 📁 Location: ${result.projectDir}
 🛠️ Package Manager: ${result.packageManager}
+📱 Target Platforms: ${platforms.join(', ')}
 `);
+
+  const runCommands = platforms.map((p) => `  • ${pmRun} ${p}`).join('\n');
+  const bundleCommands = platforms.map((p) => `  • ${pmRun} bundle:${p}`).join('\n');
 
   if (isNew) {
     const dirName = path.basename(result.projectDir);
     console.log(`To get started with your new app:
   1. cd ${dirName}
-  2. ${pmRun} start               # Start fast Bun Dev Server
-  3. ${pmRun} ios (or android)    # Run on Simulator or Device
+  2. ${pmRun} start               # Start fast Bun Dev Server (bun-rn start)
+${runCommands}
+  • ${pmRun} check                # Check linter, formatter & tests
 `);
   } else {
     console.log(`Your project is now configured with react-native-bun-build!
-  • Dev Server: ${pmRun} start (or ${pmRun} start:bun)
-  • Fast Release Bundle: ${pmRun} bundle:bun
-  • Code Quality: ${pmRun} check (oxlint + oxfmt)
+  • Dev Server: ${pmRun} start (bun-rn start)
+${runCommands}
+  • Fast Release Bundles:
+${bundleCommands}
+  • Code Quality & Test:
+  • ${pmRun} lint (bun-rn lint)
+  • ${pmRun} format (bun-rn format)
+  • ${pmRun} test (bun-rn test)
+  • ${pmRun} check (bun-rn lint + format + test)
 `);
   }
 }
@@ -97,6 +109,51 @@ export async function initCommand(
       projectName = await promptText('Enter your new project name', 'MyAwesomeApp');
     }
 
+    if (!args.platforms) {
+      args.platforms = await promptSelect('Which platforms will you develop for?', [
+        {
+          label: 'iOS & Android (Mobile)',
+          value: ['ios', 'android'] as TargetPlatform[],
+          hint: 'Standard mobile app development (recommended)',
+        },
+        {
+          label: 'All Platforms (iOS, Android, macOS, Windows)',
+          value: ['ios', 'android', 'macos', 'windows'] as TargetPlatform[],
+          hint: 'Full mobile + desktop coverage',
+        },
+        {
+          label: 'iOS, Android & macOS',
+          value: ['ios', 'android', 'macos'] as TargetPlatform[],
+          hint: 'Apple ecosystem + Android',
+        },
+        {
+          label: 'iOS, Android & Windows',
+          value: ['ios', 'android', 'windows'] as TargetPlatform[],
+          hint: 'Mobile + Windows desktop',
+        },
+        {
+          label: 'iOS only',
+          value: ['ios'] as TargetPlatform[],
+          hint: 'iPhone and iPad apps only',
+        },
+        {
+          label: 'Android only',
+          value: ['android'] as TargetPlatform[],
+          hint: 'Android devices only',
+        },
+        {
+          label: 'macOS Desktop only',
+          value: ['macos'] as TargetPlatform[],
+          hint: 'Native macOS apps with react-native-macos',
+        },
+        {
+          label: 'Windows Desktop only',
+          value: ['windows'] as TargetPlatform[],
+          hint: 'Native Windows apps with react-native-windows',
+        },
+      ]);
+    }
+
     if (!args.pm) {
       args.pm = await promptSelect('Select your package manager', [
         { label: 'bun', value: 'bun', hint: 'Ultra-fast native runtime (recommended)' },
@@ -113,9 +170,22 @@ export async function initCommand(
       );
     }
 
-    if (!isExistingMode && process.platform === 'darwin' && args.skipPods === undefined) {
+    const chosenPlatforms = Array.isArray(args.platforms)
+      ? args.platforms
+      : String(args.platforms || '').split(',');
+    const hasApplePlatform =
+      chosenPlatforms.includes('ios') ||
+      chosenPlatforms.includes('macos') ||
+      chosenPlatforms.includes('all');
+
+    if (
+      !isExistingMode &&
+      process.platform === 'darwin' &&
+      hasApplePlatform &&
+      args.skipPods === undefined
+    ) {
       const installPods = await promptConfirm(
-        'Run CocoaPods (pod install) for iOS dependencies now?',
+        'Run CocoaPods (pod install) for iOS/macOS dependencies now?',
         false
       );
       args.skipPods = !installPods;

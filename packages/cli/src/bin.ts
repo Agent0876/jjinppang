@@ -101,6 +101,7 @@ Initializes a new React Native project with Bun or configures an existing projec
 Options:
   --existing                      Configure react-native-bun-build in current project
   --pm <bun|npm|yarn|pnpm>        Package manager to use (default: auto-detect)
+  --platforms <list>              Target platforms (ios, android, macos, windows, or all)
   --skip-install                  Skip installing dependencies
   --skip-pods                     Skip CocoaPods pod install on macOS/iOS
   --template <name>               Template to use for new project creation
@@ -116,6 +117,7 @@ Options:
       projectName: positionals[0],
       existing: Boolean(values.existing),
       pm: values.pm as 'bun' | 'npm' | 'yarn' | 'pnpm' | undefined,
+      platforms: values.platforms as string | undefined,
       skipInstall: Boolean(values['skip-install'] || values.skipInstall),
       skipPods: Boolean(values['skip-pods'] || values.skipPods),
       template: values.template as string | undefined,

@@ -3,11 +3,18 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "start": "bun-rn start",
+    "bundle": "bun-rn bundle",
     "android": "react-native run-android",
+    "bundle:android": "bun-rn bundle --entry-file index.js --platform android --dev false --bundle-output dist/index.android.bundle --assets-dest dist/res",
     "ios": "react-native run-ios",
-    "lint": "eslint .",
-    "start": "react-native start",
-    "test": "jest"
+    "bundle:ios": "bun-rn bundle --entry-file index.js --platform ios --dev false --bundle-output dist/main.jsbundle --assets-dest dist/assets",
+    "test": "bun-rn test",
+    "lint": "bun-rn lint",
+    "lint:fix": "bun-rn lint --fix",
+    "format": "bun-rn format",
+    "format:check": "bun-rn format --check",
+    "check": "bun-rn lint && bun-rn format --check"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^3.1.1",

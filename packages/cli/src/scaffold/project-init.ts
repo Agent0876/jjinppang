@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import type { InitArguments } from '../types.js';
+import type { InitArguments, TargetPlatform } from '../types.js';
 import { detectPackageManager, type PackageManagerType } from './pm-detector.js';
 import { patchReactNativeConfig } from './rn-config-patcher.js';
 import { generateBunBuildConfig } from './bun-config-gen.js';
@@ -13,10 +13,22 @@ export interface InitResult {
   mode: 'existing' | 'new';
   projectDir: string;
   packageManager: PackageManagerType;
+  platforms: TargetPlatform[];
   patchedRnConfig: boolean;
   createdBunConfig: boolean;
   configuredOxc: boolean;
   installedDependencies: boolean;
+}
+
+export function parsePlatforms(raw?: TargetPlatform[] | string): TargetPlatform[] {
+  if (!raw) return ['ios', 'android'];
+  if (Array.isArray(raw)) return raw;
+  if (raw === 'all') return ['ios', 'android', 'macos', 'windows'];
+  const parsed = raw
+    .split(',')
+    .map((p) => p.trim().toLowerCase() as TargetPlatform)
+    .filter((p) => ['ios', 'android', 'macos', 'windows'].includes(p));
+  return parsed.length > 0 ? parsed : ['ios', 'android'];
 }
 
 /**
@@ -91,11 +103,13 @@ export async function initExistingProject(
   }
 
   // 4. Update package.json scripts and dependencies
+  const platforms = parsePlatforms(options.platforms);
   updatePackageJson(projectDir, {
     oxc: setupOxcEnabled,
+    platforms,
     dryRun,
   });
-  console.log(`  ✅ Updated package.json (added scripts and react-native-bun-build)`);
+  console.log(`  ✅ Updated package.json (configured bun-rn scripts for ${platforms.join(', ')})`);
 
   // 5. Run install if not skipped and not dry-run
   let installed = false;
@@ -107,6 +121,7 @@ export async function initExistingProject(
     mode: 'existing',
     projectDir,
     packageManager: pm,
+    platforms,
     patchedRnConfig: rnConfigRes.status !== 'already_configured',
     createdBunConfig: bunConfigRes.status === 'created',
     configuredOxc,
@@ -141,6 +156,7 @@ export async function initNewProject(
       mode: 'new',
       projectDir,
       packageManager: (options.pm as PackageManagerType) || 'bun',
+      platforms: parsePlatforms(options.platforms),
       patchedRnConfig: true,
       createdBunConfig: true,
       configuredOxc: true,

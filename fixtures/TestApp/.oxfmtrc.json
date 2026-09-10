@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "es5",
+  "printWidth": 100,
+  "bracketSpacing": true,
+  "arrowParens": "always",
+  "ignorePatterns": [
+    "dist/**",
+    "node_modules/**",
+    "android/**",
+    "ios/**",
+    ".bun-rn-temp/**",
+    "bun.lock",
+    "*.bundle",
+    "*.jsbundle",
+    "*.hbc",
+    "*.map"
+  ]
+}
