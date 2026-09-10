@@ -3,6 +3,10 @@
   "private": true,
   "description": "Ultra-fast custom bundler CLI for React Native bare projects powered by Bun",
   "license": "MIT",
+  "bin": {
+    "bun-rn": "./packages/react-native-bun-build/bin/bun-rn.js",
+    "react-native-bun-build": "./packages/react-native-bun-build/bin/bun-rn.js"
+  },
   "workspaces": [
     "packages/*"
   ],

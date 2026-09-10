@@ -237,6 +237,52 @@ Options:
     return;
   }
 
+  // Handle 'test' or 'bun-test' command
+  if (commandName === 'test' || commandName === 'bun-test') {
+    const testArgs = rawArgs.slice(1);
+    if (testArgs.includes('-h') || testArgs.includes('--help')) {
+      console.log(`
+Usage: bun-rn test [filter] [options]
+
+Runs ultra-fast test suite powered by Bun test for React Native projects.
+
+Options:
+  --watch                         Watch files for changes and re-run tests
+  --bail                          Exit immediately on first test failure
+  --coverage                      Generate code coverage report
+  -t, --test-name-pattern <str>   Run only tests matching regex pattern
+  -h, --help                      Show help
+      `);
+      process.exit(0);
+    }
+
+    console.log(`\n⚡ [react-native-bun-build] Running tests (bun test)...`);
+    const { spawnSync } = await import('node:child_process');
+    const result = spawnSync('bun', ['test', ...testArgs], {
+      cwd: process.cwd(),
+      stdio: 'inherit',
+      shell: process.platform === 'win32',
+    });
+
+    process.exit(result.status ?? 0);
+  }
+
+  // Check if this is an unknown command
+  const isBundle =
+    commandName === 'bundle' ||
+    commandName === 'bun-bundle' ||
+    commandName === undefined ||
+    commandName.startsWith('-') ||
+    rawArgs.includes('--entry-file') ||
+    rawArgs.includes('--bundle-output');
+
+  if (!isBundle) {
+    console.error(
+      `\n❌ Unknown command "${commandName}".\nRun "bun-rn --help" to see all available commands.\n`
+    );
+    process.exit(1);
+  }
+
   // Handle 'bundle' or 'bun-bundle' command (or default)
   const argsToParse =
     commandName === 'bundle' || commandName === 'bun-bundle' ? rawArgs.slice(1) : rawArgs;
@@ -263,6 +309,7 @@ Commands:
   bundle                          Build offline bundle for release or debug
   lint [dir]                      Run ultra-fast OXC linter (oxlint) with zero config
   format [dir]                    Run ultra-fast OXC formatter (oxfmt) with zero config
+  test [filter]                   Run ultra-fast tests powered by Bun test
 
 Bundle Options:
   --entry-file <path>             Path to root JS/TS file (e.g. index.js)
