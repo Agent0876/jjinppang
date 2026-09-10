@@ -1,6 +1,7 @@
 import type { Command } from '../types.js';
 import { bundleCommand } from './bundle.js';
-import { bundleCommandOptions } from './options.js';
+import { startCommand } from './start.js';
+import { bundleCommandOptions, startCommandOptions } from './options.js';
 
 export const commands: Command[] = [
   {
@@ -15,7 +16,20 @@ export const commands: Command[] = [
     func: bundleCommand,
     options: bundleCommandOptions,
   },
+  {
+    name: 'start',
+    description: 'Starts the React Native development server powered by Bun.',
+    func: startCommand,
+    options: startCommandOptions,
+  },
+  {
+    name: 'bun-start',
+    description: 'Starts the React Native development server powered by Bun.',
+    func: startCommand,
+    options: startCommandOptions,
+  },
 ];
 
 export default commands;
-export { bundleCommand, bundleCommandOptions };
+export { bundleCommand, bundleCommandOptions, startCommand, startCommandOptions };
+

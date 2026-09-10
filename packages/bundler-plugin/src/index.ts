@@ -4,3 +4,6 @@ export * from './assets.js';
 export * from './babel-hybrid.js';
 export * from './hermes.js';
 export * from './bundler.js';
+export * from './symbolicator.js';
+export * from './hmr.js';
+export * from './dev-server.js';

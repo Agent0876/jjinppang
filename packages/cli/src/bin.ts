@@ -1,15 +1,69 @@
 import { parseArgs } from 'node:util';
 import { bundleCommand } from './commands/bundle.js';
-import type { BundleArguments } from './types.js';
+import { startCommand } from './commands/start.js';
+import type { BundleArguments, StartArguments } from './types.js';
 
 export async function runCli(): Promise<void> {
   const rawArgs = process.argv.slice(2);
-
-  // If first argument is 'bundle' or 'bun-bundle', consume it
   const commandName = rawArgs[0];
-  const argsToParse = commandName === 'bundle' || commandName === 'bun-bundle'
-    ? rawArgs.slice(1)
-    : rawArgs;
+
+  if (rawArgs.includes('-v') || rawArgs.includes('--version')) {
+    console.log(`react-native-bun-build v0.1.0`);
+    process.exit(0);
+  }
+
+  // Handle 'start' or 'bun-start' command
+  if (commandName === 'start' || commandName === 'bun-start') {
+    const argsToParse = rawArgs.slice(1);
+    const { values } = parseArgs({
+      args: argsToParse,
+      options: {
+        port: { type: 'string', default: '8081' },
+        host: { type: 'string', default: 'localhost' },
+        'reset-cache': { type: 'boolean', default: false },
+        resetCache: { type: 'boolean', default: false },
+        config: { type: 'string' },
+        projectRoot: { type: 'string' },
+        help: { type: 'boolean', short: 'h', default: false },
+      },
+      allowPositionals: true,
+      strict: false,
+    });
+
+    if (values.help) {
+      console.log(`
+Usage: bun-rn start [options]
+
+Starts the React Native development server powered by Bun.serve.
+
+Options:
+  --port <number>                 Port to listen on (default: 8081)
+  --host <string>                 Host to listen on (default: "localhost")
+  --reset-cache                   Clears in-memory bundle cache
+  --config <path>                 Path to custom configuration file
+  --projectRoot <path>            Path to project root (default: current directory)
+  -h, --help                      Show help
+      `);
+      process.exit(0);
+    }
+
+    const startArgs: StartArguments = {
+      port: values.port ? Number(values.port) : 8081,
+      host: (values.host as string) || 'localhost',
+      resetCache: Boolean(values['reset-cache'] || values.resetCache),
+      config: values.config as string | undefined,
+      projectRoot: values.projectRoot as string | undefined,
+    };
+
+    await startCommand(rawArgs, { root: process.cwd() }, startArgs);
+    return;
+  }
+
+  // Handle 'bundle' or 'bun-bundle' command (or default)
+  const argsToParse =
+    commandName === 'bundle' || commandName === 'bun-bundle'
+      ? rawArgs.slice(1)
+      : rawArgs;
 
   const { values, positionals } = parseArgs({
     args: argsToParse,
@@ -26,24 +80,25 @@ export async function runCli(): Promise<void> {
       'reset-cache': { type: 'boolean', default: false },
       config: { type: 'string' },
       help: { type: 'boolean', short: 'h', default: false },
-      version: { type: 'boolean', short: 'v', default: false },
     },
     allowPositionals: true,
     strict: false,
   });
 
-  if (values.version) {
-    console.log(`react-native-bun-build v0.1.0`);
-    process.exit(0);
-  }
-
-  if (values.help || (!values['entry-file'] && !values['bundle-output'] && positionals.length === 0)) {
+  if (
+    values.help ||
+    (!values['entry-file'] && !values['bundle-output'] && positionals.length === 0)
+  ) {
     console.log(`
-Usage: bun-rn bundle [options]
+Usage: bun-rn <command> [options]
 
 Ultra-fast custom bundler CLI for React Native bare projects powered by Bun.
 
-Options:
+Commands:
+  start                           Start development server with HMR / Fast Refresh & Symbolicate
+  bundle                          Build offline bundle for release or debug
+
+Bundle Options:
   --entry-file <path>             Path to root JS/TS file (e.g. index.js)
   --platform <string>             Target platform ("ios" or "android", default: "ios")
   --dev <boolean>                 Development mode (true/false, default: true)

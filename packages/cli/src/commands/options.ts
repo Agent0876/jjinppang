@@ -60,3 +60,30 @@ export const bundleCommandOptions: CommandOption[] = [
     description: 'Path to the CLI configuration file',
   },
 ];
+
+export const startCommandOptions: CommandOption[] = [
+  {
+    name: '--port <number>',
+    description: 'Port to listen on',
+    parse: (val: string) => Number(val),
+    default: 8081,
+  },
+  {
+    name: '--host <string>',
+    description: 'Host to listen on',
+    default: 'localhost',
+  },
+  {
+    name: '--reset-cache, --resetCache',
+    description: 'Removes cached files',
+  },
+  {
+    name: '--config <path>',
+    description: 'Path to the CLI configuration file',
+  },
+  {
+    name: '--projectRoot <path>',
+    description: 'Path to the root of the project',
+  },
+];
+

@@ -13,11 +13,15 @@
 
 - ⚡ **Lightning Fast**: Powered by Bun's native bundling engine (`Bun.build()`), delivering **3x–5x+ faster** production bundle builds compared to Metro.
 - 🔄 **Drop-in Metro Replacement**: Follows React Native CLI command plugin specifications. Existing Xcode Build Phases and Gradle tasks invoke it without modifications.
+- 🚀 **Built-in Development Server (`start`)**: High-performance dev server powered by `Bun.serve()` serving dynamic bundles and external source maps.
+- 🔥 **Real-Time HMR & Fast Refresh**: Full WebSocket `/hot` protocol implementation compatible with React Native's HMRClient, enabling instant code updates with state preservation.
+- 🗺️ **Full `/symbolicate` & `/open-stack-frame` Support**: Maps bundled runtime errors and LogBox/RedBox stack traces back to exact source file lines with code frames and opens them directly in your editor.
 - 📱 **Full Platform-Specific File Resolution**:
   1. `.{platform}.tsx` / `.{platform}.ts` / `.{platform}.jsx` / `.{platform}.js`
   2. `.native.tsx` / `.native.ts` / `.native.jsx` / `.native.js`
   3. Standard fallback extensions (`.tsx`, `.ts`, `.jsx`, `.js`, `.json`)
   4. Monorepo and symlinked package support with automatic `react-native` package condition resolution.
+
 - 🎨 **Asset Transformation Pipeline**:
   - Intercepts images and fonts (`.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.svg`, `.ttf`, `.otf`).
   - Automatic `@2x` / `@3x` scale variant detection and grouping.
@@ -60,15 +64,23 @@ module.exports = {
 };
 ```
 
-That's it! Now standard React Native CLI bundling will automatically use `react-native-bun-build`:
+That's it! Now standard React Native CLI commands will automatically use `react-native-bun-build`:
 
 ```bash
+# 1. Start Development Server with HMR / Fast Refresh & Symbolication
+npx react-native start
+
+# Custom port or host
+npx react-native start --port 8081 --host localhost
+
+# 2. Production Bundling
 # iOS Bundle
 npx react-native bundle --entry-file index.js --platform ios --dev false --bundle-output dist/main.jsbundle --assets-dest dist/assets
 
 # Android Bundle
 npx react-native bundle --entry-file index.js --platform android --dev false --bundle-output dist/index.android.bundle --assets-dest dist/res
 ```
+
 
 ---
 
@@ -146,6 +158,18 @@ module.exports = {
 
 You can also run the custom CLI directly without `react-native`:
 
+### Starting the Dev Server (`start`)
+
+```bash
+# Start server on default port 8081
+bun-rn start
+
+# Custom port, host, or reset cache
+bun-rn start --port 8081 --host localhost --reset-cache
+```
+
+### Building Bundles (`bundle`)
+
 ```bash
 bun-rn bundle \
   --entry-file index.js \
@@ -156,7 +180,8 @@ bun-rn bundle \
   --sourcemap-output dist/main.jsbundle.map
 ```
 
-### CLI Arguments
+### Bundle CLI Arguments
+
 
 | Argument | Description | Default |
 | :--- | :--- | :--- |

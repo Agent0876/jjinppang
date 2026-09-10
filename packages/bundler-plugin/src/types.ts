@@ -59,3 +59,64 @@ export interface ReactNativeBunBuildConfig {
   hermes?: HermesOptions;
   minify?: boolean;
 }
+
+export interface DevServerOptions {
+  projectRoot: string;
+  port?: number;
+  host?: string;
+  resetCache?: boolean;
+  assetExtensions?: string[];
+  alias?: Record<string, string>;
+  babel?: BabelHybridOptions;
+  hermes?: HermesOptions;
+}
+
+export interface StackFrame {
+  file: string | null;
+  lineNumber: number | null;
+  column: number | null;
+  methodName: string;
+  collapse?: boolean;
+}
+
+export interface CodeFrame {
+  content: string;
+  location: {
+    row: number;
+    column: number;
+  } | null;
+  fileName: string;
+}
+
+export interface SymbolicateRequest {
+  stack: StackFrame[];
+  extraData?: unknown;
+}
+
+export interface SymbolicateResponse {
+  stack: StackFrame[];
+  codeFrame: CodeFrame | null;
+}
+
+export interface HMRModule {
+  module: [number | string, string];
+  sourceURL?: string;
+  sourceMappingURL?: string;
+}
+
+export interface HMRUpdate {
+  isInitialUpdate: boolean;
+  revisionId: string;
+  added: HMRModule[];
+  modified: HMRModule[];
+  deleted: (number | string)[];
+}
+
+export type HMRMessage =
+  | { type: 'heartbeat' }
+  | { type: 'bundle-registered' }
+  | { type: 'update-start'; body: { isInitialUpdate: boolean } }
+  | { type: 'update'; body: HMRUpdate }
+  | { type: 'update-done'; body?: { changeId?: string } }
+  | { type: 'error'; body: { type: string; message: string; [key: string]: unknown } };
+

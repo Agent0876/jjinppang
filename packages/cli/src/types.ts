@@ -7,16 +7,17 @@ export interface CommandOption<T = unknown> {
   default?: string | boolean | number | (() => string | boolean | number);
 }
 
-export interface Command {
+export interface Command<T = any> {
   name: string;
   description?: string;
   func: (
     argv: string[],
     config: CliConfig,
-    args: BundleArguments
+    args: T
   ) => Promise<void> | void;
   options?: CommandOption[];
 }
+
 
 export interface CliProjectConfig {
   root: string;
@@ -51,3 +52,12 @@ export interface BundleArguments {
   resetCache?: boolean;
   config?: string;
 }
+
+export interface StartArguments {
+  port?: number;
+  host?: string;
+  resetCache?: boolean;
+  config?: string;
+  projectRoot?: string;
+}
+
