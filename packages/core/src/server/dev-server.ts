@@ -332,6 +332,9 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
           return new Response(cached.code, {
             headers: {
               'Content-Type': 'application/javascript; charset=UTF-8',
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              Pragma: 'no-cache',
+              Expires: '0',
               'X-Metro-Files-Changed-Count': '0',
             },
           });
@@ -360,6 +363,9 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
           return new Response(code, {
             headers: {
               'Content-Type': 'application/javascript; charset=UTF-8',
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              Pragma: 'no-cache',
+              Expires: '0',
               'X-Metro-Files-Changed-Count': '0',
             },
           });
@@ -394,17 +400,6 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
         return new Response(JSON.stringify([]), {
           headers: { 'Content-Type': 'application/json' },
         });
-      }
-
-      // 10. Debug errors endpoint (temporary - for diagnosing white screen issues)
-      if (pathname === '/debug-errors' && req.method === 'POST') {
-        try {
-          const body = await req.json();
-          console.error(
-            `\n[DevServer] 🔴 JS ERROR from app:\n  Message: ${body.message}\n  Stack: ${body.stack || 'N/A'}\n`
-          );
-        } catch {}
-        return new Response('OK', { status: 200 });
       }
 
       return new Response('Not Found', { status: 404 });

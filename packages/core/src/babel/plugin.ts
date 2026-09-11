@@ -26,21 +26,24 @@ export function createBabelHybridPlugin(options: BabelHybridPluginOptions): BunP
         const isNodeModules = filePath.includes('/node_modules/');
         const matchesDefaultPath = DEFAULT_BABEL_PATH_PATTERNS.some((p) => p.test(filePath));
 
+        let code: string;
+        try {
+          code = await Bun.file(filePath).text();
+        } catch {
+          return undefined;
+        }
+
         if (isNodeModules && !matchesDefaultPath) {
           const isExplicitlyIncluded =
             options.include?.some((pattern) =>
               typeof pattern === 'string' ? filePath.includes(pattern) : pattern.test(filePath)
             ) ?? false;
           if (!isExplicitlyIncluded && !filePath.includes('react-native-reanimated')) {
-            return undefined;
+            // In node_modules, only transform if code contains ES6 class syntax (Hermes incompatible)
+            if (!/\bclass\s+[\w$]+/.test(code)) {
+              return undefined;
+            }
           }
-        }
-
-        let code: string;
-        try {
-          code = await Bun.file(filePath).text();
-        } catch {
-          return undefined;
         }
 
         if (!shouldTransformWithBabel(filePath, code, options)) {

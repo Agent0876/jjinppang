@@ -9,6 +9,7 @@ export const DEFAULT_BABEL_PATTERNS = [
   /createAnimatedComponent/,
   /@flow/,
   /import\s+typeof/,
+  /\bclass\s+[\w$]+/,
 ];
 
 export const DEFAULT_BABEL_PATH_PATTERNS = [
