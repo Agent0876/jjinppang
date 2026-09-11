@@ -394,11 +394,11 @@ describe('Init Command & Project Scaffolding', () => {
     expect(true).toBe(true);
   });
 
-  test('resolveCompatibleReactNativeVersion resolves maximum supported version for desktop', () => {
-    expect(resolveCompatibleReactNativeVersion(['ios', 'android'])).toBeUndefined();
-    expect(resolveCompatibleReactNativeVersion(['macos'])).toBe('0.81.6');
-    expect(resolveCompatibleReactNativeVersion(['ios', 'android', 'macos'])).toBe('0.81.6');
-    expect(resolveCompatibleReactNativeVersion(['ios', 'android', 'windows'])).toBe('0.84.1');
-    expect(resolveCompatibleReactNativeVersion(['macos', 'windows'])).toBe('0.81.6');
+  test('resolveCompatibleReactNativeVersion dynamically resolves maximum supported version for desktop', async () => {
+    expect(await resolveCompatibleReactNativeVersion(['ios', 'android'])).toBeUndefined();
+    expect(await resolveCompatibleReactNativeVersion(['macos'])).toBe('0.81.6');
+    expect(await resolveCompatibleReactNativeVersion(['ios', 'android', 'macos'])).toBe('0.81.6');
+    expect(await resolveCompatibleReactNativeVersion(['ios', 'android', 'windows'])).toBe('0.84.1');
+    expect(await resolveCompatibleReactNativeVersion(['macos', 'windows'])).toBe('0.81.6');
   });
 });

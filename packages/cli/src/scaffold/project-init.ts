@@ -32,20 +32,58 @@ export function parsePlatforms(raw?: TargetPlatform[] | string): TargetPlatform[
 }
 
 /**
- * Resolves the highest compatible React Native version for the selected platforms.
- * - If macos is selected: react-native-macos@0.81.9 requires react-native@0.81.6
- * - If windows is selected (without macos): react-native-windows@0.84.0 requires react-native@0.84.1
+ * Fetches the latest package metadata from npm registry with a short timeout.
+ */
+export async function fetchNpmPackageLatest(
+  pkgName: string,
+  timeoutMs = 2000
+): Promise<{ version: string; peerDependencies?: Record<string, string> } | null> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    const res = await fetch(`https://registry.npmjs.org/${pkgName}/latest`, {
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    });
+    clearTimeout(timeout);
+    if (!res.ok) return null;
+    return (await res.json()) as {
+      version: string;
+      peerDependencies?: Record<string, string>;
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Dynamically resolves the highest compatible React Native version for the selected platforms
+ * by querying the latest npm package releases and their peerDependencies.
+ * - If macos is selected: queries react-native-macos latest peerDependency for react-native
+ * - If windows is selected: queries react-native-windows latest peerDependency for react-native
  * - If only mobile (ios, android): returns undefined (defaults to latest React Native)
  */
-export function resolveCompatibleReactNativeVersion(
+export async function resolveCompatibleReactNativeVersion(
   platforms: TargetPlatform[]
-): string | undefined {
+): Promise<string | undefined> {
   if (platforms.includes('macos')) {
-    return '0.81.6';
+    const macosInfo = await fetchNpmPackageLatest('react-native-macos');
+    const peerRn = macosInfo?.peerDependencies?.['react-native'];
+    if (peerRn) {
+      return peerRn.replace(/^[\^~>=< ]+/, '');
+    }
+    return '0.81.6'; // safe offline fallback
   }
+
   if (platforms.includes('windows')) {
-    return '0.84.1';
+    const windowsInfo = await fetchNpmPackageLatest('react-native-windows');
+    const peerRn = windowsInfo?.peerDependencies?.['react-native'];
+    if (peerRn) {
+      return peerRn.replace(/^[\^~>=< ]+/, '');
+    }
+    return '0.84.1'; // safe offline fallback
   }
+
   return undefined;
 }
 
@@ -185,7 +223,7 @@ export async function initNewProject(
   // 1. Scaffold native React Native structure using @react-native-community/cli
   console.log(`📱 Generating project files with React Native CLI...`);
   const platforms = parsePlatforms(options.platforms);
-  const targetRnVersion = options.version || resolveCompatibleReactNativeVersion(platforms);
+  const targetRnVersion = options.version || (await resolveCompatibleReactNativeVersion(platforms));
 
   const initArgs = [
     '@react-native-community/cli',

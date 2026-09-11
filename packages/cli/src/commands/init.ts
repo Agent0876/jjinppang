@@ -162,7 +162,7 @@ export async function initCommand(
       const selectedPlatforms = Array.isArray(args.platforms)
         ? args.platforms
         : String(args.platforms || 'ios,android').split(',');
-      const suggestedVersion = resolveCompatibleReactNativeVersion(
+      const suggestedVersion = await resolveCompatibleReactNativeVersion(
         selectedPlatforms as TargetPlatform[]
       );
       if (suggestedVersion && !args.version) {
