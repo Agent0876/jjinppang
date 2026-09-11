@@ -4,6 +4,7 @@ import type { Platform } from '../types.js';
 import { findNodeModulesPackage } from './node-modules.js';
 import { resolvePackageExport } from './exports.js';
 import { resolveDirectory, resolveFileWithPlatformExtensions } from './file-resolver.js';
+import { cachedExistsSync } from './fs-cache.js';
 
 /**
  * Resolves a package import (bare specifier), e.g. "react-native" or "react-native/Libraries/..."
@@ -32,14 +33,26 @@ export function resolvePackageImport(
     return null;
   }
 
-  // If no subpath, resolve package entry point
+  // If no subpath, check package.json exports['.'] first, then fallback to resolveDirectory
   if (!subpath) {
+    const pkgJsonPath = path.join(pkgDir, 'package.json');
+    if (cachedExistsSync(pkgJsonPath)) {
+      try {
+        const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
+        if (pkg.exports) {
+          const resolved = resolvePackageExport(pkg.exports, '.', pkgDir, platform);
+          if (resolved) return resolved;
+        }
+      } catch {
+        // ignore
+      }
+    }
     return resolveDirectory(pkgDir, platform);
   }
 
   // If subpath exists, first check package.json exports
   const pkgJsonPath = path.join(pkgDir, 'package.json');
-  if (fs.existsSync(pkgJsonPath)) {
+  if (cachedExistsSync(pkgJsonPath)) {
     try {
       const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
       if (pkg.exports) {
@@ -54,7 +67,7 @@ export function resolvePackageImport(
   // Legacy AssetRegistry fallback in React Native 0.87+
   if (pkgName === 'react-native' && subpath === 'Libraries/Image/AssetRegistry') {
     const modernPath = path.join(pkgDir, 'src/asset-registry.js');
-    if (fs.existsSync(modernPath)) {
+    if (cachedExistsSync(modernPath)) {
       return modernPath;
     }
   }

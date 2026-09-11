@@ -47,7 +47,7 @@ export function createBabelHybridPlugin(options: BabelHybridPluginOptions): BunP
           return undefined; // Let Bun handle it natively!
         }
 
-        const cacheKey = `${filePath}:${code.length}`;
+        const cacheKey = `${filePath}:${Bun.hash(code)}`;
         if (cache.has(cacheKey)) {
           return {
             contents: cache.get(cacheKey)!,

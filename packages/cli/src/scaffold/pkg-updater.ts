@@ -2,6 +2,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { TargetPlatform } from '../types.js';
 
+export interface PackageJson {
+  name?: string;
+  version?: string;
+  scripts?: Record<string, string>;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  [key: string]: unknown;
+}
+
 export interface UpdatePackageJsonOptions {
   oxc?: boolean;
   platforms?: TargetPlatform[];
@@ -10,8 +19,7 @@ export interface UpdatePackageJsonOptions {
 
 export interface UpdatePackageJsonResult {
   modified: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pkgJson: any;
+  pkgJson: PackageJson;
 }
 
 /**
@@ -19,8 +27,7 @@ export interface UpdatePackageJsonResult {
  * aligned with the project's react-native version or using the latest npm release.
  */
 export function resolveDesktopVersion(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pkgJson: any,
+  pkgJson: PackageJson,
   pkgName: 'react-native-macos' | 'react-native-windows'
 ): string {
   const rnVersion =

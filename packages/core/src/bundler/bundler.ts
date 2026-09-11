@@ -5,7 +5,7 @@ import { createResolverPlugin } from '../resolver/index.js';
 import { createAssetPlugin, copyAssetsToDestination } from '../assets/index.js';
 import { createBabelHybridPlugin } from '../babel/index.js';
 import { compileWithHermes } from '../hermes/index.js';
-import { generateRuntimePrelude, generateVirtualEntryContent } from './banner.js';
+import { generateVirtualEntryContent } from './banner.js';
 
 export interface BundleResult {
   bundleOutput: string;
@@ -124,8 +124,8 @@ export async function bundle(options: BundlerOptions): Promise<BundleResult> {
     throw new Error(`[react-native-bun-build] No entrypoint output produced by Bun.build`);
   }
 
-  const prelude = generateRuntimePrelude(options.dev);
-  const bundleText = prelude + (await jsOutput.text());
+  // Virtual entry already sets __DEV__, global, and InitializeCore — no additional prelude needed
+  const bundleText = await jsOutput.text();
 
   fs.writeFileSync(bundleOutput, bundleText, options.bundleEncoding ?? 'utf8');
 

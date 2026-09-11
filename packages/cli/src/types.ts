@@ -7,7 +7,7 @@ export interface CommandOption<T = unknown> {
   default?: string | boolean | number | (() => string | boolean | number);
 }
 
-export interface Command<T = any> {
+export interface Command<T = unknown> {
   name: string;
   description?: string;
   func: (argv: string[], config: CliConfig, args: T) => Promise<void> | void;

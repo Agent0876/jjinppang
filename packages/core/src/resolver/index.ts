@@ -1,3 +1,4 @@
+export * from './fs-cache.js';
 export * from './extensions.js';
 export * from './file-resolver.js';
 export * from './node-modules.js';

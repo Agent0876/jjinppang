@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
-
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { startDevServer } from '@react-native-bun-build/core';
 import { loadConfigFile } from '../config.js';
 import type { CliConfig, StartArguments } from '../types.js';
@@ -20,7 +20,8 @@ export async function startCommand(
   // spawn Bun to run the dev server with Bun.serve engine
   if (typeof Bun === 'undefined') {
     const bunPath = findBunExecutable();
-    const cliBinPath = path.resolve(__dirname, '../../bin/bun-rn.js');
+    const currentDir = path.dirname(fileURLToPath(import.meta.url));
+    const cliBinPath = path.resolve(currentDir, '../../bin/bun-rn.js');
 
     const forwardArgs = [cliBinPath, 'start'];
     if (args.port !== undefined) forwardArgs.push('--port', String(args.port));

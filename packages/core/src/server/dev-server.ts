@@ -1,12 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { spawn } from 'node:child_process';
 import type { Server } from 'bun';
 import type { DevServerOptions, Platform, SymbolicateRequest } from '../types.js';
-import { createResolverPlugin } from '../resolver/index.js';
+import { createResolverPlugin, clearResolverCache } from '../resolver/index.js';
 import { createAssetPlugin } from '../assets/index.js';
 import { createBabelHybridPlugin } from '../babel/index.js';
 import { Symbolicator } from '../diagnostics/index.js';
+import { generateVirtualEntryContent } from '../bundler/banner.js';
 import { HMRServer, type ClientData } from './hmr-socket.js';
 
 export interface DevServerInstance {
@@ -19,7 +21,6 @@ export interface DevServerInstance {
 
 interface CachedBundle {
   code: string;
-  map?: string;
   timestamp: number;
 }
 
@@ -33,6 +34,7 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
 
   const symbolicator = new Symbolicator(projectRoot);
   const bundleCache = new Map<string, CachedBundle>();
+  const sourcemapCache = new Map<string, string>();
 
   if (options.resetCache) {
     const tempDir = path.join(projectRoot, '.bun-rn-temp');
@@ -50,6 +52,8 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
     onFileChange: (_filePath) => {
       // Invalidate in-memory bundle cache on file changes
       bundleCache.clear();
+      sourcemapCache.clear();
+      clearResolverCache();
     },
   });
 
@@ -78,7 +82,7 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
       candidateEntry = path.resolve(projectRoot, 'index.js');
     }
 
-    // Temporary virtual entry file
+    // Temporary virtual entry file — reuse shared generateVirtualEntryContent
     const tempEntryDir = path.join(projectRoot, '.bun-rn-temp');
     if (!fs.existsSync(tempEntryDir)) {
       fs.mkdirSync(tempEntryDir, { recursive: true });
@@ -88,22 +92,7 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
       `dev-entry-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.js`
     );
 
-    const virtualEntryContent = `// Auto-generated dev entry by react-native-bun-build
-var __DEV__ = ${dev ? 'true' : 'false'};
-var global = typeof global !== 'undefined' ? global : globalThis;
-global.__DEV__ = __DEV__;
-
-try {
-  require('react-native/Libraries/Core/InitializeCore');
-} catch (e) {
-  try {
-    require('react-native/setup-env');
-  } catch (e2) {}
-}
-
-require(${JSON.stringify(candidateEntry)});
-`;
-
+    const virtualEntryContent = generateVirtualEntryContent(candidateEntry, dev);
     fs.writeFileSync(virtualEntryPath, virtualEntryContent, 'utf8');
 
     const assetPlugin = createAssetPlugin(
@@ -162,12 +151,10 @@ require(${JSON.stringify(candidateEntry)});
       throw new Error('No entry-point output produced by Bun.build');
     }
 
-    const prelude = `var __DEV__ = ${dev ? 'true' : 'false'};\nvar global = typeof global !== 'undefined' ? global : globalThis;\nglobal.__DEV__ = __DEV__;\n`;
+    // Virtual entry already sets __DEV__, global, and InitializeCore — no additional prelude needed
     const mapText = sourcemapArtifact ? await sourcemapArtifact.text() : undefined;
     const bundleText =
-      prelude +
-      (await jsOutput.text()) +
-      (mapText ? `\n//# sourceMappingURL=/${entryName}.map\n` : '');
+      (await jsOutput.text()) + (mapText ? `\n//# sourceMappingURL=/${entryName}.map\n` : '');
 
     const buildTimeMs = Math.round(performance.now() - startTime);
     return {
@@ -175,6 +162,36 @@ require(${JSON.stringify(candidateEntry)});
       map: mapText,
       buildTimeMs,
     };
+  }
+
+  /**
+   * Opens a file in the user's preferred editor with cross-platform fallback
+   */
+  function openFileInEditor(file: string, line: number): void {
+    const editor = process.env.REACT_EDITOR || process.env.EDITOR;
+    if (editor) {
+      spawn(editor, [`${file}:${line}`], {
+        detached: true,
+        stdio: 'ignore',
+      });
+      return;
+    }
+
+    // Try VS Code first, then platform-specific fallback
+    spawn('code', ['--goto', `${file}:${line}`], {
+      detached: true,
+      stdio: 'ignore',
+    }).on('error', () => {
+      const platform = os.platform();
+      if (platform === 'darwin') {
+        spawn('open', [file], { detached: true, stdio: 'ignore' });
+      } else if (platform === 'win32') {
+        spawn('cmd', ['/c', 'start', '', file], { detached: true, stdio: 'ignore' });
+      } else {
+        // Linux and other Unix-like systems
+        spawn('xdg-open', [file], { detached: true, stdio: 'ignore' });
+      }
+    });
   }
 
   // Launch Bun.serve
@@ -255,8 +272,9 @@ require(${JSON.stringify(candidateEntry)});
           return new Response(JSON.stringify(result), {
             headers: { 'Content-Type': 'application/json' },
           });
-        } catch (err: any) {
-          return new Response(JSON.stringify({ error: err.message || 'Symbolication failed' }), {
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Symbolication failed';
+          return new Response(JSON.stringify({ error: message }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
           });
@@ -271,21 +289,7 @@ require(${JSON.stringify(candidateEntry)});
             lineNumber?: number;
           };
           if (body && body.file) {
-            const editor = process.env.REACT_EDITOR || process.env.EDITOR;
-            const line = body.lineNumber ?? 1;
-            if (editor) {
-              spawn(editor, [`${body.file}:${line}`], {
-                detached: true,
-                stdio: 'ignore',
-              });
-            } else {
-              spawn('code', ['--goto', `${body.file}:${line}`], {
-                detached: true,
-                stdio: 'ignore',
-              }).on('error', () => {
-                spawn('open', [body.file!], { detached: true, stdio: 'ignore' });
-              });
-            }
+            openFileInEditor(body.file, body.lineNumber ?? 1);
           }
           return new Response('OK', { status: 200 });
         } catch {
@@ -293,12 +297,12 @@ require(${JSON.stringify(candidateEntry)});
         }
       }
 
-      // 5. Source map request
+      // 5. Source map request — use dedicated sourcemap cache with query params
       if (pathname.endsWith('.map')) {
-        const bundlePathname = pathname.replace(/\.map$/, '.bundle');
-        const cached = bundleCache.get(bundlePathname);
-        if (cached && cached.map) {
-          return new Response(cached.map, {
+        const mapCacheKey = `${pathname}?${url.searchParams.toString()}`;
+        const cachedMap = sourcemapCache.get(mapCacheKey) || sourcemapCache.get(pathname);
+        if (cachedMap) {
+          return new Response(cachedMap, {
             headers: { 'Content-Type': 'application/json' },
           });
         }
@@ -327,10 +331,15 @@ require(${JSON.stringify(candidateEntry)});
         try {
           const { code, map, buildTimeMs } = await buildBundle(entryName, platform, dev, minify);
 
-          bundleCache.set(cacheKey, { code, map, timestamp: Date.now() });
-          bundleCache.set(pathname, { code, map, timestamp: Date.now() });
+          bundleCache.set(cacheKey, { code, timestamp: Date.now() });
 
           if (map) {
+            // Store sourcemap with query-qualified key and plain pathname key
+            const mapPathname = pathname.replace(/\.bundle$/, '.map');
+            const mapCacheKey = `${mapPathname}?platform=${platform}&dev=${dev}&minify=${minify}`;
+            sourcemapCache.set(mapCacheKey, map);
+            sourcemapCache.set(mapPathname, map);
+
             symbolicator.registerSourceMap(req.url, map);
             symbolicator.registerSourceMap(pathname, map);
           }
@@ -345,13 +354,14 @@ require(${JSON.stringify(candidateEntry)});
               'X-Metro-Files-Changed-Count': '0',
             },
           });
-        } catch (err: any) {
-          console.error(`[DevServer] Bundle error for ${pathname}:`, err.message);
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Unknown build error';
+          console.error(`[DevServer] Bundle error for ${pathname}:`, message);
           return new Response(
             JSON.stringify({
               type: 'TransformError',
-              message: err.message,
-              errors: [{ description: err.message }],
+              message,
+              errors: [{ description: message }],
             }),
             {
               status: 500,

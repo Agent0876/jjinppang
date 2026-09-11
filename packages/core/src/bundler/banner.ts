@@ -1,4 +1,5 @@
 /**
+ * @deprecated Virtual entry script now includes prelude setup. Retained for backward compatibility.
  * Generates runtime prelude for React Native environments
  */
 export function generateRuntimePrelude(dev: boolean): string {

@@ -1,10 +1,14 @@
 import readline from 'node:readline';
 import { colors, symbols } from './colors.js';
+import { getCliVersion } from '../version.js';
 
 export function renderHeader(): void {
+  const version = `v${getCliVersion()}`;
+  const title = `⚡ react-native-bun-build ${version}`;
+  const padding = ' '.repeat(Math.max(1, 57 - title.length));
   console.log(`
 ${colors.brightCyan}┌─────────────────────────────────────────────────────────────┐${colors.reset}
-${colors.brightCyan}│${colors.reset}  ${colors.bold}${colors.brightYellow}⚡ react-native-bun-build${colors.reset} ${colors.dim}v0.1.0${colors.reset}                           ${colors.brightCyan}│${colors.reset}
+${colors.brightCyan}│${colors.reset}  ${colors.bold}${colors.brightYellow}⚡ react-native-bun-build${colors.reset} ${colors.dim}${version}${colors.reset}${padding}${colors.brightCyan}│${colors.reset}
 ${colors.brightCyan}│${colors.reset}  ${colors.dim}Next-generation Ultra-fast Bun Bundler for React Native${colors.reset}    ${colors.brightCyan}│${colors.reset}
 ${colors.brightCyan}└─────────────────────────────────────────────────────────────┘${colors.reset}
 `);

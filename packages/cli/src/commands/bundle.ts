@@ -2,6 +2,7 @@ import { execSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { bundle } from '@react-native-bun-build/core';
 import type { BundlerOptions } from '@react-native-bun-build/core';
 import { loadConfigFile } from '../config.js';
@@ -60,7 +61,8 @@ export async function bundleCommand(
   // spawn Bun to run the custom bundler with Bun.build engine
   if (typeof Bun === 'undefined') {
     const bunPath = findBunExecutable();
-    const cliBinPath = path.resolve(__dirname, '../../bin/bun-rn.js');
+    const currentDir = path.dirname(fileURLToPath(import.meta.url));
+    const cliBinPath = path.resolve(currentDir, '../../bin/bun-rn.js');
 
     // Build arguments list to forward to bun-rn
     const forwardArgs = [cliBinPath, 'bundle'];

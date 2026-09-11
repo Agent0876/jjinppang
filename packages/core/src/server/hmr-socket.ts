@@ -125,7 +125,10 @@ export class HMRServer {
   }
 
   /**
-   * Triggers an HMR update sequence for changed files
+   * Triggers a Live Reload update sequence for changed files.
+   * Note: This sends a full-refresh signal to clients rather than granular
+   * module-level delta updates (like Metro's HMR). The bundle cache is cleared
+   * so that subsequent client requests receive a fresh build.
    */
   async triggerUpdate(changedFiles: string[]): Promise<void> {
     if (this.clients.size === 0) return;
@@ -141,7 +144,7 @@ export class HMRServer {
       const relPath = path.relative(this.projectRoot, file);
       const sourceURL = `http://${this.host}:${this.port}/${relPath}`;
 
-      // Refresh hook that triggers ReactRefresh or full reload fallback
+      // Live Reload trigger — signals the client to perform a full refresh
       const code = `
 (function() {
   try {

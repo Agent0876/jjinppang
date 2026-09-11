@@ -5,6 +5,7 @@ import {
   resolveFileWithPlatformExtensions,
   resolveDirectory,
   resolveSpecifier,
+  resolvePackageImport,
 } from '../packages/core/src/resolver/index.js';
 
 const TEST_DIR = path.join(__dirname, '.temp-resolver-test');
@@ -92,6 +93,29 @@ describe('React Native Platform Resolver', () => {
       JSON.stringify({ name: 'react-native', main: 'index.js' })
     );
     fs.writeFileSync(path.join(rnDir, 'index.js'), 'export const platform = "core";');
+
+    // Package using exports["."]
+    const exportsPkgDir = path.join(nmDir, 'pkg-with-exports');
+    fs.mkdirSync(exportsPkgDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(exportsPkgDir, 'package.json'),
+      JSON.stringify({
+        name: 'pkg-with-exports',
+        main: 'legacy.js',
+        exports: {
+          '.': {
+            'react-native': './custom-rn.js',
+            default: './custom-default.js',
+          },
+        },
+      })
+    );
+    fs.writeFileSync(path.join(exportsPkgDir, 'legacy.js'), 'export default "legacy";');
+    fs.writeFileSync(path.join(exportsPkgDir, 'custom-rn.js'), 'export default "custom-rn";');
+    fs.writeFileSync(
+      path.join(exportsPkgDir, 'custom-default.js'),
+      'export default "custom-default";'
+    );
   });
 
   afterAll(() => {
@@ -198,6 +222,13 @@ describe('React Native Platform Resolver', () => {
     });
     expect(resolved).toBe(
       fs.realpathSync(path.join(TEST_DIR, 'node_modules/react-native-windows/index.js'))
+    );
+  });
+
+  it('resolves package entry point using exports["."] before main', () => {
+    const resolved = resolvePackageImport('pkg-with-exports', TEST_DIR, 'ios');
+    expect(resolved).toBe(
+      fs.realpathSync(path.join(TEST_DIR, 'node_modules/pkg-with-exports/custom-rn.js'))
     );
   });
 });

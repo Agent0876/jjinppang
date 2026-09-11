@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import type { PackageJson } from './pkg-updater.js';
 
 export interface GenerateBunConfigResult {
   status: 'created' | 'skipped';
@@ -11,8 +12,7 @@ export interface GenerateBunConfigResult {
  */
 export function generateBunBuildConfig(
   projectDir: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pkgJson: any,
+  pkgJson: PackageJson,
   dryRun = false,
   force = false
 ): GenerateBunConfigResult {
