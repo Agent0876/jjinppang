@@ -17,6 +17,8 @@ export interface DevServerInstance {
   host: string;
   url: string;
   stop: () => void;
+  broadcastReload: (reason?: string) => void;
+  broadcastDevMenu: () => void;
 }
 
 interface CachedBundle {
@@ -438,6 +440,15 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
     stop() {
       hmrServer.close();
       server.stop();
+    },
+    broadcastReload(reason?: string) {
+      bundleCache.clear();
+      sourcemapCache.clear();
+      clearResolverCache();
+      hmrServer.broadcastReload(reason);
+    },
+    broadcastDevMenu() {
+      hmrServer.broadcastDevMenu();
     },
   };
 }

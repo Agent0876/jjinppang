@@ -7,7 +7,16 @@ interface BuildConfig {
   outfile?: string;
   format?: 'esm' | 'cjs';
   target?: 'node' | 'browser' | 'bun';
+  external?: string[];
 }
+
+const COMMON_EXTERNALS = [
+  'fast-flow-transform',
+  '@babel/core',
+  'image-size',
+  'source-map-js',
+  '@jjinppang/core',
+];
 
 const builds: BuildConfig[] = [
   {
@@ -16,6 +25,7 @@ const builds: BuildConfig[] = [
     outdir: 'packages/core/dist',
     target: 'node',
     format: 'esm',
+    external: COMMON_EXTERNALS,
   },
   {
     name: 'cli',
@@ -23,6 +33,7 @@ const builds: BuildConfig[] = [
     outdir: 'packages/cli/dist',
     target: 'node',
     format: 'esm',
+    external: COMMON_EXTERNALS,
   },
   {
     name: 'cli-commands-esm',
@@ -65,6 +76,7 @@ async function runBuild(): Promise<void> {
       entrypoints: config.entrypoints,
       target: config.target ?? 'node',
       format: config.format ?? 'esm',
+      external: config.external,
     };
 
     if (config.outfile) {

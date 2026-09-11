@@ -35,8 +35,9 @@
     "access": "public"
   },
   "dependencies": {
-    "@babel/core": "^7.26.9",
-    "image-size": "^1.2.0",
+    "@babel/core": "^8.0.5",
+    "fast-flow-transform": "^0.0.3",
+    "image-size": "^2.0.2",
     "source-map-js": "^1.2.1"
   },
   "devDependencies": {

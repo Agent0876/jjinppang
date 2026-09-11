@@ -1,20 +1,32 @@
+import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { BunPlugin } from 'bun';
-import * as babel from '@babel/core';
+import * as babelDefault from '@babel/core';
+import fastFlowTransform from 'fast-flow-transform';
 import {
   type BabelHybridPluginOptions,
   findBabelConfigFile,
   shouldTransformWithBabel,
 } from './detector.js';
-import { DEFAULT_BABEL_PATH_PATTERNS } from './patterns.js';
+import { DEFAULT_BABEL_PATH_PATTERNS, WORKLET_PATTERNS, getLoaderForPath } from './patterns.js';
 
 export { type BabelHybridPluginOptions } from './detector.js';
+
+function getBabelInstance(projectRoot: string): typeof babelDefault {
+  try {
+    const req = createRequire(path.join(projectRoot, 'package.json'));
+    return req('@babel/core');
+  } catch {
+    return babelDefault;
+  }
+}
 
 /**
  * Creates Bun.build plugin for hybrid Babel transformation with persistent disk caching
  */
 export function createBabelHybridPlugin(options: BabelHybridPluginOptions): BunPlugin {
+  const babel = getBabelInstance(options.projectRoot);
   const configFile = findBabelConfigFile(options.projectRoot);
   const memoryCache = new Map<string, string>();
 
@@ -109,16 +121,65 @@ export function createBabelHybridPlugin(options: BabelHybridPluginOptions): BunP
           try {
             const cachedCode = await diskFile.text();
             memoryCache.set(cacheFileName, cachedCode);
+            let loader: any = getLoaderForPath(filePath);
+            if (
+              loader === 'js' &&
+              cachedCode.includes('<') &&
+              (cachedCode.includes('/>') || cachedCode.includes('</'))
+            ) {
+              loader = 'jsx';
+            }
             return {
               contents: cachedCode,
-              loader: 'js',
+              loader,
             };
           } catch {
-            // Fall through to Babel transform on read error
+            // Fall through to transform on read error
           }
         }
 
-        // 3. Perform Babel Transformation
+        // 3. Fast-path: Ultra-fast Rust Flow stripping for pure Flow files (130x+ faster than Babel)
+        const needsWorkletOrCustom =
+          (options.transformPatterns &&
+            options.transformPatterns.some((p) =>
+              typeof p === 'string'
+                ? filePath.includes(p) || code.includes(p)
+                : p.test(filePath) || p.test(code)
+            )) ||
+          WORKLET_PATTERNS.some((p) => p.test(filePath) || p.test(code));
+
+        if (!needsWorkletOrCustom) {
+          try {
+            const stripped = await fastFlowTransform({
+              filename: filePath,
+              source: code,
+              dialect: 'flow',
+              format: 'pretty',
+            });
+            if (stripped && stripped.code) {
+              const resCode = stripped.code;
+              memoryCache.set(cacheFileName, resCode);
+              ensureCacheDir();
+              Bun.write(diskCachePath, resCode).catch(() => {});
+              let loader: any = getLoaderForPath(filePath);
+              if (
+                loader === 'js' &&
+                resCode.includes('<') &&
+                (resCode.includes('/>') || resCode.includes('</'))
+              ) {
+                loader = 'jsx';
+              }
+              return {
+                contents: resCode,
+                loader,
+              };
+            }
+          } catch {
+            // Fall through to Babel transform if fast-flow-transform fails on edge-case syntax
+          }
+        }
+
+        // 4. Perform Full Babel Transformation (Worklets, Custom Plugins, or Flow Fallback)
         try {
           const result = await babel.transformAsync(code, {
             filename: filePath,

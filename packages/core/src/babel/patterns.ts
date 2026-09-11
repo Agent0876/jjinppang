@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-export const DEFAULT_BABEL_PATTERNS = [
+export const WORKLET_PATTERNS = [
   // 1. Reanimated worklets and animation hooks
   /react-native-reanimated/,
   /['"]worklet['"]/,
@@ -10,19 +10,21 @@ export const DEFAULT_BABEL_PATTERNS = [
   /useFrameCallback/,
   /runOn(JS|UI)/,
 
-  // 2. Flow typing (Flow syntax is not stripped by Bun in .js files)
-  /@flow/,
-  /\bimport\s+type(?:of)?\b/,
-  /\btype\s+[A-Z][\w$]*\s*=/,
-
-  // 3. Hermes VM incompatible syntax (Hermes parser cannot execute these directly)
-  /\bclass\s*(\{|\bextends\b|[\w$]+)/,
-  /\basync\s+/,
-
-  // 4. Styling macros & CSS-in-JS
+  // 2. Styling macros & CSS-in-JS
   /\bnativewind\b/,
   /\bclassName\s*=/,
 ];
+
+export const FLOW_PATTERNS = [
+  // Flow typing (Flow syntax is not stripped by Bun in .js files)
+  /@flow/,
+  /\bimport\s+type(?:of)?\b/,
+  /\btype\s+[A-Z][\w$]*\s*=/,
+  /\bopaque\s+type\b/,
+  /\bdeclare\s+module\b/,
+];
+
+export const DEFAULT_BABEL_PATTERNS = [...WORKLET_PATTERNS, ...FLOW_PATTERNS];
 
 export const DEFAULT_BABEL_PATH_PATTERNS = [
   // Core React Native & platform forks (cross-platform path separators)

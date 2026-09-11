@@ -35,6 +35,7 @@ const IGNORED_SEGMENTS = [
  */
 export class HMRServer {
   private clients: Set<ServerWebSocket<ClientData>> = new Set();
+  private packagerClients: Set<ServerWebSocket<ClientData>> = new Set();
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private watcher: fs.FSWatcher | null = null;
   private projectRoot: string;
@@ -60,7 +61,7 @@ export class HMRServer {
   handleOpen(ws: ServerWebSocket<ClientData>): void {
     if (ws.data.clientUrl?.includes('/message')) {
       // Packager client connection (RCTPackagerConnection / Metro packager protocol)
-      // Do not send HMR heartbeat or add to HMR broadcast clients
+      this.packagerClients.add(ws);
       return;
     }
     this.clients.add(ws);
@@ -113,6 +114,7 @@ export class HMRServer {
    */
   handleClose(ws: ServerWebSocket<ClientData>): void {
     this.clients.delete(ws);
+    this.packagerClients.delete(ws);
   }
 
   /**
@@ -125,6 +127,78 @@ export class HMRServer {
         client.send(payload);
       } catch {
         this.clients.delete(client);
+      }
+    }
+  }
+
+  /**
+   * Broadcasts a full reload command to all connected Metro Packager and HMR clients
+   */
+  broadcastReload(reason: string = 'Manual reload'): void {
+    // 1. Send Metro packager reload command to native app
+    const packagerMsg = JSON.stringify({
+      version: 2,
+      type: 'command',
+      command: 'reload',
+      params: { reason },
+    });
+    for (const client of this.packagerClients) {
+      try {
+        client.send(packagerMsg);
+      } catch {
+        this.packagerClients.delete(client);
+      }
+    }
+
+    // 2. Also notify HMR clients to perform refresh
+    this.broadcast({
+      type: 'update-start',
+      body: { isInitialUpdate: false },
+    });
+    this.broadcast({
+      type: 'update',
+      body: {
+        isInitialUpdate: false,
+        revisionId: String(Date.now()),
+        added: [],
+        modified: [
+          {
+            module: [
+              'reload',
+              `
+(function() {
+  if (typeof global !== 'undefined' && global.__ReactRefresh) {
+    global.__ReactRefresh.performFullRefresh(${JSON.stringify(reason)});
+  }
+})();
+`,
+            ],
+            sourceURL: `http://${this.host}:${this.port}/reload`,
+          },
+        ],
+        deleted: [],
+      },
+    });
+    this.broadcast({
+      type: 'update-done',
+      body: { changeId: String(Date.now()) },
+    });
+  }
+
+  /**
+   * Broadcasts an open dev menu command to native app
+   */
+  broadcastDevMenu(): void {
+    const packagerMsg = JSON.stringify({
+      version: 2,
+      type: 'command',
+      command: 'devMenu',
+    });
+    for (const client of this.packagerClients) {
+      try {
+        client.send(packagerMsg);
+      } catch {
+        this.packagerClients.delete(client);
       }
     }
   }

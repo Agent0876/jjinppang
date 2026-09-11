@@ -277,5 +277,36 @@ console.log('App loaded:', App());
       expect(opened).toBe(true);
       ws.close();
     });
+
+    it('broadcasts reload and devMenu commands to connected /message and /hot clients', async () => {
+      const msgWs = new WebSocket(`ws://localhost:${testPort}/message`);
+      const packagerMessages: any[] = [];
+      await new Promise<void>((resolve) => {
+        msgWs.onopen = () => resolve();
+      });
+      msgWs.onmessage = (event) => {
+        try {
+          packagerMessages.push(JSON.parse(String(event.data)));
+        } catch {}
+      };
+
+      // Call devServer broadcastReload & broadcastDevMenu
+      devServer.broadcastReload('Test interactive reload');
+      devServer.broadcastDevMenu();
+
+      await new Promise((r) => setTimeout(r, 100));
+
+      const hasReloadCommand = packagerMessages.some(
+        (m) => m.type === 'command' && m.command === 'reload'
+      );
+      const hasDevMenuCommand = packagerMessages.some(
+        (m) => m.type === 'command' && m.command === 'devMenu'
+      );
+
+      expect(hasReloadCommand).toBe(true);
+      expect(hasDevMenuCommand).toBe(true);
+
+      msgWs.close();
+    });
   });
 });

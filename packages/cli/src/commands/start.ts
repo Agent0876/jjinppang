@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { startDevServer } from '@jjinppang/core';
 import { loadConfigFile } from '../config.js';
 import type { CliConfig, StartArguments } from '../types.js';
+import { setupInteractiveKeyboard } from '../ui/index.js';
 import { findBunExecutable } from './bundle.js';
 
 /**
@@ -65,8 +66,16 @@ export async function startCommand(
     hermes: fileConfig.hermes,
   });
 
+  // Setup interactive keyboard commands (r, d, i, a, c, q)
+  const teardownKeyboard = setupInteractiveKeyboard({
+    broadcastReload: (reason) => devServer.broadcastReload(reason),
+    broadcastDevMenu: () => devServer.broadcastDevMenu(),
+    stop: () => devServer.stop(),
+  });
+
   // Handle termination signals
   const cleanup = () => {
+    teardownKeyboard();
     console.log('\n[DevServer] Stopping React Native Bun Dev Server...');
     devServer.stop();
     process.exit(0);
