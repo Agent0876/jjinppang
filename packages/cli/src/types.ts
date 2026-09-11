@@ -71,6 +71,7 @@ export interface InitArguments {
   redux?: boolean;
   webview?: boolean;
   monorepo?: boolean;
+  next?: boolean;
   dryRun?: boolean;
   force?: boolean;
 }

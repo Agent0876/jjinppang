@@ -163,6 +163,11 @@ export const initCommandOptions: CommandOption[] = [
     default: false,
   },
   {
+    name: '--next, --nextjs [boolean]',
+    description: 'Configure universal Next.js web application (apps/web) with react-native-web',
+    default: false,
+  },
+  {
     name: '--dry-run',
     description: 'Display changes that would be made without modifying files',
     default: false,
@@ -193,6 +198,8 @@ export const initParseArgsConfig = {
   redux: { type: 'boolean' as const, default: false },
   webview: { type: 'boolean' as const, default: false },
   monorepo: { type: 'boolean' as const, default: false },
+  next: { type: 'boolean' as const, default: false },
+  nextjs: { type: 'boolean' as const, default: false },
   'dry-run': { type: 'boolean' as const, default: false },
   dryRun: { type: 'boolean' as const, default: false },
   force: { type: 'boolean' as const, default: false },

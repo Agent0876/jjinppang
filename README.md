@@ -73,10 +73,14 @@ bun-rn init MyAwesomeApp
 2. **Redux Toolkit**: Choose whether to install and pre-configure `@reduxjs/toolkit` and `react-redux` with a counter demo.
 3. **React Native WebView**: Choose whether to install and configure `react-native-webview` with an in-app browser demo.
 4. **Monorepo Workspace**: Choose whether to structure the project as a modern Bun monorepo (`apps/mobile` + `packages/ui` via `workspace:*`).
+5. **Next.js Web App**: Choose whether to configure a universal Next.js 15 web app (`apps/web`) with `react-native-web` sharing cross-platform UI primitives.
 
 Non-interactive flags:
 
 ```bash
+# Universal Monorepo: Mobile (iOS/Android) + Next.js Web (App Router) + Shared UI
+bun-rn init MyUniversalApp --next --redux --webview
+
 # Full-stack monorepo with Redux and WebView
 bun-rn init MyMonorepo --monorepo --redux --webview --platforms all
 

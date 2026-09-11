@@ -37,6 +37,9 @@ function printSuccessBanner(result: InitResult): void {
   const monorepoInfo = result.configuredMonorepo
     ? '\n🏛️ Workspace: Bun Monorepo (apps/mobile + packages/ui)'
     : '';
+  const nextInfo = result.configuredNext
+    ? '\n⚡ Web Framework: Next.js 15 (apps/web) with react-native-web'
+    : '';
 
   console.log(`
 ┌─────────────────────────────────────────────────────────────┐
@@ -45,7 +48,7 @@ function printSuccessBanner(result: InitResult): void {
 
 📁 Location: ${result.projectDir}
 🛠️ Package Manager: ${result.packageManager}
-📱 Target Platforms: ${platforms.join(', ')}${stateMgmt}${webviewInfo}${monorepoInfo}
+📱 Target Platforms: ${platforms.join(', ')}${stateMgmt}${webviewInfo}${monorepoInfo}${nextInfo}
 `);
 
   const runCommands = platforms.map((p) => `  • ${pmRun} ${p}`).join('\n');
@@ -53,13 +56,19 @@ function printSuccessBanner(result: InitResult): void {
 
   if (result.configuredMonorepo) {
     const dirName = path.basename(result.projectDir);
+    const webCmd = result.configuredNext
+      ? `\n  5. ${pmRun} web                 # Start Next.js web dev server (http://localhost:3000)`
+      : '';
+    const webAppInfo = result.configuredNext
+      ? `\n  • Web App: apps/web (Next.js 15 App Router)`
+      : '';
     console.log(`To get started with your Monorepo app:
   1. cd ${dirName}
   2. ${pmRun} start               # Start fast Bun Dev Server for apps/mobile
   3. ${pmRun} ios                 # Run on iOS simulator
-  4. ${pmRun} android             # Run on Android emulator
+  4. ${pmRun} android             # Run on Android emulator${webCmd}
   • Mobile App: apps/mobile
-  • Shared UI package: packages/ui (workspace:*)
+  • Shared UI package: packages/ui (workspace:*)${webAppInfo}
   • Check quality: ${pmRun} check
 `);
   } else if (isNew) {
@@ -126,6 +135,13 @@ export async function initCommand(
   );
   const hasMonorepoFlag = argv.some(
     (a) => a.startsWith('--monorepo') || a.startsWith('--no-monorepo') || a === '-m'
+  );
+  const hasNextFlag = argv.some(
+    (a) =>
+      a.startsWith('--next') ||
+      a.startsWith('--no-next') ||
+      a.startsWith('--nextjs') ||
+      a.startsWith('--no-nextjs')
   );
   const hasSkipInstallFlag = argv.some(
     (a) => a.includes('skip-install') || a.includes('skipInstall')
@@ -237,14 +253,25 @@ export async function initCommand(
       );
     }
 
-    // 8. Install Dependencies Now?
+    // 8. Next.js Universal Web (apps/web)
+    if (!hasNextFlag && args.next === undefined) {
+      args.next = await promptConfirm(
+        'Configure universal Next.js Web app (apps/web) with react-native-web?',
+        false
+      );
+    }
+    if (args.next) {
+      args.monorepo = true;
+    }
+
+    // 9. Install Dependencies Now?
     if (!hasSkipInstallFlag) {
       const pmToUse = args.pm || detectPackageManager(currentDir);
       const installNow = await promptConfirm(`Install dependencies with ${pmToUse} now?`, true);
       args.skipInstall = !installNow;
     }
 
-    // 7. CocoaPods (for Apple platforms on macOS)
+    // 10. CocoaPods (for Apple platforms on macOS)
     const chosenPlatforms = Array.isArray(args.platforms)
       ? args.platforms
       : String(args.platforms || 'ios,android').split(',');
@@ -271,6 +298,9 @@ export async function initCommand(
   args.pm = args.pm || detectPackageManager(currentDir);
   args.oxc = args.oxc ?? true;
   args.redux = Boolean(args.redux);
+  args.webview = Boolean(args.webview);
+  args.monorepo = Boolean(args.monorepo || args.next);
+  args.next = Boolean(args.next);
   args.skipPods = args.skipPods ?? true;
   args.platforms = args.platforms || ['ios', 'android'];
 

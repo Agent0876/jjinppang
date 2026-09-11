@@ -9,3 +9,4 @@ export * from './template-generator.js';
 export * from './redux-setup.js';
 export * from './webview-setup.js';
 export * from './monorepo-setup.js';
+export * from './next-setup.js';

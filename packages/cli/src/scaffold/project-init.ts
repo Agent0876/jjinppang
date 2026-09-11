@@ -12,6 +12,7 @@ import { generateProjectFromTemplate } from './template-generator.js';
 import { setupRedux } from './redux-setup.js';
 import { setupWebview } from './webview-setup.js';
 import { setupMonorepo, linkMonorepoPackage } from './monorepo-setup.js';
+import { setupNextjs } from './next-setup.js';
 
 export interface InitResult {
   mode: 'existing' | 'new';
@@ -24,6 +25,7 @@ export interface InitResult {
   configuredRedux?: boolean;
   configuredWebview?: boolean;
   configuredMonorepo?: boolean;
+  configuredNext?: boolean;
   installedDependencies: boolean;
 }
 
@@ -187,13 +189,20 @@ export async function initExistingProject(
   }
 
   // 7. Setup Monorepo workspace if requested
-  if (options.monorepo) {
+  if (options.monorepo || options.next) {
     const projectName = path.basename(projectDir);
     setupMonorepo(projectDir, projectName, dryRun);
     console.log(`  ✅ Configured Monorepo Workspace (packages/ui)`);
   }
 
-  // 8. Run install if not skipped and not dry-run
+  // 8. Setup Next.js web app if requested
+  if (options.next) {
+    const projectName = path.basename(projectDir);
+    setupNextjs(projectDir, projectName, dryRun);
+    console.log(`  ✅ Configured Universal Next.js Web app (apps/web)`);
+  }
+
+  // 9. Run install if not skipped and not dry-run
   let installed = false;
   if (!options.skipInstall && !dryRun) {
     installed = runInstall(projectDir, pm);
@@ -209,7 +218,8 @@ export async function initExistingProject(
     configuredOxc,
     configuredRedux: Boolean(options.redux),
     configuredWebview: Boolean(options.webview),
-    configuredMonorepo: Boolean(options.monorepo),
+    configuredMonorepo: Boolean(options.monorepo || options.next),
+    configuredNext: Boolean(options.next),
     installedDependencies: installed,
   };
 }
@@ -245,11 +255,15 @@ export async function initNewProject(
       patchedRnConfig: true,
       createdBunConfig: true,
       configuredOxc: true,
+      configuredRedux: Boolean(options.redux),
+      configuredWebview: Boolean(options.webview),
+      configuredMonorepo: Boolean(options.monorepo || options.next),
+      configuredNext: Boolean(options.next),
       installedDependencies: false,
     };
   }
 
-  const isMonorepo = Boolean(options.monorepo);
+  const isMonorepo = Boolean(options.monorepo || options.next);
   const appTargetDir = isMonorepo ? path.join(projectDir, 'apps/mobile') : projectDir;
   const appName = isMonorepo ? 'mobile' : projectName;
 
@@ -301,6 +315,12 @@ dist/
 
     // Setup packages/ui
     setupMonorepo(projectDir, projectName, dryRun);
+
+    // Setup Next.js universal web app if requested
+    if (options.next) {
+      setupNextjs(projectDir, projectName, dryRun);
+      console.log(`  ✅ Configured Universal Next.js Web app (apps/web)`);
+    }
   }
 
   // 1. Scaffold clean native React Native structure with bun-rn built-in template
@@ -469,6 +489,7 @@ dist/
     configuredRedux: Boolean(options.redux),
     configuredWebview: Boolean(options.webview),
     configuredMonorepo: isMonorepo,
+    configuredNext: Boolean(options.next),
     installedDependencies: installed,
   };
 }

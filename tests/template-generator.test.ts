@@ -244,4 +244,55 @@ describe('Template Generator (Built-in Scaffolder)', () => {
     expect(mobileAppTsx).toContain('<WebViewDemo />');
     expect(mobileAppTsx).toContain('<CounterSection />');
   });
+
+  test('scaffolds universal Next.js 15 web app (apps/web) via initNewProject with --next', async () => {
+    const { initNewProject } = await import('../packages/cli/src/scaffold/project-init.js');
+    const projectName = 'NextUniversalApp';
+
+    const result = await initNewProject(projectName, TEST_DIR, {
+      platforms: 'ios,android',
+      skipInstall: true,
+      skipPods: true,
+      next: true,
+    });
+
+    expect(result.configuredNext).toBe(true);
+    expect(result.configuredMonorepo).toBe(true);
+
+    const rootDir = path.join(TEST_DIR, projectName);
+
+    // 1. Root workspace package.json scripts
+    const rootPkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
+    expect(rootPkg.workspaces).toEqual(['apps/*', 'packages/*']);
+    expect(rootPkg.scripts['web']).toBe('bun --filter web dev');
+    expect(rootPkg.scripts['build:web']).toBe('bun --filter web build');
+
+    // 2. apps/web/package.json
+    const webPkgPath = path.join(rootDir, 'apps/web/package.json');
+    expect(fs.existsSync(webPkgPath)).toBe(true);
+    const webPkg = JSON.parse(fs.readFileSync(webPkgPath, 'utf8'));
+    expect(webPkg.name).toBe('web');
+    expect(webPkg.dependencies['next']).toBeDefined();
+    expect(webPkg.dependencies['react-native-web']).toBeDefined();
+    expect(webPkg.dependencies[`@${projectName.toLowerCase()}/ui`]).toBe('workspace:*');
+
+    // 3. apps/web/next.config.mjs
+    const nextConfigPath = path.join(rootDir, 'apps/web/next.config.mjs');
+    expect(fs.existsSync(nextConfigPath)).toBe(true);
+    const nextConfigContent = fs.readFileSync(nextConfigPath, 'utf8');
+    expect(nextConfigContent).toContain(
+      `transpilePackages: ['@${projectName.toLowerCase()}/ui', 'react-native-web']`
+    );
+    expect(nextConfigContent).toContain(`'react-native$': 'react-native-web'`);
+
+    // 4. apps/web/app/page.tsx
+    const pageTsxPath = path.join(rootDir, 'apps/web/app/page.tsx');
+    expect(fs.existsSync(pageTsxPath)).toBe(true);
+    const pageTsxContent = fs.readFileSync(pageTsxPath, 'utf8');
+    expect(pageTsxContent).toContain(`from '@${projectName.toLowerCase()}/ui'`);
+    expect(pageTsxContent).toContain('<SharedCard');
+
+    // 5. apps/web/tsconfig.json
+    expect(fs.existsSync(path.join(rootDir, 'apps/web/tsconfig.json'))).toBe(true);
+  });
 });

@@ -59,6 +59,7 @@ Options:
   --redux [boolean]               Configure Redux Toolkit (@reduxjs/toolkit & react-redux)
   --webview [boolean]             Install and configure react-native-webview
   --monorepo [boolean]            Configure project as a modern Bun monorepo workspace
+  --next, --nextjs [boolean]      Configure universal Next.js web app (apps/web)
   --dry-run                       Display planned changes without writing files
   --force                         Force overwrite existing configuration files
   -h, --help                      Show help
@@ -77,7 +78,8 @@ Options:
       oxc: values.oxc !== 'false' && (values.oxc as unknown) !== false,
       redux: Boolean(values.redux),
       webview: Boolean(values.webview),
-      monorepo: Boolean(values.monorepo),
+      monorepo: Boolean(values.monorepo || values.next || values.nextjs),
+      next: Boolean(values.next || values.nextjs),
       dryRun: Boolean(values['dry-run'] || values.dryRun),
       force: Boolean(values.force),
     };
