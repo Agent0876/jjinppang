@@ -202,6 +202,10 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
     async fetch(req, srv) {
       const url = new URL(req.url);
       const pathname = url.pathname;
+      // Skip logging for noisy polling endpoints
+      if (pathname !== '/message' && !pathname.startsWith('/inspector/device')) {
+        console.log(`[DevServer] REQ: ${req.method} ${pathname}${url.search}`);
+      }
 
       // 1. WebSocket upgrade for /hot and /inspector/debug
       if (pathname === '/hot' || pathname === '/inspector/debug') {
@@ -379,6 +383,19 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
         if (fs.existsSync(fullAssetPath)) {
           return new Response(Bun.file(fullAssetPath));
         }
+      }
+
+      // 8. Inspector device list endpoint (polled by native InspectorProxy)
+      if (pathname === '/inspector/device') {
+        return new Response(JSON.stringify([]), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      // 9. Message long-polling endpoint (Metro DevServerHelper compatibility)
+      // React Native native side polls this endpoint; return 204 so it retries without blocking
+      if (pathname === '/message') {
+        return new Response(null, { status: 204 });
       }
 
       return new Response('Not Found', { status: 404 });
