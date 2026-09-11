@@ -127,3 +127,6 @@ dist/
 .temp-*
 tests/.temp-*
 MyAwesomeApp/
+scratch/
+.rollipop/
+**/.rollipop/

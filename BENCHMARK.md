@@ -1,54 +1,58 @@
-# react-native-bun-build vs Metro Benchmark
+# React Native 번들러 3자 벤치마크: Metro vs react-native-bun-build vs Rollipop
 
-React Native 0.87 환경(`--dev false`, `--reset-cache`)에서의 프로덕션 번들 빌드 성능 및 산출물 크기 비교 결과입니다. (연속 3회 측정 평균치)
-
----
-
-## 1. 빌드 속도 비교 (Build Speed)
-
-`react-native-bun-build`는 번들링 및 **Hermes Bytecode Ahead-Of-Time(AOT) 컴파일까지 포함**하고도 Metro 대비 **약 1.71x ~ 1.73x 빠른 속도**를 제공합니다.
-
-| Platform    | Bundler                          | Avg Duration |       Speedup       |
-| :---------- | :------------------------------- | :----------: | :-----------------: |
-| **iOS**     | Metro                            |   5,965 ms   |  1.0x _(baseline)_  |
-| **iOS**     | **react-native-bun-build (Bun)** | **3,481 ms** | **1.71x faster** ⚡ |
-| **Android** | Metro                            |   5,755 ms   |  1.0x _(baseline)_  |
-| **Android** | **react-native-bun-build (Bun)** | **3,332 ms** | **1.73x faster** ⚡ |
+React Native 0.87 프로덕션 빌드 환경(`--dev false`, `--reset-cache`)에서 3대 번들러(**Metro**, **react-native-bun-build**, **Rollipop**)의 빌드 성능, 산출물 크기 및 아키텍처를 정밀 측정한 결과입니다. (각 플랫폼별 3회 연속 측정 평균치)
 
 ---
 
-## 2. 번들 크기 정밀 비교 (Bundle Size by Format)
+## 1. 빌드 속도 및 산출물 종합 비교 (Production Build Benchmark)
 
-> [!NOTE]
-> **기존 수치 오해 해소**: React Native 표준 CLI(`react-native bundle`)는 Hermes 컴파일을 자체 수행하지 않고 **순수 Minified JS**만 출력합니다. 반면 `react-native-bun-build`는 **Hermes Bytecode(.hbc)**까지 빌드 파이프라인에서 자동 완결합니다.
-> 따라서 포맷(JS vs .hbc)을 일치시켜 계층별로 공정하게 비교한 결과는 다음과 같습니다.
+| Platform    | 번들러 (Bundler)                            | 핵심 엔진 (Engine)    | 평균 소요 시간 (Avg) | 산출물 크기 (Bundle Size) |       출력 포맷 (Format)       | 속도 개선 배수 (vs Metro) |
+| :---------- | :------------------------------------------ | :-------------------- | :------------------: | :-----------------------: | :----------------------------: | :-----------------------: |
+| **iOS**     | **Metro (기본 빌드)**                       | Babel + Node.js       |     **8,761 ms**     |    1.80 MB (1840.1 KB)    |          Minified JS           |     1.0x _(baseline)_     |
+| **iOS**     | **react-native-bun-build (우리가 만든 것)** | Bun + Babel Hybrid    |     **6,813 ms**     |    2.89 MB (2955.5 KB)    | **Hermes Bytecode (.hbc) AOT** |    **1.29x faster** ⚡    |
+| **iOS**     | **Rollipop**                                | Rolldown (Rust) + SWC |     **1,363 ms**     |    2.23 MB (2283.1 KB)    |          Minified JS           |    **6.43x faster** ⚡    |
+| **Android** | **Metro (기본 빌드)**                       | Babel + Node.js       |    **10,104 ms**     |    1.80 MB (1845.8 KB)    |          Minified JS           |     1.0x _(baseline)_     |
+| **Android** | **react-native-bun-build (우리가 만든 것)** | Bun + Babel Hybrid    |     **7,885 ms**     |    2.89 MB (2963.2 KB)    | **Hermes Bytecode (.hbc) AOT** |    **1.28x faster** ⚡    |
+| **Android** | **Rollipop**                                | Rolldown (Rust) + SWC |     **1,490 ms**     |    2.24 MB (2294.9 KB)    |          Minified JS           |    **6.78x faster** ⚡    |
 
-### 포맷별 크기 비교표 (iOS 기준)
+---
 
-| 단계 (Format)                   |                   Metro                   |            react-native-bun-build             |  차이 (Bun vs Metro)   |         비교 결과          |
-| :------------------------------ | :---------------------------------------: | :-------------------------------------------: | :--------------------: | :------------------------: |
-| **① Raw JS (안 압축)**          | 1,962.6 KB _(2,009,744 B)_<br>45,068 라인 | **1,869.4 KB** _(1,914,229 B)_<br>38,990 라인 | **-95.5 KB (-4.75%)**  |    ⚡ **Bun이 더 작음**    |
-| **② Minified JS (압축 텍스트)** |  875.87 KB _(896,892 B)_<br>14,293 라인   |    **847.95 KB** _(868,305 B)_<br>65 라인     | **-28.58 KB (-3.19%)** |    ⚡ **Bun이 더 작음**    |
-| **③ Hermes Bytecode (.hbc)**    |      **1,232.59 KB** _(1,262,178 B)_      |          1,268.07 KB _(1,298,506 B)_          |   +35.48 KB (+2.88%)   | 🔹 **대등 (약 2.8% 차이)** |
+## 2. 3대 번들러 아키텍처 및 특징 비교 (Architecture & Features)
+
+| 비교 항목             | Metro (기본 빌드)                      | react-native-bun-build (Bun)                | Rollipop (Rolldown)                  |
+| :-------------------- | :------------------------------------- | :------------------------------------------ | :----------------------------------- |
+| **핵심 런타임**       | Node.js (V8)                           | **Bun (JavaScriptCore + Zig)**              | Node.js + Rust NAPI                  |
+| **번들러 코어**       | Metro AST Graph Traversal              | **Bun.build() (네이티브 Zig 번들러)**       | **Rolldown (Rust 기반 Rollup 포팅)** |
+| **JS/TS 변환**        | Babel (`@react-native/babel-preset`)   | **Bun Native Transpiler + Babel Hybrid**    | SWC + fast-flow-transform            |
+| **Hermes AOT 컴파일** | ❌ 미지원 (Xcode/Gradle 단계에서 수행) | **✅ 번들러 파이프라인에서 .hbc 자동 완결** | ❌ 미지원 (순수 JS만 방출)           |
+| **에셋 파이프라인**   | `@2x`, `@3x` 자동 추출                 | **`@2x`, `@3x` 고속 추출 & 네이티브 매핑**  | `@2x`, `@3x` 자동 추출               |
+| **개발 서버 코어**    | Connect / Node.js HTTP                 | **`Bun.serve` 네이티브 초고속 서버**        | Fastify (Node.js)                    |
+| **HMR 지원**          | Metro HMR Protocol                     | **Metro 호환 초경량 HMR 엔진**              | Vite-style HMR / Metro 호환          |
+| **호환성**            | 100% (React Native 공식 표준)          | **Hermes/RN 0.87 최신 완벽 호환**           | RN 0.86+ Flow 문법 등 일부 shim 필요 |
 
 ---
 
 ## 3. 핵심 분석 및 기술적 특징 (Key Findings)
 
-### 1) 순수 JS 레벨에서 Bun이 더 컴팩트한 이유 (-28.6 KB)
+### 1) 빌드 속도 관점 (Build Performance)
 
-- **런타임 패키저 오버헤드 최소화**: Metro는 약 800줄의 런타임(`metroRequire`, `define`, `Map` 캐시)과 모듈당 7개의 고정 매개변수 선언을 주입하지만, Bun은 컴팩트한 경량 래퍼(`__commonJS`, `__toESM`)를 사용하여 보일러플레이트를 대폭 줄였습니다.
-- **철저한 Dead Code Elimination (DCE)**: `--dev false` 시 `__DEV__`가 `false`로 치환되며 모든 개발용 분기(`if (false)`)가 컴파일 타임에 완벽히 제거됩니다. React 특유의 invariant 상세 에러 문구와 불필요한 스텁 모듈이 번들에서 완전 배제됩니다.
+- **Rollipop (Rolldown)**: Rust 기반의 Rolldown 번들러 코어와 메모리 매핑을 통해 순수 JS 번들링 단계에서 **가장 빠른 극초고속(~1363ms)** 빌드를 달성합니다.
+- **react-native-bun-build (Bun)**: 번들링뿐만 아니라 **Hermes Bytecode(.hbc) AOT 바이너리 컴파일까지 일괄 수행**하고도 Metro 대비 **약 1.29x ~ 1.28x 빠른 속도**를 제공합니다.
+- **Metro**: 순수 Node.js 단일 스레드 이벤트 루프와 복잡한 Babel AST 순회로 인해 빌드에 가장 긴 시간(~8761ms)이 소요됩니다.
 
-### 2) Hermes Bytecode (.hbc) 크기 특성 (+2.8%)
+### 2) 산출물 포맷 및 크기 관점 (Bundle Format & Size)
 
-- Bun은 CommonJS 모듈 격리를 위해 클로저 함수 단위를 활용하며, Hermes 컴파일러는 각 JS 함수마다 렉시컬 환경 테이블 및 프레임 메타데이터를 생성합니다.
-- 이에 따라 HBC 바이너리 변환 시 메타데이터 크기가 소폭 추가되지만, 실제 바이너리 차이는 약 35 KB(2.8%) 수준으로 런타임 성능 및 메모리에 영향 없는 범위 내에서 대등합니다.
+- **산출물 포맷의 차이**:
+  - **Metro**와 **Rollipop**은 **Minified JS 파일**만 생성합니다. (앱 릴리즈 시 Xcode / Gradle 단계에서 별도로 Hermes 바이너리 컴파일을 거침)
+  - **react-native-bun-build**는 번들 빌드와 동시에 **Hermes Bytecode(.hbc)**를 직접 생성하여, 네이티브 앱 패키징 시간을 획기적으로 단축시킵니다.
+- **번들 크기**:
+  - Minified JS 기준: Metro(1.80 MB (1840.1 KB)) vs Rollipop(2.23 MB (2283.1 KB))
+  - HBC Bytecode 기준: react-native-bun-build(2.89 MB (2955.5 KB))는 컴파일된 네이티브 바이트코드 바이너리 크기입니다.
 
-### 3) 올인원 파이프라인 (All-in-One Pipeline)
+### 3) 실전 도입 및 생태계 관점
 
-- **Hermes AOT 기본 탑재**: 별도의 빌드 페이즈 스크립트 없이 JS 번들링과 Hermes Bytecode 컴파일, 소스맵 합성을 한 번의 실행으로 완결합니다.
-- **Asset Pipeline**: `@2x`, `@3x` 등의 해상도별 이미지 에셋을 iOS 에셋 카탈로그 및 Android `drawable-*`/`raw` 디렉토리로 자동 분류 추출합니다.
+- **react-native-bun-build**는 `bun-rn init`부터 Redux Toolkit / AsyncStorage / Reanimated / WebView 지원, `Bun.serve` 기반의 독립 개발 서버, Hermes Bytecode 직접 컴파일까지 **올인원 풀스택 번들링 툴킷**으로 설계되어 단일 도구로 완전한 대체가 가능합니다.
+- **Rollipop**은 빠른 번들링을 제공하지만 RN 0.87의 최신 Flow `readonly` 키워드 파싱 이슈나 `package.json` exports 매핑 등 추가 shim 설정이 수반되어야 합니다.
 
 ---
 

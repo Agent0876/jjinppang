@@ -29,7 +29,7 @@ export function compileWithHermes(params: CompileWithHermesParams): boolean {
   const hbcOutput = `${bundleOutput}.hbc`;
   const hbcMapOutput = `${bundleOutput}.hbc.map`;
 
-  const flags: string[] = ['-emit-binary', '-out', hbcOutput, bundleOutput, '-Xes6-class'];
+  const flags: string[] = ['-emit-binary', '-out', hbcOutput, bundleOutput];
 
   if (sourcemapOutput) {
     flags.push('-output-source-map');

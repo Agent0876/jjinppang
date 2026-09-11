@@ -25,6 +25,7 @@
     "fixtures/TestApp/node_modules/**",
     "fixtures/TestApp/dist/**",
     ".bun-rn-temp/**",
+    "scratch/**",
     "bun.lock"
   ]
 }
