@@ -6,8 +6,10 @@ import {
   initExistingProject,
   initNewProject,
   detectPackageManager,
+  resolveCompatibleReactNativeVersion,
 } from '../scaffold/index.js';
 import {
+  colors,
   promptConfirm,
   promptMultiSelect,
   promptSelect,
@@ -156,6 +158,18 @@ export async function initCommand(
           },
         ]
       );
+
+      const selectedPlatforms = Array.isArray(args.platforms)
+        ? args.platforms
+        : String(args.platforms || 'ios,android').split(',');
+      const suggestedVersion = resolveCompatibleReactNativeVersion(
+        selectedPlatforms as TargetPlatform[]
+      );
+      if (suggestedVersion && !args.version) {
+        console.log(
+          `\n  ${colors.dim}💡 Selected desktop platforms require React Native ${suggestedVersion} for native compatibility.${colors.reset}`
+        );
+      }
     }
 
     // Auto-detect package manager (defaults to bun, no prompt needed)

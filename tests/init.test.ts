@@ -9,6 +9,7 @@ import {
   updatePackageJson,
   initExistingProject,
   resolveDesktopVersion,
+  resolveCompatibleReactNativeVersion,
   initCommand,
 } from '../packages/cli/src/commands/init.js';
 import {
@@ -391,5 +392,13 @@ describe('Init Command & Project Scaffolding', () => {
 
     // Validates initCommand succeeded without throwing or blocking
     expect(true).toBe(true);
+  });
+
+  test('resolveCompatibleReactNativeVersion resolves maximum supported version for desktop', () => {
+    expect(resolveCompatibleReactNativeVersion(['ios', 'android'])).toBeUndefined();
+    expect(resolveCompatibleReactNativeVersion(['macos'])).toBe('0.81.6');
+    expect(resolveCompatibleReactNativeVersion(['ios', 'android', 'macos'])).toBe('0.81.6');
+    expect(resolveCompatibleReactNativeVersion(['ios', 'android', 'windows'])).toBe('0.84.1');
+    expect(resolveCompatibleReactNativeVersion(['macos', 'windows'])).toBe('0.81.6');
   });
 });

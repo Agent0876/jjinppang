@@ -119,6 +119,11 @@ export const initCommandOptions: CommandOption[] = [
     default: false,
   },
   {
+    name: '--version <string>',
+    description:
+      'React Native version to install (auto-selected to highest compatible version for desktop platforms)',
+  },
+  {
     name: '--pm <string>',
     description: 'Package manager to use (bun, npm, yarn, pnpm)',
   },
@@ -159,6 +164,7 @@ export const initCommandOptions: CommandOption[] = [
 ];
 
 export const initParseArgsConfig = {
+  version: { type: 'string' as const },
   existing: { type: 'boolean' as const, default: false },
   pm: { type: 'string' as const },
   platforms: { type: 'string' as const },

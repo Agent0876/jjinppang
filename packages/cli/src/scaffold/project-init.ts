@@ -32,6 +32,24 @@ export function parsePlatforms(raw?: TargetPlatform[] | string): TargetPlatform[
 }
 
 /**
+ * Resolves the highest compatible React Native version for the selected platforms.
+ * - If macos is selected: react-native-macos@0.81.9 requires react-native@0.81.6
+ * - If windows is selected (without macos): react-native-windows@0.84.0 requires react-native@0.84.1
+ * - If only mobile (ios, android): returns undefined (defaults to latest React Native)
+ */
+export function resolveCompatibleReactNativeVersion(
+  platforms: TargetPlatform[]
+): string | undefined {
+  if (platforms.includes('macos')) {
+    return '0.81.6';
+  }
+  if (platforms.includes('windows')) {
+    return '0.84.1';
+  }
+  return undefined;
+}
+
+/**
  * Configure an existing React Native project
  */
 export async function initExistingProject(
@@ -166,6 +184,9 @@ export async function initNewProject(
 
   // 1. Scaffold native React Native structure using @react-native-community/cli
   console.log(`📱 Generating project files with React Native CLI...`);
+  const platforms = parsePlatforms(options.platforms);
+  const targetRnVersion = options.version || resolveCompatibleReactNativeVersion(platforms);
+
   const initArgs = [
     '@react-native-community/cli',
     'init',
@@ -174,6 +195,12 @@ export async function initNewProject(
     options.pm || 'bun',
     '--skip-install',
   ];
+  if (targetRnVersion) {
+    console.log(
+      `⚡ [react-native-bun-build] Auto-selected React Native ${targetRnVersion} for compatibility with ${platforms.join(', ')}.`
+    );
+    initArgs.push('--version', targetRnVersion);
+  }
   if (options.template) {
     initArgs.push('--template', options.template);
   }
