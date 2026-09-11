@@ -212,12 +212,24 @@ export async function initNewProject(
   if (configureResult.platforms.includes('macos')) {
     const macosDir = path.join(projectDir, 'macos');
     if (!fs.existsSync(macosDir)) {
-      console.log(`\n🍏 Scaffolding macOS native project (react-native-macos-init)...`);
-      spawnSync('npx', ['--yes', 'react-native-macos-init'], {
-        cwd: projectDir,
-        stdio: 'inherit',
-        shell: true,
-      });
+      if (process.platform !== 'darwin') {
+        console.log(
+          `\nℹ️ [react-native-bun-build] macOS native project scaffolding requires macOS (Darwin).\n` +
+            `   Your bun-rn scripts are configured for macOS. To generate the macos/ directory, run 'npx react-native-macos-init' on a Mac.`
+        );
+      } else {
+        console.log(`\n🍏 Scaffolding macOS native project (react-native-macos-init)...`);
+        const res = spawnSync('npx', ['--yes', 'react-native-macos-init'], {
+          cwd: projectDir,
+          stdio: 'inherit',
+          shell: true,
+        });
+        if (res.status !== 0) {
+          console.warn(
+            `\n⚠️ react-native-macos-init completed with warnings/errors. You can review and configure macOS native files manually.`
+          );
+        }
+      }
     }
   }
 
@@ -225,12 +237,25 @@ export async function initNewProject(
   if (configureResult.platforms.includes('windows')) {
     const windowsDir = path.join(projectDir, 'windows');
     if (!fs.existsSync(windowsDir)) {
-      console.log(`\n🪟 Scaffolding Windows native project (react-native-windows-init)...`);
-      spawnSync('npx', ['--yes', 'react-native-windows-init', '--overwrite'], {
-        cwd: projectDir,
-        stdio: 'inherit',
-        shell: true,
-      });
+      if (process.platform !== 'win32') {
+        console.log(
+          `\nℹ️ [react-native-bun-build] Windows native scaffolding (react-native-windows-init) requires a Windows host environment.\n` +
+            `   Your bun-rn scripts and package.json are configured for Windows.\n` +
+            `   To generate native windows/ files, run 'npx react-native-windows-init' on a Windows machine.`
+        );
+      } else {
+        console.log(`\n🪟 Scaffolding Windows native project (react-native-windows-init)...`);
+        const res = spawnSync('npx', ['--yes', 'react-native-windows-init', '--overwrite'], {
+          cwd: projectDir,
+          stdio: 'inherit',
+          shell: true,
+        });
+        if (res.status !== 0) {
+          console.warn(
+            `\n⚠️ react-native-windows-init completed with warnings/errors. You can review and configure Windows native files manually.`
+          );
+        }
+      }
     }
   }
 
