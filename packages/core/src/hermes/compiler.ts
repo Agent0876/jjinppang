@@ -42,10 +42,18 @@ export function compileWithHermes(params: CompileWithHermesParams): boolean {
     }
   }
 
-  const result = spawnSync(hermescPath, flags, {
+  let result = spawnSync(hermescPath, flags, {
     stdio: 'inherit',
     encoding: 'utf8',
   });
+
+  if (result.status !== 0 && process.platform === 'darwin' && process.arch === 'arm64') {
+    // Retry with x86_64 via Rosetta if arm64 segfaults under Bun process memory mapping
+    result = spawnSync('arch', ['-x86_64', hermescPath, ...flags], {
+      stdio: 'inherit',
+      encoding: 'utf8',
+    });
+  }
 
   if (result.status !== 0) {
     if (result.error) console.error('Hermesc error:', result.error);
