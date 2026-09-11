@@ -17,6 +17,7 @@
     "src",
     "bin",
     "commands.js",
+    "commands.cjs",
     "README.md",
     "LICENSE"
   ],
@@ -29,7 +30,11 @@
       "import": "./src/index.ts",
       "default": "./dist/index.js"
     },
-    "./commands": "./commands.js"
+    "./commands": {
+      "require": "./commands.cjs",
+      "import": "./commands.js",
+      "default": "./commands.cjs"
+    }
   },
   "publishConfig": {
     "access": "public"

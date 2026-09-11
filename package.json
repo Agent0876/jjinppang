@@ -8,10 +8,12 @@
     "react-native-bun-build": "./packages/react-native-bun-build/bin/bun-rn.js"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "fixtures/*",
+    "MyAwesomeApp"
   ],
   "scripts": {
-    "build": "bun build packages/core/src/index.ts --outdir packages/core/dist --target node && bun build packages/cli/src/index.ts --outdir packages/cli/dist --target node && bun build packages/cli/src/commands/index.ts --outfile packages/cli/dist/commands/index.js --target node && bun build packages/cli/src/bin.ts --outfile packages/cli/dist/bin.js --target node && bun build packages/react-native-bun-build/src/index.ts --outdir packages/react-native-bun-build/dist --target node",
+    "build": "bun build packages/core/src/index.ts --outdir packages/core/dist --target node && bun build packages/cli/src/index.ts --outdir packages/cli/dist --target node && bun build packages/cli/src/commands/index.ts --outfile packages/cli/dist/commands/index.js --target node && bun build packages/cli/src/commands/index.ts --outfile packages/react-native-bun-build/dist/commands.cjs --target node --format cjs && bun build packages/cli/src/bin.ts --outfile packages/cli/dist/bin.js --target node && bun build packages/react-native-bun-build/src/index.ts --outdir packages/react-native-bun-build/dist --target node",
     "test": "bun test tests/",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",

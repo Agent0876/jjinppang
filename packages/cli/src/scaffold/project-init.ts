@@ -208,7 +208,33 @@ export async function initNewProject(
     installed = runInstall(projectDir, pm);
   }
 
-  // 4. Run CocoaPods on macOS
+  // 4. Scaffold macOS native files if macos is targeted and macos/ does not exist
+  if (configureResult.platforms.includes('macos')) {
+    const macosDir = path.join(projectDir, 'macos');
+    if (!fs.existsSync(macosDir)) {
+      console.log(`\n🍏 Scaffolding macOS native project (react-native-macos-init)...`);
+      spawnSync('npx', ['--yes', 'react-native-macos-init'], {
+        cwd: projectDir,
+        stdio: 'inherit',
+        shell: true,
+      });
+    }
+  }
+
+  // 5. Scaffold Windows native files if windows is targeted and windows/ does not exist
+  if (configureResult.platforms.includes('windows')) {
+    const windowsDir = path.join(projectDir, 'windows');
+    if (!fs.existsSync(windowsDir)) {
+      console.log(`\n🪟 Scaffolding Windows native project (react-native-windows-init)...`);
+      spawnSync('npx', ['--yes', 'react-native-windows-init', '--overwrite'], {
+        cwd: projectDir,
+        stdio: 'inherit',
+        shell: true,
+      });
+    }
+  }
+
+  // 6. Run CocoaPods on macOS (handles both ios/ and macos/)
   if (process.platform === 'darwin' && !options.skipPods && !options.skipInstall) {
     runPodInstall(projectDir);
   }

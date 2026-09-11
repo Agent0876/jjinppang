@@ -18,19 +18,32 @@ export function runInstall(projectDir: string, pm: PackageManagerType): boolean 
 }
 
 /**
- * Runs CocoaPods pod install in ios/ directory if Podfile is present
+ * Runs CocoaPods pod install in ios/ and macos/ directories if Podfile is present
  */
 export function runPodInstall(projectDir: string): boolean {
+  let success = true;
+
   const iosDir = path.join(projectDir, 'ios');
-  if (!fs.existsSync(path.join(iosDir, 'Podfile'))) {
-    return true;
+  if (fs.existsSync(path.join(iosDir, 'Podfile'))) {
+    console.log(`\n🍎 Running CocoaPods (pod install) in ios/...`);
+    const res = spawnSync('pod', ['install'], {
+      cwd: iosDir,
+      stdio: 'inherit',
+      shell: true,
+    });
+    if (res.status !== 0) success = false;
   }
 
-  console.log(`\n🍎 Running CocoaPods (pod install) in ios/...`);
-  const res = spawnSync('pod', ['install'], {
-    cwd: iosDir,
-    stdio: 'inherit',
-    shell: true,
-  });
-  return res.status === 0;
+  const macosDir = path.join(projectDir, 'macos');
+  if (fs.existsSync(path.join(macosDir, 'Podfile'))) {
+    console.log(`\n🍏 Running CocoaPods (pod install) in macos/...`);
+    const res = spawnSync('pod', ['install'], {
+      cwd: macosDir,
+      stdio: 'inherit',
+      shell: true,
+    });
+    if (res.status !== 0) success = false;
+  }
+
+  return success;
 }

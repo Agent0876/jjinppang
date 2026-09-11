@@ -126,3 +126,4 @@ fixtures/TestApp/dist/
 dist/
 .temp-*
 tests/.temp-*
+MyAwesomeApp/
