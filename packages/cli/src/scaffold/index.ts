@@ -7,3 +7,5 @@ export * from './installer.js';
 export * from './project-init.js';
 export * from './template-generator.js';
 export * from './redux-setup.js';
+export * from './webview-setup.js';
+export * from './monorepo-setup.js';

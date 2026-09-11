@@ -142,4 +142,106 @@ describe('Template Generator (Built-in Scaffolder)', () => {
     expect(appTsx).toContain('useAppDispatch');
     expect(appTsx).toContain(projectName);
   });
+
+  test('scaffolds project with react-native-webview when webview is enabled', async () => {
+    const projectName = 'WebviewApp';
+    const projectDir = path.join(TEST_DIR, projectName);
+
+    await generateProjectFromTemplate({
+      projectName,
+      targetDir: projectDir,
+      platforms: ['ios', 'android'],
+      pm: 'bun',
+      oxc: true,
+      webview: true,
+    });
+
+    // 1. Check WebViewDemo component
+    const webviewComponentPath = path.join(projectDir, 'src/components/WebViewDemo.tsx');
+    expect(fs.existsSync(webviewComponentPath)).toBe(true);
+    const componentContent = fs.readFileSync(webviewComponentPath, 'utf8');
+    expect(componentContent).toContain("from 'react-native-webview'");
+    expect(componentContent).toContain('export function WebViewDemo');
+
+    // 2. Check package.json has react-native-webview
+    const pkg = JSON.parse(fs.readFileSync(path.join(projectDir, 'package.json'), 'utf8'));
+    expect(pkg.dependencies['react-native-webview']).toBeDefined();
+
+    // 3. Check App.tsx renders WebViewDemo
+    const appTsx = fs.readFileSync(path.join(projectDir, 'App.tsx'), 'utf8');
+    expect(appTsx).toContain("import { WebViewDemo } from './src/components/WebViewDemo'");
+    expect(appTsx).toContain('<WebViewDemo />');
+  });
+
+  test('scaffolds project with both Redux and WebView combined', async () => {
+    const projectName = 'FullStackApp';
+    const projectDir = path.join(TEST_DIR, projectName);
+
+    await generateProjectFromTemplate({
+      projectName,
+      targetDir: projectDir,
+      platforms: ['ios', 'android'],
+      pm: 'bun',
+      oxc: true,
+      redux: true,
+      webview: true,
+    });
+
+    const pkg = JSON.parse(fs.readFileSync(path.join(projectDir, 'package.json'), 'utf8'));
+    expect(pkg.dependencies['@reduxjs/toolkit']).toBeDefined();
+    expect(pkg.dependencies['react-redux']).toBeDefined();
+    expect(pkg.dependencies['react-native-webview']).toBeDefined();
+
+    const appTsx = fs.readFileSync(path.join(projectDir, 'App.tsx'), 'utf8');
+    expect(appTsx).toContain('<Provider store={store}>');
+    expect(appTsx).toContain('<CounterSection />');
+    expect(appTsx).toContain('<WebViewDemo />');
+  });
+
+  test('scaffolds monorepo workspace structure via initNewProject', async () => {
+    const { initNewProject } = await import('../packages/cli/src/scaffold/project-init.js');
+    const projectName = 'MonorepoApp';
+
+    const result = await initNewProject(projectName, TEST_DIR, {
+      platforms: 'ios,android',
+      skipInstall: true,
+      skipPods: true,
+      monorepo: true,
+      webview: true,
+      redux: true,
+    });
+
+    expect(result.configuredMonorepo).toBe(true);
+    expect(result.configuredWebview).toBe(true);
+    expect(result.configuredRedux).toBe(true);
+
+    const rootDir = path.join(TEST_DIR, projectName);
+
+    // 1. Root workspace package.json
+    const rootPkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
+    expect(rootPkg.workspaces).toEqual(['apps/*', 'packages/*']);
+    expect(rootPkg.scripts['start']).toContain('apps/mobile');
+
+    // 2. apps/mobile package.json
+    const mobilePkgPath = path.join(rootDir, 'apps/mobile/package.json');
+    expect(fs.existsSync(mobilePkgPath)).toBe(true);
+    const mobilePkg = JSON.parse(fs.readFileSync(mobilePkgPath, 'utf8'));
+    expect(mobilePkg.dependencies['@reduxjs/toolkit']).toBeDefined();
+    expect(mobilePkg.dependencies['react-native-webview']).toBeDefined();
+    expect(mobilePkg.dependencies[`@${projectName.toLowerCase()}/ui`]).toBe('workspace:*');
+
+    // 3. packages/ui shared package
+    const uiPkgPath = path.join(rootDir, 'packages/ui/package.json');
+    expect(fs.existsSync(uiPkgPath)).toBe(true);
+    const uiPkg = JSON.parse(fs.readFileSync(uiPkgPath, 'utf8'));
+    expect(uiPkg.name).toBe(`@${projectName.toLowerCase()}/ui`);
+    expect(fs.existsSync(path.join(rootDir, 'packages/ui/src/Card.tsx'))).toBe(true);
+
+    // 4. apps/mobile/App.tsx imports SharedCard
+    const mobileAppTsx = fs.readFileSync(path.join(rootDir, 'apps/mobile/App.tsx'), 'utf8');
+    expect(mobileAppTsx).toContain(`from '@${projectName.toLowerCase()}/ui'`);
+    expect(mobileAppTsx).toContain('<SharedCard');
+    expect(mobileAppTsx).toContain('<WebViewDemo />');
+    expect(mobileAppTsx).toContain('<CounterSection />');
+  });
 });

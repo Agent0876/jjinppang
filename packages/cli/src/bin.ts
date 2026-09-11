@@ -56,6 +56,9 @@ Options:
   --skip-pods                     Skip CocoaPods pod install on macOS/iOS
   --template <name>               Template to use for new project creation
   --oxc <boolean>                 Configure OXC (oxlint & oxfmt) (default: true)
+  --redux [boolean]               Configure Redux Toolkit (@reduxjs/toolkit & react-redux)
+  --webview [boolean]             Install and configure react-native-webview
+  --monorepo [boolean]            Configure project as a modern Bun monorepo workspace
   --dry-run                       Display planned changes without writing files
   --force                         Force overwrite existing configuration files
   -h, --help                      Show help
@@ -72,6 +75,9 @@ Options:
       skipPods: Boolean(values['skip-pods'] || values.skipPods),
       template: values.template as string | undefined,
       oxc: values.oxc !== 'false' && (values.oxc as unknown) !== false,
+      redux: Boolean(values.redux),
+      webview: Boolean(values.webview),
+      monorepo: Boolean(values.monorepo),
       dryRun: Boolean(values['dry-run'] || values.dryRun),
       force: Boolean(values.force),
     };

@@ -31,6 +31,12 @@ function printSuccessBanner(result: InitResult): void {
   const stateMgmt = result.configuredRedux
     ? '\n📦 State Management: Redux Toolkit (@reduxjs/toolkit)'
     : '';
+  const webviewInfo = result.configuredWebview
+    ? '\n🌐 In-App Browser: React Native WebView (react-native-webview)'
+    : '';
+  const monorepoInfo = result.configuredMonorepo
+    ? '\n🏛️ Workspace: Bun Monorepo (apps/mobile + packages/ui)'
+    : '';
 
   console.log(`
 ┌─────────────────────────────────────────────────────────────┐
@@ -39,13 +45,24 @@ function printSuccessBanner(result: InitResult): void {
 
 📁 Location: ${result.projectDir}
 🛠️ Package Manager: ${result.packageManager}
-📱 Target Platforms: ${platforms.join(', ')}${stateMgmt}
+📱 Target Platforms: ${platforms.join(', ')}${stateMgmt}${webviewInfo}${monorepoInfo}
 `);
 
   const runCommands = platforms.map((p) => `  • ${pmRun} ${p}`).join('\n');
   const bundleCommands = platforms.map((p) => `  • ${pmRun} bundle:${p}`).join('\n');
 
-  if (isNew) {
+  if (result.configuredMonorepo) {
+    const dirName = path.basename(result.projectDir);
+    console.log(`To get started with your Monorepo app:
+  1. cd ${dirName}
+  2. ${pmRun} start               # Start fast Bun Dev Server for apps/mobile
+  3. ${pmRun} ios                 # Run on iOS simulator
+  4. ${pmRun} android             # Run on Android emulator
+  • Mobile App: apps/mobile
+  • Shared UI package: packages/ui (workspace:*)
+  • Check quality: ${pmRun} check
+`);
+  } else if (isNew) {
     const dirName = path.basename(result.projectDir);
     console.log(`To get started with your new app:
   1. cd ${dirName}
@@ -103,6 +120,12 @@ export async function initCommand(
   const hasOxcFlag = argv.some((a) => a.startsWith('--oxc') || a.startsWith('--no-oxc'));
   const hasReduxFlag = argv.some(
     (a) => a.startsWith('--redux') || a.startsWith('--no-redux') || a === '-r'
+  );
+  const hasWebviewFlag = argv.some(
+    (a) => a.startsWith('--webview') || a.startsWith('--no-webview') || a === '-w'
+  );
+  const hasMonorepoFlag = argv.some(
+    (a) => a.startsWith('--monorepo') || a.startsWith('--no-monorepo') || a === '-m'
   );
   const hasSkipInstallFlag = argv.some(
     (a) => a.includes('skip-install') || a.includes('skipInstall')
@@ -198,7 +221,23 @@ export async function initCommand(
       );
     }
 
-    // 6. Install Dependencies Now?
+    // 6. React Native WebView (react-native-webview)
+    if (!hasWebviewFlag && args.webview === undefined) {
+      args.webview = await promptConfirm(
+        'Configure React Native WebView (react-native-webview) for in-app web views?',
+        false
+      );
+    }
+
+    // 7. Monorepo Workspace (apps/ + packages/)
+    if (!hasMonorepoFlag && args.monorepo === undefined) {
+      args.monorepo = await promptConfirm(
+        'Configure project as a modern Monorepo workspace (apps/ + packages/)?',
+        false
+      );
+    }
+
+    // 8. Install Dependencies Now?
     if (!hasSkipInstallFlag) {
       const pmToUse = args.pm || detectPackageManager(currentDir);
       const installNow = await promptConfirm(`Install dependencies with ${pmToUse} now?`, true);

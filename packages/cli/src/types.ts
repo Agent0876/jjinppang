@@ -69,6 +69,8 @@ export interface InitArguments {
   template?: string;
   oxc?: boolean;
   redux?: boolean;
+  webview?: boolean;
+  monorepo?: boolean;
   dryRun?: boolean;
   force?: boolean;
 }

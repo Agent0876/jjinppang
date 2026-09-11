@@ -10,6 +10,8 @@ import { updatePackageJson } from './pkg-updater.js';
 import { runInstall, runPodInstall } from './installer.js';
 import { generateProjectFromTemplate } from './template-generator.js';
 import { setupRedux } from './redux-setup.js';
+import { setupWebview } from './webview-setup.js';
+import { setupMonorepo, linkMonorepoPackage } from './monorepo-setup.js';
 
 export interface InitResult {
   mode: 'existing' | 'new';
@@ -20,6 +22,8 @@ export interface InitResult {
   createdBunConfig: boolean;
   configuredOxc: boolean;
   configuredRedux?: boolean;
+  configuredWebview?: boolean;
+  configuredMonorepo?: boolean;
   installedDependencies: boolean;
 }
 
@@ -175,7 +179,21 @@ export async function initExistingProject(
     console.log(`  ✅ Configured Redux Toolkit (@reduxjs/toolkit & react-redux)`);
   }
 
-  // 6. Run install if not skipped and not dry-run
+  // 6. Setup React Native WebView if requested
+  if (options.webview) {
+    const projectName = path.basename(projectDir);
+    setupWebview(projectDir, projectName, dryRun, Boolean(options.redux));
+    console.log(`  ✅ Configured React Native WebView (react-native-webview)`);
+  }
+
+  // 7. Setup Monorepo workspace if requested
+  if (options.monorepo) {
+    const projectName = path.basename(projectDir);
+    setupMonorepo(projectDir, projectName, dryRun);
+    console.log(`  ✅ Configured Monorepo Workspace (packages/ui)`);
+  }
+
+  // 8. Run install if not skipped and not dry-run
   let installed = false;
   if (!options.skipInstall && !dryRun) {
     installed = runInstall(projectDir, pm);
@@ -190,6 +208,8 @@ export async function initExistingProject(
     createdBunConfig: bunConfigRes.status === 'created',
     configuredOxc,
     configuredRedux: Boolean(options.redux),
+    configuredWebview: Boolean(options.webview),
+    configuredMonorepo: Boolean(options.monorepo),
     installedDependencies: installed,
   };
 }
@@ -229,24 +249,84 @@ export async function initNewProject(
     };
   }
 
+  const isMonorepo = Boolean(options.monorepo);
+  const appTargetDir = isMonorepo ? path.join(projectDir, 'apps/mobile') : projectDir;
+  const appName = isMonorepo ? 'mobile' : projectName;
+
+  if (isMonorepo && !dryRun) {
+    console.log(`🏛️ Setting up Bun workspace monorepo at ${projectDir}...`);
+    fs.mkdirSync(projectDir, { recursive: true });
+
+    // Root workspace package.json
+    const rootPkg = {
+      name: `${projectName.toLowerCase()}-workspace`,
+      private: true,
+      workspaces: ['apps/*', 'packages/*'],
+      scripts: {
+        start: 'bun-rn start --projectRoot apps/mobile',
+        ios: 'bun --filter mobile ios',
+        android: 'bun --filter mobile android',
+        'bundle:ios': 'bun --filter mobile bundle:ios',
+        'bundle:android': 'bun --filter mobile bundle:android',
+        lint: 'oxlint',
+        format: 'oxfmt',
+        check: 'oxlint && oxfmt --check && bun test',
+      },
+      devDependencies: {
+        oxlint: '^1.82.0',
+        oxfmt: '^0.67.0',
+        typescript: '^5.0.0',
+      },
+    };
+    fs.writeFileSync(
+      path.join(projectDir, 'package.json'),
+      JSON.stringify(rootPkg, null, 2) + '\n',
+      'utf8'
+    );
+
+    // Root .gitignore
+    const gitignoreContent = `node_modules/
+dist/
+.bun-rn-temp/
+*.log
+*.bundle
+*.jsbundle
+*.hbc
+.DS_Store
+`;
+    fs.writeFileSync(path.join(projectDir, '.gitignore'), gitignoreContent, 'utf8');
+
+    // Setup root OXC
+    setupOxc(projectDir, dryRun, options.force);
+
+    // Setup packages/ui
+    setupMonorepo(projectDir, projectName, dryRun);
+  }
+
   // 1. Scaffold clean native React Native structure with bun-rn built-in template
   console.log(`⚡ Generating clean project structure with bun-rn built-in template...`);
   const platforms = parsePlatforms(options.platforms);
   const pm = (options.pm as PackageManagerType) || 'bun';
 
   await generateProjectFromTemplate({
-    projectName,
-    targetDir: projectDir,
+    projectName: appName,
+    targetDir: appTargetDir,
     platforms,
     pm,
     templateName: options.template || 'default',
     dryRun,
     force: options.force,
-    oxc: options.oxc !== false,
+    oxc: !isMonorepo && options.oxc !== false,
     redux: Boolean(options.redux),
+    webview: Boolean(options.webview),
+    monorepo: isMonorepo,
   });
 
-  // 2. Install packages
+  if (isMonorepo && !dryRun) {
+    linkMonorepoPackage(appTargetDir, projectName, dryRun);
+  }
+
+  // 2. Install packages (run at workspace root so all packages are linked)
   let installed = false;
   if (!options.skipInstall && !dryRun) {
     installed = runInstall(projectDir, pm);
@@ -254,7 +334,7 @@ export async function initNewProject(
 
   // 3. Scaffold macOS native files if macos is targeted and macos/ does not exist
   if (platforms.includes('macos')) {
-    const macosDir = path.join(projectDir, 'macos');
+    const macosDir = path.join(appTargetDir, 'macos');
     if (!fs.existsSync(macosDir)) {
       if (process.platform !== 'darwin') {
         console.log(
@@ -264,7 +344,7 @@ export async function initNewProject(
       } else {
         console.log(`\n🍏 Scaffolding macOS native project...`);
         const localGenerator = path.join(
-          projectDir,
+          appTargetDir,
           'node_modules',
           'react-native-macos',
           'local-cli',
@@ -277,9 +357,9 @@ export async function initNewProject(
         // with ENOWORKSPACES in npm/yarn/bun monorepo workspaces.
         if (fs.existsSync(localGenerator)) {
           try {
-            const nodeScript = `const gen = require(${JSON.stringify(localGenerator)}); gen(${JSON.stringify(projectDir)}, ${JSON.stringify(projectName)}, { overwrite: true });`;
+            const nodeScript = `const gen = require(${JSON.stringify(localGenerator)}); gen(${JSON.stringify(appTargetDir)}, ${JSON.stringify(appName)}, { overwrite: true });`;
             const genRes = spawnSync('node', ['-e', nodeScript], {
-              cwd: projectDir,
+              cwd: appTargetDir,
               stdio: 'inherit',
             });
             if (genRes.status === 0 && fs.existsSync(macosDir)) {
@@ -292,7 +372,7 @@ export async function initNewProject(
 
         // 2. Fallback to npx react-native-macos-init if local generator was not found or failed
         if (!scaffolded) {
-          const pkgJsonPath = path.join(projectDir, 'package.json');
+          const pkgJsonPath = path.join(appTargetDir, 'package.json');
           let originalDeps: Record<string, string> = {};
           let originalDevDeps: Record<string, string> = {};
           if (fs.existsSync(pkgJsonPath)) {
@@ -306,7 +386,7 @@ export async function initNewProject(
           }
 
           const res = spawnSync('npx', ['--yes', 'react-native-macos-init'], {
-            cwd: projectDir,
+            cwd: appTargetDir,
             stdio: 'inherit',
             shell: true,
           });
@@ -349,7 +429,7 @@ export async function initNewProject(
 
   // 4. Scaffold Windows native files if windows is targeted and windows/ does not exist
   if (platforms.includes('windows')) {
-    const windowsDir = path.join(projectDir, 'windows');
+    const windowsDir = path.join(appTargetDir, 'windows');
     if (!fs.existsSync(windowsDir)) {
       if (process.platform !== 'win32') {
         console.log(
@@ -360,7 +440,7 @@ export async function initNewProject(
       } else {
         console.log(`\n🪟 Scaffolding Windows native project (react-native-windows-init)...`);
         const res = spawnSync('npx', ['--yes', 'react-native-windows-init', '--overwrite'], {
-          cwd: projectDir,
+          cwd: appTargetDir,
           stdio: 'inherit',
           shell: true,
         });
@@ -375,7 +455,7 @@ export async function initNewProject(
 
   // 5. Run CocoaPods on macOS (handles both ios/ and macos/)
   if (process.platform === 'darwin' && !options.skipPods && !options.skipInstall) {
-    runPodInstall(projectDir);
+    runPodInstall(appTargetDir);
   }
 
   return {
@@ -387,6 +467,8 @@ export async function initNewProject(
     createdBunConfig: true,
     configuredOxc: options.oxc !== false,
     configuredRedux: Boolean(options.redux),
+    configuredWebview: Boolean(options.webview),
+    configuredMonorepo: isMonorepo,
     installedDependencies: installed,
   };
 }

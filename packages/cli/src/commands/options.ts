@@ -153,6 +153,16 @@ export const initCommandOptions: CommandOption[] = [
     default: false,
   },
   {
+    name: '--webview [boolean]',
+    description: 'Install and configure react-native-webview for in-app web views',
+    default: false,
+  },
+  {
+    name: '--monorepo [boolean]',
+    description: 'Configure project as a modern Bun workspace monorepo (apps/ + packages/)',
+    default: false,
+  },
+  {
     name: '--dry-run',
     description: 'Display changes that would be made without modifying files',
     default: false,
@@ -181,6 +191,8 @@ export const initParseArgsConfig = {
   template: { type: 'string' as const },
   oxc: { type: 'string' as const, default: 'true' },
   redux: { type: 'boolean' as const, default: false },
+  webview: { type: 'boolean' as const, default: false },
+  monorepo: { type: 'boolean' as const, default: false },
   'dry-run': { type: 'boolean' as const, default: false },
   dryRun: { type: 'boolean' as const, default: false },
   force: { type: 'boolean' as const, default: false },

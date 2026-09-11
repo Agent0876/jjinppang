@@ -6,6 +6,7 @@ import { type PackageManagerType } from './pm-detector.js';
 import { updatePackageJson } from './pkg-updater.js';
 import { setupOxc } from './oxc-setup.js';
 import { setupRedux } from './redux-setup.js';
+import { setupWebview } from './webview-setup.js';
 import { patchReactNativeConfig } from './rn-config-patcher.js';
 import { generateBunBuildConfig } from './bun-config-gen.js';
 
@@ -19,6 +20,8 @@ export interface GenerateProjectOptions {
   force?: boolean;
   oxc?: boolean;
   redux?: boolean;
+  webview?: boolean;
+  monorepo?: boolean;
 }
 
 const BINARY_EXTENSIONS = new Set([
@@ -199,5 +202,10 @@ export async function generateProjectFromTemplate(options: GenerateProjectOption
   // 6. Setup Redux Toolkit if enabled
   if (options.redux) {
     setupRedux(targetDir, projectName, dryRun);
+  }
+
+  // 7. Setup React Native WebView if enabled
+  if (options.webview) {
+    setupWebview(targetDir, projectName, dryRun, Boolean(options.redux));
   }
 }
