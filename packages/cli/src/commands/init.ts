@@ -222,7 +222,7 @@ export async function initCommand(
     args.pm = args.pm || detectPackageManager(currentDir);
 
     // 4. OXC Setup (oxlint & oxfmt)
-    if (!hasOxcFlag) {
+    if (!hasOxcFlag && args.oxc === undefined) {
       args.oxc = await promptConfirm(
         'Configure OXC (oxlint & oxfmt) for ultra-fast linting and formatting?',
         true

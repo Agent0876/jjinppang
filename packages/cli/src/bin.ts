@@ -72,14 +72,31 @@ Options:
       existing: Boolean(values.existing),
       pm: values.pm as 'bun' | 'npm' | 'yarn' | 'pnpm' | undefined,
       platforms: values.platforms as string | undefined,
-      skipInstall: Boolean(values['skip-install'] || values.skipInstall),
-      skipPods: Boolean(values['skip-pods'] || values.skipPods),
+      skipInstall:
+        values['skip-install'] !== undefined || values.skipInstall !== undefined
+          ? Boolean(values['skip-install'] || values.skipInstall)
+          : undefined,
+      skipPods:
+        values['skip-pods'] !== undefined || values.skipPods !== undefined
+          ? Boolean(values['skip-pods'] || values.skipPods)
+          : undefined,
       template: values.template as string | undefined,
-      oxc: values.oxc !== 'false' && (values.oxc as unknown) !== false,
-      redux: Boolean(values.redux),
-      webview: Boolean(values.webview),
-      monorepo: Boolean(values.monorepo || values.next || values.nextjs),
-      next: Boolean(values.next || values.nextjs),
+      oxc:
+        values.oxc !== undefined
+          ? values.oxc !== 'false' && (values.oxc as unknown) !== false
+          : undefined,
+      redux: values.redux !== undefined ? Boolean(values.redux) : undefined,
+      webview: values.webview !== undefined ? Boolean(values.webview) : undefined,
+      monorepo:
+        values.next || values.nextjs
+          ? true
+          : values.monorepo !== undefined
+            ? Boolean(values.monorepo)
+            : undefined,
+      next:
+        values.next !== undefined || values.nextjs !== undefined
+          ? Boolean(values.next || values.nextjs)
+          : undefined,
       dryRun: Boolean(values['dry-run'] || values.dryRun),
       force: Boolean(values.force),
     };
