@@ -4,7 +4,24 @@
  * process.env, and Fast Refresh globals are defined.
  */
 export function generateRuntimePrelude(dev: boolean): string {
-  return `var __DEV__ = ${dev ? 'true' : 'false'};
+  if (!dev) {
+    return `var __DEV__ = false;
+var global = typeof global !== 'undefined' ? global : typeof globalThis !== 'undefined' ? globalThis : this;
+if (typeof globalThis !== 'undefined') {
+  globalThis.global = global;
+}
+global.global = global;
+global.__DEV__ = false;
+var process = global.process || {};
+process.env = process.env || {};
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = 'production';
+}
+global.process = process;
+`;
+  }
+
+  return `var __DEV__ = true;
 var global = typeof global !== 'undefined' ? global : typeof globalThis !== 'undefined' ? globalThis : this;
 if (typeof globalThis !== 'undefined') {
   globalThis.global = global;
@@ -14,7 +31,7 @@ global.__DEV__ = __DEV__;
 var process = global.process || {};
 process.env = process.env || {};
 if (!process.env.NODE_ENV) {
-  process.env.NODE_ENV = __DEV__ ? 'development' : 'production';
+  process.env.NODE_ENV = 'development';
 }
 global.process = process;
 if (typeof globalThis.$RefreshReg$ === 'undefined') {

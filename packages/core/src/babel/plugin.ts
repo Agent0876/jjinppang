@@ -62,6 +62,8 @@ export function createBabelHybridPlugin(options: BabelHybridPluginOptions): BunP
         try {
           const result = await babel.transformAsync(code, {
             filename: filePath,
+            cwd: options.projectRoot,
+            root: options.projectRoot,
             configFile: configFile ?? false,
             babelrc: false,
             sourceMaps: 'inline',

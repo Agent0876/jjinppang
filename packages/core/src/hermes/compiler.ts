@@ -35,7 +35,8 @@ export function compileWithHermes(params: CompileWithHermesParams): boolean {
     flags.push('-output-source-map');
   }
 
-  const extraFlags = options?.flags && options.flags.length > 0 ? options.flags : ['-O'];
+  const defaultFlags = ['-O', '-fstrip-function-names', '-fstatic-builtins'];
+  const extraFlags = options?.flags && options.flags.length > 0 ? options.flags : defaultFlags;
   for (const flag of extraFlags) {
     if (!flags.includes(flag)) {
       flags.push(flag);

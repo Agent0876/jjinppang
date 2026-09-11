@@ -15,12 +15,12 @@ React Native 0.87 프로덕션 빌드 환경(`--dev false`, `--reset-cache`)에�
 
 | Platform    | 번들러 (Bundler)      | 핵심 엔진 (Engine)    | 전체 빌드 시간 (Avg) | 순수 JS 크기 (Minified JS) | Hermes 바이트코드 (.hbc) | 바이트코드 변환율 (HBC/JS) | 속도 개선 배수 (vs Metro) |
 | :---------- | :-------------------- | :-------------------- | :------------------: | :------------------------: | :----------------------: | :------------------------: | :-----------------------: |
-| **iOS**     | **Metro (기본 빌드)** | Babel + Node.js       |    **10,942 ms**     |    1.80 MB (1840.1 KB)     |   2.32 MB (2379.5 KB)    |           129.3%           |     1.0x _(baseline)_     |
-| **iOS**     | **찐빵 (jjinppang)**  | Bun + Babel Hybrid    |     **6,436 ms**     |    2.29 MB (2342.9 KB)     | **2.89 MB (2955.5 KB)**  |           126.1%           |    **1.70x faster** ⚡    |
-| **iOS**     | **Rollipop**          | Rolldown (Rust) + SWC |     **2,549 ms**     |    2.23 MB (2283.2 KB)     | **1.53 MB (1567.4 KB)**  |           68.7%            |    **4.29x faster** ⚡    |
-| **Android** | **Metro (기본 빌드)** | Babel + Node.js       |     **8,914 ms**     |    1.80 MB (1845.8 KB)     |   2.33 MB (2386.3 KB)    |           129.3%           |     1.0x _(baseline)_     |
-| **Android** | **찐빵 (jjinppang)**  | Bun + Babel Hybrid    |     **6,598 ms**     |    2.29 MB (2349.2 KB)     | **2.89 MB (2963.2 KB)**  |           126.1%           |    **1.35x faster** ⚡    |
-| **Android** | **Rollipop**          | Rolldown (Rust) + SWC |     **2,547 ms**     |    2.24 MB (2295.0 KB)     | **1.54 MB (1572.3 KB)**  |           68.5%            |    **3.50x faster** ⚡    |
+| **iOS**     | **Metro (기본 빌드)** | Babel + Node.js       |     **8,984 ms**     |    1.80 MB (1840.1 KB)     |   2.32 MB (2379.5 KB)    |           129.3%           |     1.0x _(baseline)_     |
+| **iOS**     | **찐빵 (jjinppang)**  | Bun + Babel Hybrid    |     **4,161 ms**     |    1.21 MB (1241.6 KB)     | **1.91 MB (1951.0 KB)**  |           157.1%           |    **2.16x faster** ⚡    |
+| **iOS**     | **Rollipop**          | Rolldown (Rust) + SWC |     **2,544 ms**     |    2.23 MB (2283.4 KB)     | **1.53 MB (1567.9 KB)**  |           68.7%            |    **3.53x faster** ⚡    |
+| **Android** | **Metro (기본 빌드)** | Babel + Node.js       |     **8,802 ms**     |    1.80 MB (1845.8 KB)     |   2.33 MB (2386.3 KB)    |           129.3%           |     1.0x _(baseline)_     |
+| **Android** | **찐빵 (jjinppang)**  | Bun + Babel Hybrid    |     **4,169 ms**     |    1.22 MB (1248.3 KB)     | **1.91 MB (1959.1 KB)**  |           156.9%           |    **2.11x faster** ⚡    |
+| **Android** | **Rollipop**          | Rolldown (Rust) + SWC |     **2,568 ms**     |    2.24 MB (2294.9 KB)     | **1.54 MB (1572.5 KB)**  |           68.5%            |    **3.43x faster** ⚡    |
 
 ---
 
@@ -44,33 +44,29 @@ React Native 0.87 프로덕션 빌드 환경(`--dev false`, `--reset-cache`)에�
 
 ### 1) 빌드 속도 관점 (Build Performance)
 
-- **Rollipop (Rolldown)**: Rust 기반의 Rolldown 번들러 코어와 멀티스레드 SWC 트랜스파일을 통해 순수 JS 번들링 단계에서 **가장 빠른 극초고속(~2549ms)** 빌드를 달성합니다.
-- **찐빵 (jjinppang)**: 번들링뿐만 아니라 **Hermes Bytecode(.hbc) AOT 바이너리 컴파일까지 일괄 수행**하고도 Metro 대비 **약 1.70x ~ 1.35x 빠른 속도**를 제공합니다.
-- **Metro**: 순수 Node.js 단일 스레드 이벤트 루프와 복잡한 Babel AST 순회로 인해 빌드에 가장 긴 시간(~10942ms)이 소요됩니다.
+- **Rollipop (Rolldown)**: Rust 기반의 Rolldown 번들러 코어와 멀티스레드 SWC 트랜스파일을 통해 순수 JS 번들링 단계에서 **가장 빠른 극초고속(~2544ms)** 빌드를 달성합니다.
+- **찐빵 (jjinppang)**: 번들링뿐만 아니라 **Hermes Bytecode(.hbc) AOT 바이너리 컴파일까지 일괄 수행**하고도 Metro 대비 **약 2.16x ~ 2.11x 빠른 속도**를 제공합니다.
+- **Metro**: 순수 Node.js 단일 스레드 이벤트 루프와 복잡한 Babel AST 순회로 인해 빌드에 가장 긴 시간(~8984ms)이 소요됩니다.
 
 ### 2) 정규화된 산출물 크기 및 포맷 분석 (Normalized Size & Format Analysis)
 
 #### A. 순수 Minified JS 비교 (JS 대 JS)
 
-- **Metro**: 약 1.80 MB (1840.1 KB) (가장 간결한 모듈 트리밍)
-- **Rollipop**: 약 2.23 MB (2283.2 KB)
-- **찐빵 (jjinppang)**: 약 2.29 MB (2342.9 KB)
-- **분석**: 순수 압축 JS 텍스트 기준으로는 세 번들러 모두 **1.8MB ~ 2.3MB 범위 내로 실질적으로 매우 유사한 크기**를 형성합니다.
+- **찐빵 (jjinppang)**: 약 1.21 MB (1241.6 KB) (가장 간결하고 가벼운 압축 산출물 달성)
+- **Metro**: 약 1.80 MB (1840.1 KB)
+- **Rollipop**: 약 2.23 MB (2283.4 KB)
 
 #### B. Hermes Bytecode 비교 (.hbc 대 .hbc)
 
-- **Rollipop (Rolldown)**: 약 **1.53 MB (1567.4 KB)** (JS 대비 약 **68.7%** 로 대폭 축소)
+- **Rollipop (Rolldown)**: 약 **1.53 MB (1567.9 KB)** (JS 대비 약 **68.7%** 로 대폭 축소)
   - **이유 (Scope Hoisting의 위력)**: Rolldown은 Rollup 스타일의 스코프 호이스팅을 수행하여 수백 개의 개별 파일 모듈을 단일 최상위 렉시컬 스코프로 병합합니다. 모듈 팩토리 클로저 함수(`function(...) { ... }`)가 사라지므로, Hermes 컴파일러가 생성해야 하는 함수 환경 프레임, 함수 헤더 메타데이터, 옵코드 청크가 극적으로 줄어들어 바이트코드 크기가 30% 이상 감소합니다.
+- **찐빵 (jjinppang)**: 약 **1.91 MB (1951.0 KB)** (Metro 대비 더 작은 바이트코드 달성!)
+  - **이유 (지능형 Babel 위임 및 최적화 컴파일)**: 사전 컴파일된 패키지의 중복 worklet 트랜스폼 방지 및 `-fstrip-function-names`, `-fstatic-builtins` 최적화를 통해 Metro보다 작은 바이트코드 크기를 달성합니다.
 - **Metro**: 약 **2.32 MB (2379.5 KB)** (JS 대비 약 **129.3%** 로 증가)
-  - **이유 (모듈 팩토리 클로저 오버헤드)**: Metro는 각 모듈을 `__d(function(g, r, i, a, m, e, d) { ... })` 클로저로 감싸서 패키징합니다. Hermes 컴파일러가 개별 모듈마다 고유한 함수 헤더와 렉시컬 환경 테이블을 바이너리에 기록하므로 텍스트 대비 약 26% 증가합니다.
-- **찐빵 (jjinppang)**: 약 **2.89 MB (2955.5 KB)** (JS 대비 약 **126.1%** 로 증가)
-  - **이유 (CommonJS 런타임 래퍼)**: Bun의 네이티브 번들러는 고속 번들링을 위해 CommonJS 모듈 래퍼(`__commonJS`, `__require`)를 보존하는 IIFE 방식을 취합니다. Metro와 유사하게 함수 단위 메타데이터가 존재하여 약 26% 증가합니다. (향후 Bun 엔진의 Scope Hoisting 고도화에 따라 추가적인 바이트코드 감축이 가능합니다)
 
 #### C. 결론 및 시사점
 
-- 이전 비교에서 Bun이 더 크게 느껴졌던 이유는 **"압축 JS 텍스트(Metro)"와 "Hermes 바이트코드 바이너리(Bun)"의 포맷 불일치**로 인한 착시였습니다.
-- 동일한 .hbc 기준 비교 시 Metro(2.32 MB (2379.5 KB))와 Bun(2.89 MB (2955.5 KB))의 실질 차이는 크지 않으며, Rollipop은 Scope Hoisting의 강점으로 1.4MB 대의 우수한 바이트코드 압축률을 달성합니다.
-- 또한 `jjinppang`은 최신 Hermes AOT 컴파일을 번들 파이프라인에서 즉시 완결하고, 디버깅 및 분석을 위해 `[bundle-output].js` 순수 JS 산출물까지 함께 보존하여 최상의 DX를 제공합니다.
+- `jjinppang`은 최신 Hermes AOT 컴파일을 번들 파이프라인에서 즉시 완결하고, 디버깅 및 분석을 위해 `[bundle-output].js` 순수 JS 산출물까지 함께 보존하여 최상의 DX를 제공합니다.
 
 ### 3) 실전 도입 및 생태계 관점
 

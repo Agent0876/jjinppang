@@ -27,6 +27,16 @@ export function shouldTransformWithBabel(
     }
   }
 
+  // 1.5. Exclude pre-compiled libraries from redundant Babel transformation
+  // These packages are already pre-compiled and running Babel worklet plugins on them causes massive code bloat.
+  if (
+    /[\\/]node_modules[\\/](react-native-reanimated|react-native-worklets|react-native-worklets-core)[\\/]/.test(
+      filePath
+    )
+  ) {
+    return false;
+  }
+
   // 2. Check user include
   if (options.include) {
     for (const pattern of options.include) {

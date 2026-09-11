@@ -28,17 +28,17 @@
 
 Benchmarked on React Native 0.87 with Hermes enabled (`--dev false`, `--reset-cache`, 3-run average). See [BENCHMARK.md](./BENCHMARK.md) for full details.
 
-| Platform    | 번들러 (Bundler)      | 핵심 엔진 (Engine)    | 평균 소요 시간 (Avg) | 산출물 크기 (Bundle Size) |       출력 포맷 (Format)       | 속도 개선 배수 (vs Metro) |
-| :---------- | :-------------------- | :-------------------- | :------------------: | :-----------------------: | :----------------------------: | :-----------------------: |
-| **iOS**     | **Metro (기본 빌드)** | Babel + Node.js       |     **8,761 ms**     |          1.80 MB          |          Minified JS           |     1.0x _(baseline)_     |
-| **iOS**     | **찐빵 (jjinppang)**  | Bun + Babel Hybrid    |     **6,813 ms**     |          2.89 MB          | **Hermes Bytecode (.hbc) AOT** |    **1.29x faster** ⚡    |
-| **iOS**     | **Rollipop**          | Rolldown (Rust) + SWC |     **1,363 ms**     |          2.23 MB          |          Minified JS           |    **6.43x faster** ⚡    |
-| **Android** | **Metro (기본 빌드)** | Babel + Node.js       |    **10,104 ms**     |          1.80 MB          |          Minified JS           |     1.0x _(baseline)_     |
-| **Android** | **찐빵 (jjinppang)**  | Bun + Babel Hybrid    |     **7,885 ms**     |          2.89 MB          | **Hermes Bytecode (.hbc) AOT** |    **1.28x faster** ⚡    |
-| **Android** | **Rollipop**          | Rolldown (Rust) + SWC |     **1,490 ms**     |          2.24 MB          |          Minified JS           |    **6.78x faster** ⚡    |
+| Platform    | 번들러 (Bundler)      | 핵심 엔진 (Engine)    | 전체 빌드 시간 (Avg) | 순수 JS 크기 (Minified JS) | Hermes 바이트코드 (.hbc) | 속도 개선 배수 (vs Metro) |
+| :---------- | :-------------------- | :-------------------- | :------------------: | :------------------------: | :----------------------: | :-----------------------: |
+| **iOS**     | **Metro (기본 빌드)** | Babel + Node.js       |     **8,984 ms**     |          1.80 MB           |         2.32 MB          |     1.0x _(baseline)_     |
+| **iOS**     | **찐빵 (jjinppang)**  | Bun + Babel Hybrid    |     **4,161 ms**     |       **1.21 MB** ⚡       |       **1.91 MB**        |    **2.16x faster** ⚡    |
+| **iOS**     | **Rollipop**          | Rolldown (Rust) + SWC |     **2,544 ms**     |          2.23 MB           |       **1.53 MB**        |    **3.53x faster** ⚡    |
+| **Android** | **Metro (기본 빌드)** | Babel + Node.js       |     **8,802 ms**     |          1.80 MB           |         2.33 MB          |     1.0x _(baseline)_     |
+| **Android** | **찐빵 (jjinppang)**  | Bun + Babel Hybrid    |     **4,169 ms**     |       **1.22 MB** ⚡       |       **1.91 MB**        |    **2.11x faster** ⚡    |
+| **Android** | **Rollipop**          | Rolldown (Rust) + SWC |     **2,568 ms**     |          2.24 MB           |       **1.54 MB**        |    **3.43x faster** ⚡    |
 
 > [!NOTE]
-> **산출물 포맷 차이**: Metro와 Rollipop은 순수 Minified JS만 생성하므로 앱 패키징 시 별도의 Hermes 컴파일 단계가 필요합니다. 반면 **`jjinppang`**은 **Hermes Bytecode(.hbc) AOT 컴파일까지 일괄 완결**하여 네이티브 앱 빌드 시간을 대폭 줄입니다.
+> **정규화된 번들 크기 비교**: 모든 번들러 산출물을 **1) 순수 Minified JS** 및 **2) React Native 공식 Hermes 바이트코드(.hbc)** 로 공정하게 정규화하여 교차 측정한 수치입니다. **`jjinppang`**은 순수 JS 크기에서 1.21 MB로 3대 번들러 중 가장 가벼우며, Hermes 바이트코드(.hbc) 또한 **1.91 MB**로 기본 Metro(2.32 MB) 대비 현저히 작습니다. 또한 Hermes AOT 컴파일을 번들링 파이프라인에서 일괄 완결합니다.
 
 ---
 
