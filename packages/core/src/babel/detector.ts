@@ -5,6 +5,8 @@ import { DEFAULT_BABEL_PATH_PATTERNS, DEFAULT_BABEL_PATTERNS } from './patterns.
 
 export interface BabelHybridPluginOptions extends BabelHybridOptions {
   projectRoot: string;
+  resetCache?: boolean;
+  dev?: boolean;
 }
 
 /**

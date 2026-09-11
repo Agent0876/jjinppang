@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import type { BunPlugin } from 'bun';
 import * as babel from '@babel/core';
 import {
@@ -10,11 +12,49 @@ import { DEFAULT_BABEL_PATH_PATTERNS } from './patterns.js';
 export { type BabelHybridPluginOptions } from './detector.js';
 
 /**
- * Creates Bun.build plugin for hybrid Babel transformation
+ * Creates Bun.build plugin for hybrid Babel transformation with persistent disk caching
  */
 export function createBabelHybridPlugin(options: BabelHybridPluginOptions): BunPlugin {
   const configFile = findBabelConfigFile(options.projectRoot);
-  const cache = new Map<string, string>();
+  const memoryCache = new Map<string, string>();
+
+  // Determine persistent disk cache directory
+  const nodeModulesDir = path.join(options.projectRoot, 'node_modules');
+  const cacheBaseDir = fs.existsSync(nodeModulesDir)
+    ? path.join(nodeModulesDir, '.cache', 'jjinppang', 'babel')
+    : path.join(options.projectRoot, '.jjinppang', 'cache', 'babel');
+
+  // Handle explicit cache reset
+  if (options.resetCache && fs.existsSync(cacheBaseDir)) {
+    try {
+      fs.rmSync(cacheBaseDir, { recursive: true, force: true });
+    } catch {
+      // ignore
+    }
+  }
+
+  // Calculate configuration fingerprint (changes to babel.config or dev mode invalidate cache)
+  let configFingerprint = 'no-config';
+  if (configFile && fs.existsSync(configFile)) {
+    try {
+      configFingerprint = fs.readFileSync(configFile, 'utf8');
+    } catch {
+      // ignore
+    }
+  }
+  const configHash = Bun.hash(`${configFingerprint}:${options.dev ? 'dev' : 'prod'}:v1`).toString(
+    16
+  );
+
+  let cacheDirCreated = false;
+  function ensureCacheDir() {
+    if (!cacheDirCreated) {
+      if (!fs.existsSync(cacheBaseDir)) {
+        fs.mkdirSync(cacheBaseDir, { recursive: true });
+      }
+      cacheDirCreated = true;
+    }
+  }
 
   return {
     name: 'react-native-babel-hybrid',
@@ -51,14 +91,34 @@ export function createBabelHybridPlugin(options: BabelHybridPluginOptions): BunP
           return undefined; // Let Bun handle it natively!
         }
 
-        const cacheKey = `${filePath}:${Bun.hash(code)}`;
-        if (cache.has(cacheKey)) {
+        const fileHash = Bun.hash(`${filePath}:${code}`).toString(16);
+        const cacheFileName = `${configHash}_${fileHash}.js`;
+
+        // 1. Check L1 Memory Cache
+        if (memoryCache.has(cacheFileName)) {
           return {
-            contents: cache.get(cacheKey)!,
+            contents: memoryCache.get(cacheFileName)!,
             loader: 'js',
           };
         }
 
+        // 2. Check L2 Persistent Disk Cache
+        const diskCachePath = path.join(cacheBaseDir, cacheFileName);
+        const diskFile = Bun.file(diskCachePath);
+        if (await diskFile.exists()) {
+          try {
+            const cachedCode = await diskFile.text();
+            memoryCache.set(cacheFileName, cachedCode);
+            return {
+              contents: cachedCode,
+              loader: 'js',
+            };
+          } catch {
+            // Fall through to Babel transform on read error
+          }
+        }
+
+        // 3. Perform Babel Transformation
         try {
           const result = await babel.transformAsync(code, {
             filename: filePath,
@@ -67,11 +127,13 @@ export function createBabelHybridPlugin(options: BabelHybridPluginOptions): BunP
             configFile: configFile ?? false,
             babelrc: false,
             sourceMaps: 'inline',
-            presets: configFile ? undefined : ['@babel/preset-typescript'],
           });
 
           if (result && result.code) {
-            cache.set(cacheKey, result.code);
+            memoryCache.set(cacheFileName, result.code);
+            ensureCacheDir();
+            // Asynchronously persist to disk cache
+            Bun.write(diskCachePath, result.code).catch(() => {});
             return {
               contents: result.code,
               loader: 'js',

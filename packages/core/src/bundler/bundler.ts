@@ -65,6 +65,8 @@ export async function bundle(options: BundlerOptions): Promise<BundleResult> {
 
   const babelPlugin = createBabelHybridPlugin({
     projectRoot,
+    resetCache: options.resetCache,
+    dev: options.dev,
     ...options.babel,
   });
 

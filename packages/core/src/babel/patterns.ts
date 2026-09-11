@@ -32,10 +32,6 @@ export const DEFAULT_BABEL_PATH_PATTERNS = [
   /[\\/]node_modules[\\/]@react-native[\\/]/,
   /[\\/]node_modules[\\/]@react-native-macos[\\/]/,
   /[\\/]node_modules[\\/]@react-native-windows[\\/]/,
-
-  // Ecosystem core runtimes & libraries requiring Babel
-  /[\\/]node_modules[\\/]metro-runtime[\\/]/,
-  /[\\/]node_modules[\\/]@react-native-community[\\/]/,
 ];
 
 /**
