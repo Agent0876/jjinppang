@@ -28,6 +28,10 @@ function printSuccessBanner(result: InitResult): void {
   const pmRun = pm === 'npm' ? 'npm run' : pm;
   const platforms = result.platforms || ['ios', 'android'];
 
+  const stateMgmt = result.configuredRedux
+    ? '\n📦 State Management: Redux Toolkit (@reduxjs/toolkit)'
+    : '';
+
   console.log(`
 ┌─────────────────────────────────────────────────────────────┐
 │  ✨ React Native Bun Build successfully initialized! ⚡     │
@@ -35,7 +39,7 @@ function printSuccessBanner(result: InitResult): void {
 
 📁 Location: ${result.projectDir}
 🛠️ Package Manager: ${result.packageManager}
-📱 Target Platforms: ${platforms.join(', ')}
+📱 Target Platforms: ${platforms.join(', ')}${stateMgmt}
 `);
 
   const runCommands = platforms.map((p) => `  • ${pmRun} ${p}`).join('\n');
@@ -97,6 +101,9 @@ export async function initCommand(
     (typeof args.platforms === 'string' && args.platforms.length > 0);
 
   const hasOxcFlag = argv.some((a) => a.startsWith('--oxc') || a.startsWith('--no-oxc'));
+  const hasReduxFlag = argv.some(
+    (a) => a.startsWith('--redux') || a.startsWith('--no-redux') || a === '-r'
+  );
   const hasSkipInstallFlag = argv.some(
     (a) => a.includes('skip-install') || a.includes('skipInstall')
   );
@@ -183,14 +190,22 @@ export async function initCommand(
       );
     }
 
-    // 5. Install Dependencies Now?
+    // 5. Redux Toolkit Setup (@reduxjs/toolkit & react-redux)
+    if (!hasReduxFlag && args.redux === undefined) {
+      args.redux = await promptConfirm(
+        'Configure Redux Toolkit (@reduxjs/toolkit & react-redux) for state management?',
+        false
+      );
+    }
+
+    // 6. Install Dependencies Now?
     if (!hasSkipInstallFlag) {
       const pmToUse = args.pm || detectPackageManager(currentDir);
       const installNow = await promptConfirm(`Install dependencies with ${pmToUse} now?`, true);
       args.skipInstall = !installNow;
     }
 
-    // 6. CocoaPods (for Apple platforms on macOS)
+    // 7. CocoaPods (for Apple platforms on macOS)
     const chosenPlatforms = Array.isArray(args.platforms)
       ? args.platforms
       : String(args.platforms || 'ios,android').split(',');
@@ -216,6 +231,7 @@ export async function initCommand(
   // Smart defaults for any remaining unspecified values
   args.pm = args.pm || detectPackageManager(currentDir);
   args.oxc = args.oxc ?? true;
+  args.redux = Boolean(args.redux);
   args.skipPods = args.skipPods ?? true;
   args.platforms = args.platforms || ['ios', 'android'];
 

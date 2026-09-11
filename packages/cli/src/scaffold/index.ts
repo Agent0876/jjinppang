@@ -5,3 +5,5 @@ export * from './oxc-setup.js';
 export * from './pkg-updater.js';
 export * from './installer.js';
 export * from './project-init.js';
+export * from './template-generator.js';
+export * from './redux-setup.js';

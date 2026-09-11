@@ -16,6 +16,7 @@
     "dist",
     "src",
     "bin",
+    "templates",
     "README.md",
     "LICENSE"
   ],

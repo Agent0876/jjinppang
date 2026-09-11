@@ -68,6 +68,7 @@ export interface InitArguments {
   skipPods?: boolean;
   template?: string;
   oxc?: boolean;
+  redux?: boolean;
   dryRun?: boolean;
   force?: boolean;
 }

@@ -8,6 +8,8 @@ import { generateBunBuildConfig } from './bun-config-gen.js';
 import { setupOxc } from './oxc-setup.js';
 import { updatePackageJson } from './pkg-updater.js';
 import { runInstall, runPodInstall } from './installer.js';
+import { generateProjectFromTemplate } from './template-generator.js';
+import { setupRedux } from './redux-setup.js';
 
 export interface InitResult {
   mode: 'existing' | 'new';
@@ -17,6 +19,7 @@ export interface InitResult {
   patchedRnConfig: boolean;
   createdBunConfig: boolean;
   configuredOxc: boolean;
+  configuredRedux?: boolean;
   installedDependencies: boolean;
 }
 
@@ -165,9 +168,14 @@ export async function initExistingProject(
     platforms,
     dryRun,
   });
-  console.log(`  ✅ Updated package.json (configured bun-rn scripts for ${platforms.join(', ')})`);
+  // 5. Setup Redux Toolkit if requested
+  if (options.redux) {
+    const projectName = path.basename(projectDir);
+    setupRedux(projectDir, projectName, dryRun);
+    console.log(`  ✅ Configured Redux Toolkit (@reduxjs/toolkit & react-redux)`);
+  }
 
-  // 5. Run install if not skipped and not dry-run
+  // 6. Run install if not skipped and not dry-run
   let installed = false;
   if (!options.skipInstall && !dryRun) {
     installed = runInstall(projectDir, pm);
@@ -181,6 +189,7 @@ export async function initExistingProject(
     patchedRnConfig: rnConfigRes.status !== 'already_configured',
     createdBunConfig: bunConfigRes.status === 'created',
     configuredOxc,
+    configuredRedux: Boolean(options.redux),
     installedDependencies: installed,
   };
 }
@@ -220,61 +229,31 @@ export async function initNewProject(
     };
   }
 
-  // 1. Scaffold native React Native structure using @react-native-community/cli
-  console.log(`📱 Generating project files with React Native CLI...`);
+  // 1. Scaffold clean native React Native structure with bun-rn built-in template
+  console.log(`⚡ Generating clean project structure with bun-rn built-in template...`);
   const platforms = parsePlatforms(options.platforms);
-  const targetRnVersion = options.version || (await resolveCompatibleReactNativeVersion(platforms));
-
-  const initArgs = [
-    '@react-native-community/cli',
-    'init',
-    projectName,
-    '--pm',
-    options.pm || 'bun',
-    '--skip-install',
-  ];
-  if (targetRnVersion) {
-    console.log(
-      `⚡ [react-native-bun-build] Auto-selected React Native ${targetRnVersion} for compatibility with ${platforms.join(', ')}.`
-    );
-    initArgs.push('--version', targetRnVersion);
-  }
-  if (options.template) {
-    initArgs.push('--template', options.template);
-  }
-
-  const scaffoldRes = spawnSync('bunx', initArgs, {
-    cwd: targetParentDir,
-    stdio: 'inherit',
-    shell: true,
-  });
-
-  if (scaffoldRes.status !== 0) {
-    // If bunx failed, fallback to npx
-    console.log(`⚠️ bunx failed, falling back to npx...`);
-    spawnSync('npx', initArgs, {
-      cwd: targetParentDir,
-      stdio: 'inherit',
-      shell: true,
-    });
-  }
-
-  // 2. Configure react-native-bun-build in the new project
-  const configureResult = await initExistingProject(projectDir, {
-    ...options,
-    existing: true,
-    skipInstall: true, // we will do unified install next
-  });
-
-  // 3. Install packages
-  let installed = false;
   const pm = (options.pm as PackageManagerType) || 'bun';
-  if (!options.skipInstall) {
+
+  await generateProjectFromTemplate({
+    projectName,
+    targetDir: projectDir,
+    platforms,
+    pm,
+    templateName: options.template || 'default',
+    dryRun,
+    force: options.force,
+    oxc: options.oxc !== false,
+    redux: Boolean(options.redux),
+  });
+
+  // 2. Install packages
+  let installed = false;
+  if (!options.skipInstall && !dryRun) {
     installed = runInstall(projectDir, pm);
   }
 
-  // 4. Scaffold macOS native files if macos is targeted and macos/ does not exist
-  if (configureResult.platforms.includes('macos')) {
+  // 3. Scaffold macOS native files if macos is targeted and macos/ does not exist
+  if (platforms.includes('macos')) {
     const macosDir = path.join(projectDir, 'macos');
     if (!fs.existsSync(macosDir)) {
       if (process.platform !== 'darwin') {
@@ -368,8 +347,8 @@ export async function initNewProject(
     }
   }
 
-  // 5. Scaffold Windows native files if windows is targeted and windows/ does not exist
-  if (configureResult.platforms.includes('windows')) {
+  // 4. Scaffold Windows native files if windows is targeted and windows/ does not exist
+  if (platforms.includes('windows')) {
     const windowsDir = path.join(projectDir, 'windows');
     if (!fs.existsSync(windowsDir)) {
       if (process.platform !== 'win32') {
@@ -394,14 +373,20 @@ export async function initNewProject(
     }
   }
 
-  // 6. Run CocoaPods on macOS (handles both ios/ and macos/)
+  // 5. Run CocoaPods on macOS (handles both ios/ and macos/)
   if (process.platform === 'darwin' && !options.skipPods && !options.skipInstall) {
     runPodInstall(projectDir);
   }
 
   return {
-    ...configureResult,
     mode: 'new',
+    projectDir,
+    packageManager: pm,
+    platforms,
+    patchedRnConfig: true,
+    createdBunConfig: true,
+    configuredOxc: options.oxc !== false,
+    configuredRedux: Boolean(options.redux),
     installedDependencies: installed,
   };
 }

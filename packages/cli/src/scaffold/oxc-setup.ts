@@ -74,6 +74,27 @@ export function setupOxc(projectDir: string, dryRun = false, force = false): Set
     if (!fs.existsSync(oxfmtFile) || force) {
       fs.writeFileSync(oxfmtFile, JSON.stringify(oxfmtConfig, null, 2) + '\n', 'utf8');
     }
+
+    // Clean up legacy ESLint & Prettier config files to avoid confusion
+    const legacyConfigFiles = [
+      '.eslintrc.js',
+      '.eslintrc.cjs',
+      '.eslintrc.json',
+      '.eslintrc.yml',
+      '.eslintrc.yaml',
+      '.prettierrc.js',
+      '.prettierrc.cjs',
+      '.prettierrc.json',
+      '.prettierrc.yml',
+      '.prettierrc.yaml',
+      '.prettierrc',
+    ];
+    for (const file of legacyConfigFiles) {
+      const fullPath = path.join(projectDir, file);
+      if (fs.existsSync(fullPath)) {
+        fs.rmSync(fullPath, { force: true });
+      }
+    }
   }
 
   return { configured: true, oxlintFile, oxfmtFile };

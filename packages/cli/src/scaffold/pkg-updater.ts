@@ -171,6 +171,15 @@ export function updatePackageJson(
     pkgJson.scripts['format'] = 'bun-rn format';
     pkgJson.scripts['format:check'] = 'bun-rn format --check';
     pkgJson.scripts['check'] = 'bun-rn lint && bun-rn format --check && bun-rn test';
+
+    // Remove legacy ESLint / Prettier packages when OXC is configured
+    delete pkgJson.devDependencies['eslint'];
+    delete pkgJson.devDependencies['@react-native/eslint-config'];
+    delete pkgJson.devDependencies['prettier'];
+    if (pkgJson.dependencies) {
+      delete pkgJson.dependencies['eslint'];
+      delete pkgJson.dependencies['prettier'];
+    }
   }
 
   if (!options.dryRun) {
