@@ -9,11 +9,11 @@ export interface SetupNextResult {
 /**
  * Configures Next.js universal web app (apps/web) with react-native-web and shared UI components.
  */
-export function setupNextjs(
+export async function setupNextjs(
   projectDir: string,
   projectName: string,
   dryRun = false
-): SetupNextResult {
+): Promise<SetupNextResult> {
   const projectNameLower = projectName.toLowerCase();
   const webDir = path.join(projectDir, 'apps/web');
   const appDir = path.join(webDir, 'app');
@@ -23,6 +23,26 @@ export function setupNextjs(
   }
 
   fs.mkdirSync(appDir, { recursive: true });
+
+  // Resolve latest Next.js version dynamically from npm registry
+  let nextVersion = '^16.3.4';
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2000);
+    const res = await fetch('https://registry.npmjs.org/next/latest', {
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = (await res.json()) as { version: string };
+      if (data.version) {
+        nextVersion = `^${data.version}`;
+      }
+    }
+  } catch {
+    nextVersion = '^16.3.4';
+  }
 
   // 1. apps/web/package.json
   const webPkg = {
@@ -38,7 +58,7 @@ export function setupNextjs(
     },
     dependencies: {
       [`@${projectNameLower}/ui`]: 'workspace:*',
-      next: '^15.1.0',
+      next: nextVersion,
       react: '19.2.3',
       'react-dom': '19.2.3',
       'react-native-web': '^0.19.13',
@@ -73,6 +93,11 @@ const nextConfig = {
       ...(config.resolve.extensions || []),
     ];
     return config;
+  },
+  turbopack: {
+    resolveAlias: {
+      'react-native': 'react-native-web',
+    },
   },
 };
 

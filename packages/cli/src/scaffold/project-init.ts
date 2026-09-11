@@ -198,7 +198,7 @@ export async function initExistingProject(
   // 8. Setup Next.js web app if requested
   if (options.next) {
     const projectName = path.basename(projectDir);
-    setupNextjs(projectDir, projectName, dryRun);
+    await setupNextjs(projectDir, projectName, dryRun);
     console.log(`  ✅ Configured Universal Next.js Web app (apps/web)`);
   }
 
@@ -318,7 +318,7 @@ dist/
 
     // Setup Next.js universal web app if requested
     if (options.next) {
-      setupNextjs(projectDir, projectName, dryRun);
+      await setupNextjs(projectDir, projectName, dryRun);
       console.log(`  ✅ Configured Universal Next.js Web app (apps/web)`);
     }
   }
@@ -363,19 +363,29 @@ dist/
         );
       } else {
         console.log(`\n🍏 Scaffolding macOS native project...`);
-        const localGenerator = path.join(
-          appTargetDir,
-          'node_modules',
-          'react-native-macos',
-          'local-cli',
-          'generate-macos.js'
-        );
+        const candidatePaths = [
+          path.join(
+            appTargetDir,
+            'node_modules',
+            'react-native-macos',
+            'local-cli',
+            'generate-macos.js'
+          ),
+          path.join(
+            projectDir,
+            'node_modules',
+            'react-native-macos',
+            'local-cli',
+            'generate-macos.js'
+          ),
+        ];
+        const localGenerator = candidatePaths.find((p) => fs.existsSync(p));
         let scaffolded = false;
 
         // 1. Prefer direct generator execution if react-native-macos is installed in node_modules.
         // This avoids `react-native-macos-init` running `npm config get registry` which fatally crashes
         // with ENOWORKSPACES in npm/yarn/bun monorepo workspaces.
-        if (fs.existsSync(localGenerator)) {
+        if (localGenerator && fs.existsSync(localGenerator)) {
           try {
             const nodeScript = `const gen = require(${JSON.stringify(localGenerator)}); gen(${JSON.stringify(appTargetDir)}, ${JSON.stringify(appName)}, { overwrite: true });`;
             const genRes = spawnSync('node', ['-e', nodeScript], {
