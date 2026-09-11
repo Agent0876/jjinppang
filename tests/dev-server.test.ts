@@ -308,5 +308,23 @@ console.log('App loaded:', App());
 
       msgWs.close();
     });
+
+    it('registers native device via /inspector/device WebSocket and exposes in /json list', async () => {
+      const deviceWs = new WebSocket(
+        `ws://localhost:${testPort}/inspector/device?name=iPhoneTestApp&app=com.example.test`
+      );
+      await new Promise<void>((resolve) => {
+        deviceWs.onopen = () => resolve();
+      });
+
+      const jsonRes = await fetch(`http://localhost:${testPort}/json`);
+      expect(jsonRes.status).toBe(200);
+      const targets = (await jsonRes.json()) as any[];
+      const matched = targets.find((t) => t.title === 'iPhoneTestApp');
+      expect(matched).toBeDefined();
+      expect(matched.description).toBe('com.example.test');
+
+      deviceWs.close();
+    });
   });
 });

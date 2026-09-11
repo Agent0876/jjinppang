@@ -6,3 +6,4 @@ export * from './hermes/index.js';
 export * from './diagnostics/index.js';
 export * from './server/index.js';
 export * from './bundler/index.js';
+export * from './expo/index.js';

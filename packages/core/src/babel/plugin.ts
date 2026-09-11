@@ -30,6 +30,17 @@ export function createBabelHybridPlugin(options: BabelHybridPluginOptions): BunP
   const configFile = findBabelConfigFile(options.projectRoot);
   const memoryCache = new Map<string, string>();
 
+  // Resolve react-refresh/babel plugin for state-preserving HMR in dev mode
+  let reactRefreshPlugin: string | null = null;
+  if (options.dev) {
+    try {
+      const req = createRequire(path.join(options.projectRoot, 'package.json'));
+      reactRefreshPlugin = req.resolve('react-refresh/babel');
+    } catch {
+      // react-refresh not installed, skip
+    }
+  }
+
   // Determine persistent disk cache directory
   const nodeModulesDir = path.join(options.projectRoot, 'node_modules');
   const cacheBaseDir = fs.existsSync(nodeModulesDir)
@@ -181,12 +192,23 @@ export function createBabelHybridPlugin(options: BabelHybridPluginOptions): BunP
 
         // 4. Perform Full Babel Transformation (Worklets, Custom Plugins, or Flow Fallback)
         try {
+          const plugins: string[] = [];
+          if (
+            options.dev &&
+            reactRefreshPlugin &&
+            !filePath.includes('/node_modules/') &&
+            !filePath.includes('\\node_modules\\')
+          ) {
+            plugins.push(reactRefreshPlugin);
+          }
+
           const result = await babel.transformAsync(code, {
             filename: filePath,
             cwd: options.projectRoot,
             root: options.projectRoot,
             configFile: configFile ?? false,
             babelrc: false,
+            plugins: plugins.length > 0 ? plugins : undefined,
             sourceMaps: 'inline',
           });
 

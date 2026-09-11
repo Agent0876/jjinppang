@@ -114,6 +114,10 @@ try {
     RefreshRuntime.register(type, id);
   };
   globalThis.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+  globalThis.__ReactRefresh = RefreshRuntime;
+  if (typeof global !== 'undefined') {
+    global.__ReactRefresh = RefreshRuntime;
+  }
 } catch (e) {
   // Ignore if react-refresh is not installed
 }

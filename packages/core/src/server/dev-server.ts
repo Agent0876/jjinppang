@@ -10,6 +10,7 @@ import { createBabelHybridPlugin } from '../babel/index.js';
 import { Symbolicator } from '../diagnostics/index.js';
 import { generateRuntimePrelude, generateVirtualEntryContent } from '../bundler/banner.js';
 import { HMRServer, type ClientData } from './hmr-socket.js';
+import { InspectorProxy } from './inspector-proxy.js';
 
 export interface DevServerInstance {
   server: Server<ClientData>;
@@ -58,6 +59,8 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
       clearResolverCache();
     },
   });
+
+  const inspectorProxy = new InspectorProxy();
 
   async function buildBundle(
     entryName: string,
@@ -209,8 +212,20 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
         console.log(`[DevServer] REQ: ${req.method} ${pathname}${url.search}`);
       }
 
-      // 1. WebSocket upgrade for /hot, /inspector/debug, and /message (PackagerConnection)
-      if (pathname === '/hot' || pathname === '/inspector/debug' || pathname === '/message') {
+      // 1. WebSocket upgrade for /hot, /inspector/debug, /inspector/device, and /message (PackagerConnection)
+      if (
+        pathname === '/hot' ||
+        pathname === '/inspector/debug' ||
+        pathname === '/inspector/device' ||
+        pathname === '/message'
+      ) {
+        // If HTTP request to /inspector/device (polling device list)
+        if (pathname === '/inspector/device' && req.headers.get('upgrade') !== 'websocket') {
+          return new Response(JSON.stringify(inspectorProxy.getDeviceList()), {
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
         const upgraded = srv.upgrade(req, {
           data: {
             id: Math.random().toString(36).slice(2, 9),
@@ -253,17 +268,29 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
       // 2.2 Chrome DevTools / Hermes Target List
       if (pathname === '/json' || pathname === '/json/list') {
         const actualPort = srv.port ?? port;
-        const debugTargets = [
-          {
-            id: 'react-native-bun-app',
-            title: 'React Native Application',
-            description: 'Bun React Native Debug Target',
-            type: 'page',
-            devtoolsFrontendUrl: `devtools://devtools/bundled/js_app.html?experiments=true&v8only=true&ws=${host}:${actualPort}/inspector/debug`,
-            webSocketDebuggerUrl: `ws://${host}:${actualPort}/inspector/debug`,
-            faviconUrl: 'https://reactnative.dev/img/header_logo.svg',
-          },
-        ];
+        const devices = inspectorProxy.getDeviceList();
+        const debugTargets =
+          devices.length > 0
+            ? devices.map((d) => ({
+                id: d.id,
+                title: d.name,
+                description: d.app,
+                type: 'page',
+                devtoolsFrontendUrl: `devtools://devtools/bundled/js_app.html?experiments=true&v8only=true&ws=${host}:${actualPort}/inspector/debug`,
+                webSocketDebuggerUrl: `ws://${host}:${actualPort}/inspector/debug`,
+                faviconUrl: 'https://reactnative.dev/img/header_logo.svg',
+              }))
+            : [
+                {
+                  id: 'react-native-bun-app',
+                  title: 'React Native Application',
+                  description: 'Bun React Native Debug Target',
+                  type: 'page',
+                  devtoolsFrontendUrl: `devtools://devtools/bundled/js_app.html?experiments=true&v8only=true&ws=${host}:${actualPort}/inspector/debug`,
+                  webSocketDebuggerUrl: `ws://${host}:${actualPort}/inspector/debug`,
+                  faviconUrl: 'https://reactnative.dev/img/header_logo.svg',
+                },
+              ];
         return new Response(JSON.stringify(debugTargets), {
           headers: { 'Content-Type': 'application/json' },
         });
@@ -399,7 +426,7 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
 
       // 8. Inspector device list endpoint (polled by native InspectorProxy)
       if (pathname === '/inspector/device') {
-        return new Response(JSON.stringify([]), {
+        return new Response(JSON.stringify(inspectorProxy.getDeviceList()), {
           headers: { 'Content-Type': 'application/json' },
         });
       }
@@ -408,13 +435,38 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
     },
     websocket: {
       open(ws) {
-        hmrServer.handleOpen(ws);
+        const clientUrl = ws.data.clientUrl || '';
+        if (clientUrl.includes('/inspector/device')) {
+          try {
+            inspectorProxy.handleDeviceOpen(ws, new URL(clientUrl, 'http://localhost'));
+          } catch {
+            // ignore
+          }
+        } else if (clientUrl.includes('/inspector/debug')) {
+          inspectorProxy.handleDebuggerOpen(ws);
+        } else {
+          hmrServer.handleOpen(ws);
+        }
       },
       message(ws, message) {
-        hmrServer.handleMessage(ws, message);
+        const clientUrl = ws.data.clientUrl || '';
+        if (clientUrl.includes('/inspector/device')) {
+          inspectorProxy.handleDeviceMessage(ws, message);
+        } else if (clientUrl.includes('/inspector/debug')) {
+          inspectorProxy.handleDebuggerMessage(ws, message);
+        } else {
+          hmrServer.handleMessage(ws, message);
+        }
       },
       close(ws) {
-        hmrServer.handleClose(ws);
+        const clientUrl = ws.data.clientUrl || '';
+        if (clientUrl.includes('/inspector/device')) {
+          inspectorProxy.handleDeviceClose(ws);
+        } else if (clientUrl.includes('/inspector/debug')) {
+          inspectorProxy.handleDebuggerClose(ws);
+        } else {
+          hmrServer.handleClose(ws);
+        }
       },
     },
   });
