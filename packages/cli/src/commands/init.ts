@@ -43,7 +43,7 @@ function printSuccessBanner(result: InitResult): void {
 
   console.log(`
 ┌─────────────────────────────────────────────────────────────┐
-│  ✨ React Native Bun Build successfully initialized! ⚡     │
+│  ✨ 찐빵 (jjinppang) successfully initialized! 🥟           │
 └─────────────────────────────────────────────────────────────┘
 
 📁 Location: ${result.projectDir}
@@ -75,27 +75,27 @@ function printSuccessBanner(result: InitResult): void {
     const dirName = path.basename(result.projectDir);
     console.log(`To get started with your new app:
   1. cd ${dirName}
-  2. ${pmRun} start               # Start fast Bun Dev Server (bun-rn start)
+  2. ${pmRun} start               # Start fast Bun Dev Server (jjinppang start)
 ${runCommands}
   • ${pmRun} check                # Check linter, formatter & tests
 `);
   } else {
-    console.log(`Your project is now configured with react-native-bun-build!
-  • Dev Server: ${pmRun} start (bun-rn start)
+    console.log(`Your project is now configured with jjinppang!
+  • Dev Server: ${pmRun} start (jjinppang start)
 ${runCommands}
   • Fast Release Bundles:
 ${bundleCommands}
   • Code Quality & Test:
-  • ${pmRun} lint (bun-rn lint)
-  • ${pmRun} format (bun-rn format)
-  • ${pmRun} test (bun-rn test)
-  • ${pmRun} check (bun-rn lint + format + test)
+  • ${pmRun} lint (jjinppang lint)
+  • ${pmRun} format (jjinppang format)
+  • ${pmRun} test (jjinppang test)
+  • ${pmRun} check (jjinppang lint + format + test)
 `);
   }
 }
 
 /**
- * CLI Command Handler for bun-rn init
+ * CLI Command Handler for jjinppang init
  */
 export async function initCommand(
   argv: string[],

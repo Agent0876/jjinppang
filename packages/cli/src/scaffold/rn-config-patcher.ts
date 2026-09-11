@@ -7,7 +7,7 @@ export interface PatchRnConfigResult {
 }
 
 /**
- * Patches or creates react-native.config.js to register react-native-bun-build commands
+ * Patches or creates react-native.config.js to register jjinppang commands
  */
 export function patchReactNativeConfig(projectDir: string, dryRun = false): PatchRnConfigResult {
   const possibleFiles = [
@@ -21,7 +21,7 @@ export function patchReactNativeConfig(projectDir: string, dryRun = false): Patc
   if (!targetFile) {
     targetFile = path.join(projectDir, 'react-native.config.js');
     const content = `module.exports = {
-  commands: require('react-native-bun-build/commands'),
+  commands: require('jjinppang/commands'),
 };
 `;
     if (!dryRun) {
@@ -31,7 +31,7 @@ export function patchReactNativeConfig(projectDir: string, dryRun = false): Patc
   }
 
   const existingContent = fs.readFileSync(targetFile, 'utf8');
-  if (existingContent.includes('react-native-bun-build')) {
+  if (existingContent.includes('jjinppang') || existingContent.includes('react-native-bun-build')) {
     return { status: 'already_configured', file: targetFile };
   }
 
@@ -39,26 +39,26 @@ export function patchReactNativeConfig(projectDir: string, dryRun = false): Patc
   if (existingContent.includes('commands:')) {
     patchedContent = existingContent.replace(
       /commands:\s*\[/,
-      `commands: [\n    ...require('react-native-bun-build/commands'),`
+      `commands: [\n    ...require('jjinppang/commands'),`
     );
     if (patchedContent === existingContent) {
       patchedContent = existingContent.replace(
         /commands:\s*([^,\n}]+)/,
-        `commands: [...require('react-native-bun-build/commands'), ...($1 || [])]`
+        `commands: [...require('jjinppang/commands'), ...($1 || [])]`
       );
     }
   } else if (existingContent.includes('module.exports = {')) {
     patchedContent = existingContent.replace(
       'module.exports = {',
-      `module.exports = {\n  commands: require('react-native-bun-build/commands'),`
+      `module.exports = {\n  commands: require('jjinppang/commands'),`
     );
   } else if (existingContent.includes('export default {')) {
     patchedContent = existingContent.replace(
       'export default {',
-      `// @ts-ignore\nimport bunCommands from 'react-native-bun-build/commands';\n\nexport default {\n  commands: bunCommands,`
+      `// @ts-ignore\nimport jjinppangCommands from 'jjinppang/commands';\n\nexport default {\n  commands: jjinppangCommands,`
     );
   } else {
-    patchedContent = `${existingContent}\n\nmodule.exports.commands = require('react-native-bun-build/commands');\n`;
+    patchedContent = `${existingContent}\n\nmodule.exports.commands = require('jjinppang/commands');\n`;
   }
 
   if (!dryRun) {

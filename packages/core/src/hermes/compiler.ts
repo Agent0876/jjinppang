@@ -21,7 +21,7 @@ export function compileWithHermes(params: CompileWithHermesParams): boolean {
   const hermescPath = findHermescPath(projectRoot, options);
   if (!hermescPath) {
     console.warn(
-      `[react-native-bun-build] Warning: hermesc compiler binary not found. Keeping bundle as standard JavaScript.`
+      `[jjinppang] Warning: hermesc compiler binary not found. Keeping bundle as standard JavaScript.`
     );
     return false;
   }
@@ -58,9 +58,7 @@ export function compileWithHermes(params: CompileWithHermesParams): boolean {
   if (result.status !== 0) {
     if (result.error) console.error('Hermesc error:', result.error);
     if (result.signal) console.error('Hermesc killed by signal:', result.signal);
-    throw new Error(
-      `[react-native-bun-build] Hermes bytecode compilation failed with status ${result.status}`
-    );
+    throw new Error(`[jjinppang] Hermes bytecode compilation failed with status ${result.status}`);
   }
 
   // Replace JS bundle with HBC file

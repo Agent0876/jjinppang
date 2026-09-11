@@ -1,6 +1,6 @@
-# Contributing to react-native-bun-build 🤝
+# Contributing to 🥟 찐빵 (jjinppang) 🤝
 
-Thank you for your interest in contributing to `react-native-bun-build`!  
+Thank you for your interest in contributing to `jjinppang`!  
 This project aims to provide the fastest, modern, and developer-friendly bundler and toolkit for bare React Native applications, powered by Bun.
 
 ---
@@ -10,11 +10,11 @@ This project aims to provide the fastest, modern, and developer-friendly bundler
 This repository is organized as a Bun workspaces monorepo:
 
 ```text
-react-native-bun-build/
+jjinppang/
 ├── packages/
-│   ├── core/                      # Core bundler engine, Babel hybrid plugin, resolver, assets & Hermes compiler
-│   ├── cli/                       # Standalone bun-rn CLI commands (init, start, bundle, test, lint, format)
-│   └── react-native-bun-build/    # Community CLI plugin adapter (react-native.config.js entry)
+│   ├── core/                      # Core bundler engine, Babel hybrid plugin, resolver, assets & Hermes compiler (@jjinppang/core)
+│   ├── cli/                       # Standalone jjinppang CLI commands (init, start, bundle, test, lint, format) (@jjinppang/cli)
+│   └── jjinppang/                 # Primary CLI binary & Community CLI plugin adapter (jjinppang)
 ├── fixtures/
 │   └── TestApp/                   # Real-world bare React Native app used for E2E testing & benchmarking
 ├── scripts/                       # Build scripts, benchmarks, and maintenance automation
@@ -36,8 +36,8 @@ react-native-bun-build/
 ### 1. Clone and Install Dependencies
 
 ```bash
-git clone https://github.com/your-org/react-native-bun-build.git
-cd react-native-bun-build
+git clone https://github.com/shinseungmin/jjinppang.git
+cd jjinppang
 
 # Install all workspace dependencies
 bun install
@@ -46,7 +46,7 @@ bun install
 ### 2. Build Monorepo Packages
 
 ```bash
-# Compiles all packages (core, cli, react-native-bun-build)
+# Compiles all packages (core, cli, jjinppang)
 bun run build
 ```
 
@@ -102,7 +102,7 @@ This automatically runs:
 
 ## 📊 Running Benchmarks
 
-### 1. 3-Way Production Bundler Benchmark (Metro vs react-native-bun-build vs Rollipop)
+### 1. 3-Way Production Bundler Benchmark (Metro vs 찐빵 (jjinppang) vs Rollipop)
 
 Measures multi-run production bundle times and bundle sizes for iOS and Android:
 
@@ -151,7 +151,7 @@ We use `@changesets/cli` for versioning and publishing packages:
 
 ## 💡 Community & Discussions
 
-- **Bug Reports**: Open an issue describing steps to reproduce, environment information (`bun-rn doctor`), and minimal reproducible example.
+- **Bug Reports**: Open an issue describing steps to reproduce, environment information (`jjinppang doctor` or `bun-rn doctor`), and minimal reproducible example.
 - **Feature Requests**: We welcome ideas! Open an issue or discussion detailing the use-case and proposal.
 
-Thank you for making `react-native-bun-build` faster and better for the entire React Native community! 🚀
+Thank you for making `jjinppang` faster and better for the entire React Native community! 🥟🚀

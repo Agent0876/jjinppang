@@ -3,8 +3,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { bundle } from '@react-native-bun-build/core';
-import type { BundlerOptions } from '@react-native-bun-build/core';
+import { bundle } from '@jjinppang/core';
+import type { BundlerOptions } from '@jjinppang/core';
 import { loadConfigFile } from '../config.js';
 import type { BundleArguments, CliConfig } from '../types.js';
 
@@ -43,7 +43,7 @@ export function findBunExecutable(): string {
   }
 
   throw new Error(
-    `[react-native-bun-build] Bun executable not found. Please install Bun from https://bun.sh or set BUN_PATH.`
+    `[jjinppang] Bun executable not found. Please install Bun from https://bun.sh or set BUN_PATH.`
   );
 }
 
@@ -62,7 +62,7 @@ export async function bundleCommand(
   if (typeof Bun === 'undefined') {
     const bunPath = findBunExecutable();
     const currentDir = path.dirname(fileURLToPath(import.meta.url));
-    const cliBinPath = path.resolve(currentDir, '../../bin/bun-rn.js');
+    const cliBinPath = path.resolve(currentDir, '../../bin/jjinppang.js');
 
     // Build arguments list to forward to bun-rn
     const forwardArgs = [cliBinPath, 'bundle'];
@@ -89,9 +89,7 @@ export async function bundleCommand(
     });
 
     if (result.status !== 0) {
-      throw new Error(
-        `[react-native-bun-build] Bundler process exited with status ${result.status}`
-      );
+      throw new Error(`[jjinppang] Bundler process exited with status ${result.status}`);
     }
     return;
   }
@@ -100,11 +98,11 @@ export async function bundleCommand(
   const fileConfig = await loadConfigFile(projectRoot, args.config);
 
   if (!args.entryFile) {
-    throw new Error(`[react-native-bun-build] Missing required option: --entry-file <path>`);
+    throw new Error(`[jjinppang] Missing required option: --entry-file <path>`);
   }
 
   if (!args.bundleOutput) {
-    throw new Error(`[react-native-bun-build] Missing required option: --bundle-output <path>`);
+    throw new Error(`[jjinppang] Missing required option: --bundle-output <path>`);
   }
 
   const platform = args.platform || 'ios';
@@ -116,11 +114,9 @@ export async function bundleCommand(
         ? fileConfig.minify
         : !dev;
 
-  console.log(
-    `[react-native-bun-build] Bundling for ${platform} (${dev ? 'development' : 'production'})...`
-  );
-  console.log(`[react-native-bun-build] Entry: ${args.entryFile}`);
-  console.log(`[react-native-bun-build] Output: ${args.bundleOutput}`);
+  console.log(`[jjinppang] Bundling for ${platform} (${dev ? 'development' : 'production'})...`);
+  console.log(`[jjinppang] Entry: ${args.entryFile}`);
+  console.log(`[jjinppang] Output: ${args.bundleOutput}`);
 
   const bundlerOptions: BundlerOptions = {
     projectRoot,
@@ -145,26 +141,24 @@ export async function bundleCommand(
     const result = await bundle(bundlerOptions);
     const sizeKb = (result.bundleSizeBytes / 1024).toFixed(2);
 
-    console.log(`[react-native-bun-build] Successfully bundled in ${result.durationMs}ms!`);
+    console.log(`[jjinppang] Successfully bundled in ${result.durationMs}ms!`);
     if (result.hermesCompiled && result.jsSizeBytes) {
-      console.log(
-        `[react-native-bun-build] Minified JS size: ${(result.jsSizeBytes / 1024).toFixed(2)} KB`
-      );
-      console.log(`[react-native-bun-build] Hermes bytecode size: ${sizeKb} KB`);
+      console.log(`[jjinppang] Minified JS size: ${(result.jsSizeBytes / 1024).toFixed(2)} KB`);
+      console.log(`[jjinppang] Hermes bytecode size: ${sizeKb} KB`);
     } else {
-      console.log(`[react-native-bun-build] Bundle size: ${sizeKb} KB`);
+      console.log(`[jjinppang] Bundle size: ${sizeKb} KB`);
     }
     if (result.assetsCount > 0) {
-      console.log(`[react-native-bun-build] Processed assets: ${result.assetsCount}`);
+      console.log(`[jjinppang] Processed assets: ${result.assetsCount}`);
     }
     if (result.hermesCompiled) {
-      console.log(`[react-native-bun-build] Hermes bytecode compiled successfully.`);
+      console.log(`[jjinppang] Hermes bytecode compiled successfully.`);
     }
     if (result.sourcemapOutput) {
-      console.log(`[react-native-bun-build] Sourcemap: ${result.sourcemapOutput}`);
+      console.log(`[jjinppang] Sourcemap: ${result.sourcemapOutput}`);
     }
   } catch (error) {
-    console.error(`[react-native-bun-build] Error during bundle:`, error);
+    console.error(`[jjinppang] Error during bundle:`, error);
     throw error;
   }
 }

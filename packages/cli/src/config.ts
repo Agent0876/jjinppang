@@ -1,8 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { ReactNativeBunBuildConfig } from '@react-native-bun-build/core';
+import type { JjinppangConfig } from '@jjinppang/core';
 
 export const CONFIG_FILE_NAMES = [
+  'jjinppang.config.js',
+  'jjinppang.config.ts',
+  'jjinppang.config.mjs',
+  'jjinppang.config.cjs',
+  // Backward compatibility candidates:
   'react-native-bun-build.config.js',
   'react-native-bun-build.config.ts',
   'react-native-bun-build.config.mjs',
@@ -12,12 +17,12 @@ export const CONFIG_FILE_NAMES = [
 ];
 
 /**
- * Loads project-level react-native-bun-build configuration file
+ * Loads project-level jjinppang configuration file
  */
 export async function loadConfigFile(
   projectRoot: string,
   customConfigPath?: string
-): Promise<ReactNativeBunBuildConfig> {
+): Promise<JjinppangConfig> {
   let targetPath: string | undefined;
 
   if (customConfigPath) {
@@ -38,15 +43,19 @@ export async function loadConfigFile(
     return {};
   }
 
+  const baseName = path.basename(targetPath);
+  if (baseName.includes('react-native-bun-build') || baseName.includes('bun-build')) {
+    console.warn(
+      `[jjinppang] ⚠️ Deprecation Notice: "${baseName}" is deprecated. Please rename your configuration file to "jjinppang.config.js".`
+    );
+  }
+
   try {
     const imported = await import(targetPath);
     const config = imported.default || imported;
     return typeof config === 'function' ? await config() : config;
   } catch (error) {
-    console.warn(
-      `[react-native-bun-build] Warning: failed to load config from ${targetPath}:`,
-      error
-    );
+    console.warn(`[jjinppang] Warning: failed to load config from ${targetPath}:`, error);
     return {};
   }
 }

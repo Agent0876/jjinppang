@@ -8,15 +8,15 @@ export interface GenerateBunConfigResult {
 }
 
 /**
- * Generates react-native-bun-build.config.js with auto-detected library patterns
+ * Generates jjinppang.config.js with auto-detected library patterns
  */
-export function generateBunBuildConfig(
+export function generateJjinppangConfig(
   projectDir: string,
   pkgJson: PackageJson,
   dryRun = false,
   force = false
 ): GenerateBunConfigResult {
-  const configFile = path.join(projectDir, 'react-native-bun-build.config.js');
+  const configFile = path.join(projectDir, 'jjinppang.config.js');
   if (fs.existsSync(configFile) && !force) {
     return { status: 'skipped', file: configFile };
   }
@@ -39,8 +39,8 @@ export function generateBunBuildConfig(
       : `[\n      // e.g. /react-native-reanimated/\n    ]`;
 
   const content = `/**
- * react-native-bun-build Configuration
- * https://github.com/shinseungmin/react-native-bun-build
+ * 찐빵 (jjinppang) Configuration
+ * https://github.com/shinseungmin/jjinppang
  */
 module.exports = {
   // Custom asset extensions to process
@@ -76,3 +76,8 @@ module.exports = {
 
   return { status: 'created', file: configFile };
 }
+
+/**
+ * Backward compatibility alias for generateJjinppangConfig
+ */
+export const generateBunBuildConfig = generateJjinppangConfig;

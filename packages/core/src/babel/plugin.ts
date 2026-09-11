@@ -77,7 +77,7 @@ export function createBabelHybridPlugin(options: BabelHybridPluginOptions): BunP
           }
         } catch (err: unknown) {
           console.warn(
-            `[react-native-bun-build] Warning: Babel transform failed for ${filePath}, falling back to Bun native transpiler. Error:`,
+            `[jjinppang] Warning: Babel transform failed for ${filePath}, falling back to Bun native transpiler. Error:`,
             err instanceof Error ? err.message : String(err)
           );
         }

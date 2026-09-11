@@ -1,3 +1,3 @@
 module.exports = {
-  commands: require('react-native-bun-build/commands'),
+  commands: require('jjinppang/commands'),
 };

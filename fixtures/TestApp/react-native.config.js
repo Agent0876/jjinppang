@@ -1,6 +1,6 @@
 let commands;
 try {
-  commands = require('react-native-bun-build/commands');
+  commands = require('jjinppang/commands');
 } catch {
   commands = require('../../commands.js');
 }

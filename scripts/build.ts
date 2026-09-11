@@ -34,7 +34,7 @@ const builds: BuildConfig[] = [
   {
     name: 'cli-commands-cjs',
     entrypoints: ['packages/cli/src/commands/index.ts'],
-    outfile: 'packages/react-native-bun-build/dist/commands.cjs',
+    outfile: 'packages/jjinppang/dist/commands.cjs',
     target: 'node',
     format: 'cjs',
   },
@@ -46,9 +46,9 @@ const builds: BuildConfig[] = [
     format: 'esm',
   },
   {
-    name: 'react-native-bun-build',
-    entrypoints: ['packages/react-native-bun-build/src/index.ts'],
-    outdir: 'packages/react-native-bun-build/dist',
+    name: 'jjinppang',
+    entrypoints: ['packages/jjinppang/src/index.ts'],
+    outdir: 'packages/jjinppang/dist',
     target: 'node',
     format: 'esm',
   },
@@ -56,7 +56,7 @@ const builds: BuildConfig[] = [
 
 async function runBuild(): Promise<void> {
   const startTime = performance.now();
-  console.log('📦 Building react-native-bun-build packages...\n');
+  console.log('📦 Building jjinppang (찐빵) packages...\n');
 
   for (const config of builds) {
     const buildStart = performance.now();

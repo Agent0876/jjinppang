@@ -1,15 +1,16 @@
 {
-  "name": "react-native-bun-build",
+  "name": "jjinppang",
   "version": "0.1.0",
-  "description": "Ultra-fast custom bundler CLI for React Native bare projects powered by Bun",
+  "description": "Ultra-fast custom bundler CLI for React Native bare projects powered by Bun (찐빵 - jjinppang)",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shinseungmin/react-native-bun-build.git",
-    "directory": "packages/react-native-bun-build"
+    "url": "https://github.com/shinseungmin/jjinppang.git",
+    "directory": "packages/jjinppang"
   },
   "bin": {
     "bun-rn": "./bin/bun-rn.js",
+    "jjinppang": "./bin/jjinppang.js",
     "react-native-bun-build": "./bin/bun-rn.js"
   },
   "files": [
@@ -40,7 +41,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@react-native-bun-build/cli": "workspace:*",
-    "@react-native-bun-build/core": "workspace:*"
+    "@jjinppang/cli": "workspace:*",
+    "@jjinppang/core": "workspace:*"
   }
 }

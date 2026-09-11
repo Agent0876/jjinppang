@@ -40,7 +40,7 @@ export async function bundle(options: BundlerOptions): Promise<BundleResult> {
   }
 
   // Temporary virtual entry file to prepend InitializeCore and React Refresh
-  const tempEntryDir = path.join(projectRoot, '.bun-rn-temp');
+  const tempEntryDir = path.join(projectRoot, '.jjinppang-temp');
   if (!fs.existsSync(tempEntryDir)) {
     fs.mkdirSync(tempEntryDir, { recursive: true });
   }
@@ -107,7 +107,7 @@ export async function bundle(options: BundlerOptions): Promise<BundleResult> {
     const errors = buildResult.logs
       .map((log) => `${log.level.toUpperCase()}: ${log.message}`)
       .join('\n');
-    throw new Error(`[react-native-bun-build] Bun build failed:\n${errors}`);
+    throw new Error(`[jjinppang] Bun build failed:\n${errors}`);
   }
 
   // Write bundle and sourcemap outputs
@@ -115,7 +115,7 @@ export async function bundle(options: BundlerOptions): Promise<BundleResult> {
   const sourcemapArtifact = buildResult.outputs.find((out) => out.kind === 'sourcemap');
 
   if (!jsOutput) {
-    throw new Error(`[react-native-bun-build] No entrypoint output produced by Bun.build`);
+    throw new Error(`[jjinppang] No entrypoint output produced by Bun.build`);
   }
 
   // Virtual entry already sets __DEV__, global, and InitializeCore — no additional prelude needed

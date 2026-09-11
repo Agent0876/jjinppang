@@ -4,11 +4,11 @@ import { getCliVersion } from '../version.js';
 
 export function renderHeader(): void {
   const version = `v${getCliVersion()}`;
-  const title = `⚡ react-native-bun-build ${version}`;
-  const padding = ' '.repeat(Math.max(1, 57 - title.length));
+  const title = `🥟 찐빵 (jjinppang) ${version}`;
+  const padding = ' '.repeat(Math.max(1, 48 - title.length));
   console.log(`
 ${colors.brightCyan}┌─────────────────────────────────────────────────────────────┐${colors.reset}
-${colors.brightCyan}│${colors.reset}  ${colors.bold}${colors.brightYellow}⚡ react-native-bun-build${colors.reset} ${colors.dim}${version}${colors.reset}${padding}${colors.brightCyan}│${colors.reset}
+${colors.brightCyan}│${colors.reset}  ${colors.bold}${colors.brightYellow}🥟 찐빵 (jjinppang)${colors.reset} ${colors.dim}${version}${colors.reset}${padding}${colors.brightCyan}│${colors.reset}
 ${colors.brightCyan}│${colors.reset}  ${colors.dim}Next-generation Ultra-fast Bun Bundler for React Native${colors.reset}    ${colors.brightCyan}│${colors.reset}
 ${colors.brightCyan}└─────────────────────────────────────────────────────────────┘${colors.reset}
 `);

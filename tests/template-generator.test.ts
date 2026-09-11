@@ -54,9 +54,11 @@ describe('Template Generator (Built-in Scaffolder)', () => {
     expect(pkg.devDependencies['@react-native/eslint-config']).toBeUndefined();
     expect(pkg.devDependencies['oxlint']).toBeDefined();
     expect(pkg.devDependencies['oxfmt']).toBeDefined();
-    expect(pkg.scripts['lint']).toBe('bun-rn lint');
-    expect(pkg.scripts['format']).toBe('bun-rn format');
-    expect(pkg.scripts['check']).toBe('bun-rn lint && bun-rn format --check && bun-rn test');
+    expect(pkg.scripts['lint']).toBe('jjinppang lint');
+    expect(pkg.scripts['format']).toBe('jjinppang format');
+    expect(pkg.scripts['check']).toBe(
+      'jjinppang lint && jjinppang format --check && jjinppang test'
+    );
     expect(pkg.devDependencies['react-native-macos']).toBeDefined();
 
     // 3. Check config files (OXC present, ESLint/Prettier absent)
@@ -105,7 +107,7 @@ describe('Template Generator (Built-in Scaffolder)', () => {
     expect(indexJsContent).toContain('AppRegistry.registerComponent');
 
     // 8. Check react-native configs
-    expect(fs.existsSync(path.join(projectDir, 'react-native-bun-build.config.js'))).toBe(true);
+    expect(fs.existsSync(path.join(projectDir, 'jjinppang.config.js'))).toBe(true);
     expect(fs.existsSync(path.join(projectDir, 'react-native.config.js'))).toBe(true);
   });
 

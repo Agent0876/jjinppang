@@ -37,7 +37,7 @@ export async function formatCommand(
   // If no config found, auto-generate sensible React Native default config
   if (!fs.existsSync(oxfmtrc) && !args.config) {
     console.log(
-      `⚡ [react-native-bun-build] No .oxfmtrc.json detected. Initializing default React Native config...`
+      `⚡ [jjinppang] No .oxfmtrc.json detected. Initializing default React Native config...`
     );
     setupOxc(projectRoot, false, false);
   }
@@ -60,9 +60,7 @@ export async function formatCommand(
     oxfmtArgs.push(targetDir);
   }
 
-  console.log(
-    `\n⚡ [react-native-bun-build] Running formatter (oxfmt${isCheck ? ' --check' : ''})...`
-  );
+  console.log(`\n⚡ [jjinppang] Running formatter (oxfmt${isCheck ? ' --check' : ''})...`);
   const result = spawnSync(cmd, oxfmtArgs, {
     cwd: projectRoot,
     stdio: 'inherit',

@@ -1,11 +1,11 @@
 {
-  "name": "@react-native-bun-build/core",
+  "name": "@jjinppang/core",
   "version": "0.1.0",
-  "description": "Core Bun.build bundling engine for React Native",
+  "description": "Core Bun.build bundling engine for React Native (찐빵 - jjinppang)",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shinseungmin/react-native-bun-build.git",
+    "url": "https://github.com/shinseungmin/jjinppang.git",
     "directory": "packages/core"
   },
   "files": [

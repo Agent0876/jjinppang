@@ -144,42 +144,42 @@ describe('Built-in Lint & Format Commands (Next.js CLI Style)', () => {
     expect(exitCode).toBe(0);
   });
 
-  test('CLI binary supports bun-rn lint and bun-rn format with --help', () => {
-    const cliBin = path.resolve(__dirname, '../packages/react-native-bun-build/bin/bun-rn.js');
+  test('CLI binary supports jjinppang lint and jjinppang format with --help', () => {
+    const cliBin = path.resolve(__dirname, '../packages/jjinppang/bin/jjinppang.js');
 
     const lintHelp = spawnSync('bun', [cliBin, 'lint', '--help'], {
       encoding: 'utf8',
     });
     expect(lintHelp.status).toBe(0);
-    expect(lintHelp.stdout).toContain('Usage: bun-rn lint');
+    expect(lintHelp.stdout).toContain('Usage: jjinppang lint');
     expect(lintHelp.stdout).toContain('--fix');
 
     const formatHelp = spawnSync('bun', [cliBin, 'format', '--help'], {
       encoding: 'utf8',
     });
     expect(formatHelp.status).toBe(0);
-    expect(formatHelp.stdout).toContain('Usage: bun-rn format');
+    expect(formatHelp.stdout).toContain('Usage: jjinppang format');
     expect(formatHelp.stdout).toContain('--check');
   });
 
   test('CLI dynamically reads version from package.json with --version and -v', () => {
-    const pkgPath = path.resolve(__dirname, '../packages/react-native-bun-build/package.json');
+    const pkgPath = path.resolve(__dirname, '../packages/jjinppang/package.json');
     const expectedVersion = JSON.parse(fs.readFileSync(pkgPath, 'utf8')).version;
 
     expect(getCliVersion()).toBe(expectedVersion);
 
-    const cliBin = path.resolve(__dirname, '../packages/react-native-bun-build/bin/bun-rn.js');
+    const cliBin = path.resolve(__dirname, '../packages/jjinppang/bin/jjinppang.js');
 
     const versionLong = spawnSync('bun', [cliBin, '--version'], {
       encoding: 'utf8',
     });
     expect(versionLong.status).toBe(0);
-    expect(versionLong.stdout.trim()).toBe(`react-native-bun-build v${expectedVersion}`);
+    expect(versionLong.stdout.trim()).toBe(`🥟 찐빵 (jjinppang) v${expectedVersion}`);
 
     const versionShort = spawnSync('bun', [cliBin, '-v'], {
       encoding: 'utf8',
     });
     expect(versionShort.status).toBe(0);
-    expect(versionShort.stdout.trim()).toBe(`react-native-bun-build v${expectedVersion}`);
+    expect(versionShort.stdout.trim()).toBe(`🥟 찐빵 (jjinppang) v${expectedVersion}`);
   });
 });

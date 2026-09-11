@@ -101,27 +101,27 @@ export function updatePackageJson(
     }
   }
 
-  // 1. Core Development & Bundling Scripts - powered by bun-rn
-  pkgJson.scripts['start'] = 'bun-rn start';
-  pkgJson.scripts['start:bun'] = 'bun-rn start';
-  pkgJson.scripts['bundle'] = 'bun-rn bundle';
+  // 1. Core Development & Bundling Scripts - powered by jjinppang
+  pkgJson.scripts['start'] = 'jjinppang start';
+  pkgJson.scripts['start:bun'] = 'jjinppang start';
+  pkgJson.scripts['bundle'] = 'jjinppang bundle';
 
   if (platforms.includes('ios')) {
     pkgJson.scripts['ios'] = 'react-native run-ios';
     pkgJson.scripts['bundle:ios'] =
-      'bun-rn bundle --entry-file index.js --platform ios --dev false --bundle-output dist/main.jsbundle --assets-dest dist/assets';
+      'jjinppang bundle --entry-file index.js --platform ios --dev false --bundle-output dist/main.jsbundle --assets-dest dist/assets';
   }
 
   if (platforms.includes('android')) {
     pkgJson.scripts['android'] = 'react-native run-android';
     pkgJson.scripts['bundle:android'] =
-      'bun-rn bundle --entry-file index.js --platform android --dev false --bundle-output dist/index.android.bundle --assets-dest dist/res';
+      'jjinppang bundle --entry-file index.js --platform android --dev false --bundle-output dist/index.android.bundle --assets-dest dist/res';
   }
 
   if (platforms.includes('macos')) {
     pkgJson.scripts['macos'] = 'react-native run-macos';
     pkgJson.scripts['bundle:macos'] =
-      'bun-rn bundle --entry-file index.js --platform macos --dev false --bundle-output dist/main.macos.jsbundle --assets-dest dist/assets';
+      'jjinppang bundle --entry-file index.js --platform macos --dev false --bundle-output dist/main.macos.jsbundle --assets-dest dist/assets';
     if (
       !pkgJson.dependencies?.['react-native-macos'] &&
       !pkgJson.devDependencies?.['react-native-macos']
@@ -136,7 +136,7 @@ export function updatePackageJson(
   if (platforms.includes('windows')) {
     pkgJson.scripts['windows'] = 'react-native run-windows';
     pkgJson.scripts['bundle:windows'] =
-      'bun-rn bundle --entry-file index.js --platform windows --dev false --bundle-output dist/main.windows.bundle --assets-dest dist/assets';
+      'jjinppang bundle --entry-file index.js --platform windows --dev false --bundle-output dist/main.windows.bundle --assets-dest dist/assets';
     if (
       !pkgJson.dependencies?.['react-native-windows'] &&
       !pkgJson.devDependencies?.['react-native-windows']
@@ -148,20 +148,20 @@ export function updatePackageJson(
     }
   }
 
-  // 2. Testing Scripts - powered by bun-rn test
-  pkgJson.scripts['test'] = 'bun-rn test';
+  // 2. Testing Scripts - powered by jjinppang test
+  pkgJson.scripts['test'] = 'jjinppang test';
 
-  // 3. Add react-native-bun-build dependency if not present
-  if (
-    !pkgJson.dependencies?.['react-native-bun-build'] &&
-    !pkgJson.devDependencies?.['react-native-bun-build']
-  ) {
+  // 3. Add jjinppang dependency if not present
+  if (!pkgJson.dependencies?.['jjinppang'] && !pkgJson.devDependencies?.['jjinppang']) {
     const parentMonorepoPkg = path.join(projectDir, '..', 'package.json');
     let isMonorepoWorkspace = false;
     if (fs.existsSync(parentMonorepoPkg)) {
       try {
         const parentPkg = JSON.parse(fs.readFileSync(parentMonorepoPkg, 'utf8'));
-        if (parentPkg.name === 'react-native-bun-build-monorepo') {
+        if (
+          parentPkg.name === 'jjinppang-monorepo' ||
+          parentPkg.name === 'react-native-bun-build-monorepo'
+        ) {
           isMonorepoWorkspace = true;
           const folderName = path.basename(projectDir);
           if (Array.isArray(parentPkg.workspaces) && !parentPkg.workspaces.includes(folderName)) {
@@ -174,20 +174,18 @@ export function updatePackageJson(
       }
     }
 
-    pkgJson.devDependencies['react-native-bun-build'] = isMonorepoWorkspace
-      ? 'workspace:*'
-      : '^0.1.0';
+    pkgJson.devDependencies['jjinppang'] = isMonorepoWorkspace ? 'workspace:*' : '^0.1.0';
   }
 
-  // 4. Code Quality Tooling - powered by bun-rn lint & bun-rn format
+  // 4. Code Quality Tooling - powered by jjinppang lint & jjinppang format
   if (options.oxc !== false) {
     pkgJson.devDependencies['oxlint'] = pkgJson.devDependencies['oxlint'] || '^1.82.0';
     pkgJson.devDependencies['oxfmt'] = pkgJson.devDependencies['oxfmt'] || '^0.67.0';
-    pkgJson.scripts['lint'] = 'bun-rn lint';
-    pkgJson.scripts['lint:fix'] = 'bun-rn lint --fix';
-    pkgJson.scripts['format'] = 'bun-rn format';
-    pkgJson.scripts['format:check'] = 'bun-rn format --check';
-    pkgJson.scripts['check'] = 'bun-rn lint && bun-rn format --check && bun-rn test';
+    pkgJson.scripts['lint'] = 'jjinppang lint';
+    pkgJson.scripts['lint:fix'] = 'jjinppang lint --fix';
+    pkgJson.scripts['format'] = 'jjinppang format';
+    pkgJson.scripts['format:check'] = 'jjinppang format --check';
+    pkgJson.scripts['check'] = 'jjinppang lint && jjinppang format --check && jjinppang test';
 
     // Remove legacy ESLint / Prettier packages when OXC is configured
     delete pkgJson.devDependencies['eslint'];

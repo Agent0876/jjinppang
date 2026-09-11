@@ -1,10 +1,10 @@
-import type { ReactNativeBunBuildConfig } from '../types.js';
+import type { JjinppangConfig } from '../types.js';
 
 /**
- * Type-safe helper to define configuration for react-native-bun-build
+ * Type-safe helper to define configuration for 찐빵 (jjinppang)
  * @example
  * ```ts
- * import { defineConfig } from '@react-native-bun-build/core';
+ * import { defineConfig } from 'jjinppang';
  *
  * export default defineConfig({
  *   hermes: { enabled: true },
@@ -12,6 +12,6 @@ import type { ReactNativeBunBuildConfig } from '../types.js';
  * });
  * ```
  */
-export function defineConfig(config: ReactNativeBunBuildConfig): ReactNativeBunBuildConfig {
+export function defineConfig(config: JjinppangConfig): JjinppangConfig {
   return config;
 }

@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 import type { InitArguments, TargetPlatform } from '../types.js';
 import { detectPackageManager, type PackageManagerType } from './pm-detector.js';
 import { patchReactNativeConfig } from './rn-config-patcher.js';
-import { generateBunBuildConfig } from './bun-config-gen.js';
+import { generateJjinppangConfig } from './bun-config-gen.js';
 import { setupOxc } from './oxc-setup.js';
 import { updatePackageJson } from './pkg-updater.js';
 import { runInstall, runPodInstall } from './installer.js';
@@ -103,7 +103,7 @@ export async function initExistingProject(
   projectDir: string,
   options: InitArguments
 ): Promise<InitResult> {
-  console.log(`\n⚡ [react-native-bun-build] Configuring existing React Native project...`);
+  console.log(`\n⚡ [jjinppang] Configuring existing React Native project...`);
   console.log(`📂 Project directory: ${projectDir}`);
 
   const pkgPath = path.join(projectDir, 'package.json');
@@ -142,16 +142,16 @@ export async function initExistingProject(
     console.log(`  ✅ Created ${path.relative(projectDir, rnConfigRes.file)} with custom commands`);
   } else if (rnConfigRes.status === 'patched') {
     console.log(
-      `  ✅ Patched ${path.relative(projectDir, rnConfigRes.file)} to include bun-build commands`
+      `  ✅ Patched ${path.relative(projectDir, rnConfigRes.file)} to include jjinppang commands`
     );
   } else {
     console.log(
-      `  ℹ️ ${path.relative(projectDir, rnConfigRes.file)} already contains bun-build commands`
+      `  ℹ️ ${path.relative(projectDir, rnConfigRes.file)} already contains jjinppang commands`
     );
   }
 
-  // 2. Generate react-native-bun-build.config.js
-  const bunConfigRes = generateBunBuildConfig(projectDir, initialPkg, dryRun, options.force);
+  // 2. Generate jjinppang.config.js
+  const bunConfigRes = generateJjinppangConfig(projectDir, initialPkg, dryRun, options.force);
   if (bunConfigRes.status === 'created') {
     console.log(`  ✅ Created ${path.relative(projectDir, bunConfigRes.file)}`);
   } else {
@@ -225,7 +225,7 @@ export async function initExistingProject(
 }
 
 /**
- * Scaffolds a new React Native project and then configures react-native-bun-build
+ * Scaffolds a new React Native project and then configures jjinppang
  */
 export async function initNewProject(
   projectName: string,
@@ -240,9 +240,7 @@ export async function initNewProject(
     );
   }
 
-  console.log(
-    `\n🚀 [react-native-bun-build] Scaffolding new React Native project: ${projectName}...`
-  );
+  console.log(`\n🚀 [jjinppang] Scaffolding new React Native project: ${projectName}...`);
 
   const dryRun = Boolean(options.dryRun);
   if (dryRun) {
@@ -277,7 +275,7 @@ export async function initNewProject(
       private: true,
       workspaces: ['apps/*', 'packages/*'],
       scripts: {
-        start: 'bun-rn start --projectRoot apps/mobile',
+        start: 'jjinppang start --projectRoot apps/mobile',
         ios: 'bun --filter mobile ios',
         android: 'bun --filter mobile android',
         'bundle:ios': 'bun --filter mobile bundle:ios',
@@ -301,7 +299,7 @@ export async function initNewProject(
     // Root .gitignore
     const gitignoreContent = `node_modules/
 dist/
-.bun-rn-temp/
+.jjinppang-temp/
 *.log
 *.bundle
 *.jsbundle
@@ -323,8 +321,8 @@ dist/
     }
   }
 
-  // 1. Scaffold clean native React Native structure with bun-rn built-in template
-  console.log(`⚡ Generating clean project structure with bun-rn built-in template...`);
+  // 1. Scaffold clean native React Native structure with jjinppang built-in template
+  console.log(`⚡ Generating clean project structure with jjinppang built-in template...`);
   const platforms = parsePlatforms(options.platforms);
   const pm = (options.pm as PackageManagerType) || 'bun';
   const rnVersion = options.version || (await resolveCompatibleReactNativeVersion(platforms));
@@ -360,8 +358,8 @@ dist/
     if (!fs.existsSync(macosDir)) {
       if (process.platform !== 'darwin') {
         console.log(
-          `\nℹ️ [react-native-bun-build] macOS native project scaffolding requires macOS (Darwin).\n` +
-            `   Your bun-rn scripts are configured for macOS. To generate the macos/ directory, run 'npx react-native-macos-init' on a Mac.`
+          `\nℹ️ [jjinppang] macOS native project scaffolding requires macOS (Darwin).\n` +
+            `   Your jjinppang scripts are configured for macOS. To generate the macos/ directory, run 'npx react-native-macos-init' on a Mac.`
         );
       } else {
         console.log(`\n🍏 Scaffolding macOS native project...`);
@@ -465,8 +463,8 @@ dist/
     if (!fs.existsSync(windowsDir)) {
       if (process.platform !== 'win32') {
         console.log(
-          `\nℹ️ [react-native-bun-build] Windows native scaffolding (react-native-windows-init) requires a Windows host environment.\n` +
-            `   Your bun-rn scripts and package.json are configured for Windows.\n` +
+          `\nℹ️ [jjinppang] Windows native scaffolding (react-native-windows-init) requires a Windows host environment.\n` +
+            `   Your jjinppang scripts and package.json are configured for Windows.\n` +
             `   To generate native windows/ files, run 'npx react-native-windows-init' on a Windows machine.`
         );
       } else {

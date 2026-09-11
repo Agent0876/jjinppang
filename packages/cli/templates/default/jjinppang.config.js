@@ -1,6 +1,6 @@
 /**
- * react-native-bun-build Configuration
- * https://github.com/shinseungmin/react-native-bun-build
+ * 🥟 jjinppang Configuration
+ * https://github.com/shinseungmin/jjinppang
  */
 module.exports = {
   // Custom asset extensions to process

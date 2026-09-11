@@ -28,7 +28,7 @@ export async function runCli(): Promise<void> {
 
   if (rawArgs.includes('-v') || rawArgs.includes('--version')) {
     const version = getCliVersion();
-    console.log(`react-native-bun-build v${version}`);
+    console.log(`🥟 찐빵 (jjinppang) v${version}`);
     process.exit(0);
   }
 
@@ -44,12 +44,12 @@ export async function runCli(): Promise<void> {
 
     if (values.help) {
       console.log(`
-Usage: bun-rn init [projectName] [options]
+Usage: jjinppang init [projectName] [options]
 
 Initializes a new React Native project with Bun or configures an existing project.
 
 Options:
-  --existing                      Configure react-native-bun-build in current project
+  --existing                      Configure jjinppang in current project
   --pm <bun|npm|yarn|pnpm>        Package manager to use (default: auto-detect)
   --platforms <list>              Target platforms (ios, android, macos, windows, or all)
   --skip-install                  Skip installing dependencies
@@ -117,7 +117,7 @@ Options:
 
     if (values.help) {
       console.log(`
-Usage: bun-rn start [options]
+Usage: jjinppang start [options]
 
 Starts the React Native development server powered by Bun.serve.
 
@@ -156,7 +156,7 @@ Options:
 
     if (values.help) {
       console.log(`
-Usage: bun-rn lint [dir] [options]
+Usage: jjinppang lint [dir] [options]
 
 Runs ultra-fast linter powered by OXC (oxlint) for React Native with zero config.
 
@@ -191,7 +191,7 @@ Options:
 
     if (values.help) {
       console.log(`
-Usage: bun-rn format [dir] [options]
+Usage: jjinppang format [dir] [options]
 
 Runs ultra-fast code formatter powered by OXC (oxfmt) for React Native with zero config.
 
@@ -219,7 +219,7 @@ Options:
     const testArgs = rawArgs.slice(1);
     if (testArgs.includes('-h') || testArgs.includes('--help')) {
       console.log(`
-Usage: bun-rn test [filter] [options]
+Usage: jjinppang test [filter] [options]
 
 Runs ultra-fast test suite powered by Bun test for React Native projects.
 
@@ -233,7 +233,7 @@ Options:
       process.exit(0);
     }
 
-    console.log(`\n⚡ [react-native-bun-build] Running tests (bun test)...`);
+    console.log(`\n⚡ [jjinppang] Running tests (bun test)...`);
     const { spawnSync } = await import('node:child_process');
     const result = spawnSync('bun', ['test', ...testArgs], {
       cwd: process.cwd(),
@@ -255,7 +255,7 @@ Options:
 
   if (!isBundle) {
     console.error(
-      `\n❌ Unknown command "${commandName}".\nRun "bun-rn --help" to see all available commands.\n`
+      `\n❌ Unknown command "${commandName}".\nRun "jjinppang --help" to see all available commands.\n`
     );
     process.exit(1);
   }
@@ -276,9 +276,9 @@ Options:
     (!values['entry-file'] && !values['bundle-output'] && positionals.length === 0)
   ) {
     console.log(`
-Usage: bun-rn <command> [options]
+Usage: jjinppang <command> [options]
 
-Ultra-fast custom bundler CLI for React Native bare projects powered by Bun.
+Ultra-fast custom bundler CLI for React Native bare projects powered by Bun (찐빵 - jjinppang).
 
 Commands:
   init [name]                     Initialize a new RN project or configure an existing project

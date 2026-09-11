@@ -3,17 +3,17 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "bun-rn start",
-    "start:bun": "bun-rn start",
-    "bundle": "bun-rn bundle",
+    "start": "jjinppang start",
+    "start:bun": "jjinppang start",
+    "bundle": "jjinppang bundle",
     "android": "react-native run-android",
     "ios": "react-native run-ios",
-    "lint": "bun-rn lint",
-    "lint:fix": "bun-rn lint --fix",
-    "format": "bun-rn format",
-    "format:check": "bun-rn format --check",
-    "check": "bun-rn check",
-    "test": "bun-rn test"
+    "lint": "jjinppang lint",
+    "lint:fix": "jjinppang lint --fix",
+    "format": "jjinppang format",
+    "format:check": "jjinppang format --check",
+    "check": "jjinppang check",
+    "test": "jjinppang test"
   },
   "dependencies": {
     "react": "19.3.0",
@@ -34,9 +34,9 @@
     "@types/react": "^19.2.0",
     "@types/react-test-renderer": "^19.0.0",
     "jest": "^29.7.0",
+    "jjinppang": "workspace:*",
     "oxfmt": "^0.67.0",
     "oxlint": "^1.82.0",
-    "react-native-bun-build": "workspace:*",
     "react-test-renderer": "19.3.0",
     "typescript": "^5.8.3"
   },

@@ -1,15 +1,16 @@
 {
-  "name": "@react-native-bun-build/cli",
+  "name": "@jjinppang/cli",
   "version": "0.1.0",
-  "description": "React Native CLI command plugin and standalone CLI for Bun bundler",
+  "description": "React Native CLI command plugin and standalone CLI for Bun bundler (찐빵 - jjinppang)",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shinseungmin/react-native-bun-build.git",
+    "url": "https://github.com/shinseungmin/jjinppang.git",
     "directory": "packages/cli"
   },
   "bin": {
     "bun-rn": "bin/bun-rn.js",
+    "jjinppang": "bin/jjinppang.js",
     "react-native-bun-build": "bin/bun-rn.js"
   },
   "files": [
@@ -35,7 +36,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@react-native-bun-build/core": "workspace:*"
+    "@jjinppang/core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.13.0"

@@ -1,11 +1,12 @@
 {
-  "name": "react-native-bun-build-monorepo",
+  "name": "jjinppang-monorepo",
   "private": true,
-  "description": "Ultra-fast custom bundler CLI for React Native bare projects powered by Bun",
+  "description": "Ultra-fast custom bundler CLI for React Native bare projects powered by Bun (찐빵 - jjinppang)",
   "license": "MIT",
   "bin": {
-    "bun-rn": "./packages/react-native-bun-build/bin/bun-rn.js",
-    "react-native-bun-build": "./packages/react-native-bun-build/bin/bun-rn.js"
+    "bun-rn": "./packages/jjinppang/bin/bun-rn.js",
+    "jjinppang": "./packages/jjinppang/bin/jjinppang.js",
+    "react-native-bun-build": "./packages/jjinppang/bin/bun-rn.js"
   },
   "workspaces": [
     "packages/*",

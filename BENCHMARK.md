@@ -1,6 +1,6 @@
-# React Native 번들러 3자 벤치마크: Metro vs react-native-bun-build vs Rollipop
+# React Native 번들러 3자 벤치마크: Metro vs 찐빵 (jjinppang) vs Rollipop
 
-React Native 0.87 프로덕션 빌드 환경(`--dev false`, `--reset-cache`)에서 3대 번들러(**Metro**, **react-native-bun-build**, **Rollipop**)의 빌드 성능, 산출물 크기 및 아키텍처를 정밀 측정한 결과입니다. (각 플랫폼별 3회 연속 측정 평균치)
+React Native 0.87 프로덕션 빌드 환경(`--dev false`, `--reset-cache`)에서 3대 번들러(**Metro**, **찐빵 (jjinppang)**, **Rollipop**)의 빌드 성능, 산출물 크기 및 아키텍처를 정밀 측정한 결과입니다. (각 플랫폼별 3회 연속 측정 평균치)
 
 ---
 
@@ -13,20 +13,20 @@ React Native 0.87 프로덕션 빌드 환경(`--dev false`, `--reset-cache`)에�
 > - **Hermes 바이트코드 (.hbc)**: 동일한 React Native 공식 Hermes 컴파일러(`hermesc -emit-binary -O`)로 컴파일한 실제 네이티브 런타임 AOT 바이너리 크기
 > - 모든 번들러의 결과물을 **1) JS 대 JS**, **2) HBC 대 HBC**로 동일한 조건에서 교차 비교하여 포맷 불일치로 인한 오해를 배제하였습니다.
 
-| Platform    | 번들러 (Bundler)                            | 핵심 엔진 (Engine)    | 전체 빌드 시간 (Avg) | 순수 JS 크기 (Minified JS) | Hermes 바이트코드 (.hbc) | 바이트코드 변환율 (HBC/JS) | 속도 개선 배수 (vs Metro) |
-| :---------- | :------------------------------------------ | :-------------------- | :------------------: | :------------------------: | :----------------------: | :------------------------: | :-----------------------: |
-| **iOS**     | **Metro (기본 빌드)**                       | Babel + Node.js       |    **10,942 ms**     |    1.80 MB (1840.1 KB)     |   2.32 MB (2379.5 KB)    |           129.3%           |     1.0x _(baseline)_     |
-| **iOS**     | **react-native-bun-build (우리가 만든 것)** | Bun + Babel Hybrid    |     **6,436 ms**     |    2.29 MB (2342.9 KB)     | **2.89 MB (2955.5 KB)**  |           126.1%           |    **1.70x faster** ⚡    |
-| **iOS**     | **Rollipop**                                | Rolldown (Rust) + SWC |     **2,549 ms**     |    2.23 MB (2283.2 KB)     | **1.53 MB (1567.4 KB)**  |           68.7%            |    **4.29x faster** ⚡    |
-| **Android** | **Metro (기본 빌드)**                       | Babel + Node.js       |     **8,914 ms**     |    1.80 MB (1845.8 KB)     |   2.33 MB (2386.3 KB)    |           129.3%           |     1.0x _(baseline)_     |
-| **Android** | **react-native-bun-build (우리가 만든 것)** | Bun + Babel Hybrid    |     **6,598 ms**     |    2.29 MB (2349.2 KB)     | **2.89 MB (2963.2 KB)**  |           126.1%           |    **1.35x faster** ⚡    |
-| **Android** | **Rollipop**                                | Rolldown (Rust) + SWC |     **2,547 ms**     |    2.24 MB (2295.0 KB)     | **1.54 MB (1572.3 KB)**  |           68.5%            |    **3.50x faster** ⚡    |
+| Platform    | 번들러 (Bundler)      | 핵심 엔진 (Engine)    | 전체 빌드 시간 (Avg) | 순수 JS 크기 (Minified JS) | Hermes 바이트코드 (.hbc) | 바이트코드 변환율 (HBC/JS) | 속도 개선 배수 (vs Metro) |
+| :---------- | :-------------------- | :-------------------- | :------------------: | :------------------------: | :----------------------: | :------------------------: | :-----------------------: |
+| **iOS**     | **Metro (기본 빌드)** | Babel + Node.js       |    **10,942 ms**     |    1.80 MB (1840.1 KB)     |   2.32 MB (2379.5 KB)    |           129.3%           |     1.0x _(baseline)_     |
+| **iOS**     | **찐빵 (jjinppang)**  | Bun + Babel Hybrid    |     **6,436 ms**     |    2.29 MB (2342.9 KB)     | **2.89 MB (2955.5 KB)**  |           126.1%           |    **1.70x faster** ⚡    |
+| **iOS**     | **Rollipop**          | Rolldown (Rust) + SWC |     **2,549 ms**     |    2.23 MB (2283.2 KB)     | **1.53 MB (1567.4 KB)**  |           68.7%            |    **4.29x faster** ⚡    |
+| **Android** | **Metro (기본 빌드)** | Babel + Node.js       |     **8,914 ms**     |    1.80 MB (1845.8 KB)     |   2.33 MB (2386.3 KB)    |           129.3%           |     1.0x _(baseline)_     |
+| **Android** | **찐빵 (jjinppang)**  | Bun + Babel Hybrid    |     **6,598 ms**     |    2.29 MB (2349.2 KB)     | **2.89 MB (2963.2 KB)**  |           126.1%           |    **1.35x faster** ⚡    |
+| **Android** | **Rollipop**          | Rolldown (Rust) + SWC |     **2,547 ms**     |    2.24 MB (2295.0 KB)     | **1.54 MB (1572.3 KB)**  |           68.5%            |    **3.50x faster** ⚡    |
 
 ---
 
 ## 2. 3대 번들러 아키텍처 및 특징 비교 (Architecture & Features)
 
-| 비교 항목             | Metro (기본 빌드)                      | react-native-bun-build (Bun)                   | Rollipop (Rolldown)                  |
+| 비교 항목             | Metro (기본 빌드)                      | 찐빵 (jjinppang)                               | Rollipop (Rolldown)                  |
 | :-------------------- | :------------------------------------- | :--------------------------------------------- | :----------------------------------- |
 | **핵심 런타임**       | Node.js (V8)                           | **Bun (JavaScriptCore + Zig)**                 | Node.js + Rust NAPI                  |
 | **번들러 코어**       | Metro AST Graph Traversal              | **Bun.build() (네이티브 Zig 번들러)**          | **Rolldown (Rust 기반 Rollup 포팅)** |
@@ -45,7 +45,7 @@ React Native 0.87 프로덕션 빌드 환경(`--dev false`, `--reset-cache`)에�
 ### 1) 빌드 속도 관점 (Build Performance)
 
 - **Rollipop (Rolldown)**: Rust 기반의 Rolldown 번들러 코어와 멀티스레드 SWC 트랜스파일을 통해 순수 JS 번들링 단계에서 **가장 빠른 극초고속(~2549ms)** 빌드를 달성합니다.
-- **react-native-bun-build (Bun)**: 번들링뿐만 아니라 **Hermes Bytecode(.hbc) AOT 바이너리 컴파일까지 일괄 수행**하고도 Metro 대비 **약 1.70x ~ 1.35x 빠른 속도**를 제공합니다.
+- **찐빵 (jjinppang)**: 번들링뿐만 아니라 **Hermes Bytecode(.hbc) AOT 바이너리 컴파일까지 일괄 수행**하고도 Metro 대비 **약 1.70x ~ 1.35x 빠른 속도**를 제공합니다.
 - **Metro**: 순수 Node.js 단일 스레드 이벤트 루프와 복잡한 Babel AST 순회로 인해 빌드에 가장 긴 시간(~10942ms)이 소요됩니다.
 
 ### 2) 정규화된 산출물 크기 및 포맷 분석 (Normalized Size & Format Analysis)
@@ -54,7 +54,7 @@ React Native 0.87 프로덕션 빌드 환경(`--dev false`, `--reset-cache`)에�
 
 - **Metro**: 약 1.80 MB (1840.1 KB) (가장 간결한 모듈 트리밍)
 - **Rollipop**: 약 2.23 MB (2283.2 KB)
-- **react-native-bun-build**: 약 2.29 MB (2342.9 KB)
+- **찐빵 (jjinppang)**: 약 2.29 MB (2342.9 KB)
 - **분석**: 순수 압축 JS 텍스트 기준으로는 세 번들러 모두 **1.8MB ~ 2.3MB 범위 내로 실질적으로 매우 유사한 크기**를 형성합니다.
 
 #### B. Hermes Bytecode 비교 (.hbc 대 .hbc)
@@ -63,34 +63,34 @@ React Native 0.87 프로덕션 빌드 환경(`--dev false`, `--reset-cache`)에�
   - **이유 (Scope Hoisting의 위력)**: Rolldown은 Rollup 스타일의 스코프 호이스팅을 수행하여 수백 개의 개별 파일 모듈을 단일 최상위 렉시컬 스코프로 병합합니다. 모듈 팩토리 클로저 함수(`function(...) { ... }`)가 사라지므로, Hermes 컴파일러가 생성해야 하는 함수 환경 프레임, 함수 헤더 메타데이터, 옵코드 청크가 극적으로 줄어들어 바이트코드 크기가 30% 이상 감소합니다.
 - **Metro**: 약 **2.32 MB (2379.5 KB)** (JS 대비 약 **129.3%** 로 증가)
   - **이유 (모듈 팩토리 클로저 오버헤드)**: Metro는 각 모듈을 `__d(function(g, r, i, a, m, e, d) { ... })` 클로저로 감싸서 패키징합니다. Hermes 컴파일러가 개별 모듈마다 고유한 함수 헤더와 렉시컬 환경 테이블을 바이너리에 기록하므로 텍스트 대비 약 26% 증가합니다.
-- **react-native-bun-build**: 약 **2.89 MB (2955.5 KB)** (JS 대비 약 **126.1%** 로 증가)
+- **찐빵 (jjinppang)**: 약 **2.89 MB (2955.5 KB)** (JS 대비 약 **126.1%** 로 증가)
   - **이유 (CommonJS 런타임 래퍼)**: Bun의 네이티브 번들러는 고속 번들링을 위해 CommonJS 모듈 래퍼(`__commonJS`, `__require`)를 보존하는 IIFE 방식을 취합니다. Metro와 유사하게 함수 단위 메타데이터가 존재하여 약 26% 증가합니다. (향후 Bun 엔진의 Scope Hoisting 고도화에 따라 추가적인 바이트코드 감축이 가능합니다)
 
 #### C. 결론 및 시사점
 
 - 이전 비교에서 Bun이 더 크게 느껴졌던 이유는 **"압축 JS 텍스트(Metro)"와 "Hermes 바이트코드 바이너리(Bun)"의 포맷 불일치**로 인한 착시였습니다.
 - 동일한 .hbc 기준 비교 시 Metro(2.32 MB (2379.5 KB))와 Bun(2.89 MB (2955.5 KB))의 실질 차이는 크지 않으며, Rollipop은 Scope Hoisting의 강점으로 1.4MB 대의 우수한 바이트코드 압축률을 달성합니다.
-- 또한 `react-native-bun-build`는 최신 Hermes AOT 컴파일을 번들 파이프라인에서 즉시 완결하고, 디버깅 및 분석을 위해 `[bundle-output].js` 순수 JS 산출물까지 함께 보존하여 최상의 DX를 제공합니다.
+- 또한 `jjinppang`은 최신 Hermes AOT 컴파일을 번들 파이프라인에서 즉시 완결하고, 디버깅 및 분석을 위해 `[bundle-output].js` 순수 JS 산출물까지 함께 보존하여 최상의 DX를 제공합니다.
 
 ### 3) 실전 도입 및 생태계 관점
 
-- **react-native-bun-build**는 `bun-rn init`부터 Redux Toolkit / AsyncStorage / Reanimated / WebView 지원, `Bun.serve` 기반의 독립 개발 서버, Hermes Bytecode 직접 컴파일까지 **올인원 풀스택 번들링 툴킷**으로 설계되어 단일 도구로 완전한 대체가 가능합니다.
+- **찐빵 (jjinppang)**은 `jjinppang init`부터 Redux Toolkit / AsyncStorage / Reanimated / WebView 지원, `Bun.serve` 기반의 독립 개발 서버, Hermes Bytecode 직접 컴파일까지 **올인원 풀스택 번들링 툴킷**으로 설계되어 단일 도구로 완전한 대체가 가능합니다.
 - **Rollipop**은 빠른 번들링을 제공하지만 RN 0.87의 최신 Flow `readonly` 키워드 파싱 이슈나 `package.json` exports 매핑 등 추가 shim 설정이 수반되어야 합니다.
 
 ---
 
 ## 4. 개발 서버 및 HMR / DX 벤치마크 (Development Server & DX Benchmark)
 
-개발 모드(`--dev true`)에서 Metro와 `react-native-bun-build`(`Bun.serve`)의 개발 서버 기동, 번들 서빙, 실시간 HMR 및 스택 트레이스 심볼리케이션 성능 실측 결과입니다.
+개발 모드(`--dev true`)에서 Metro와 `jjinppang`(`Bun.serve`)의 개발 서버 기동, 번들 서빙, 실시간 HMR 및 스택 트레이스 심볼리케이션 성능 실측 결과입니다.
 
-| 항목 (Metric)                         |   Metro (Node.js)    | react-native-bun-build (Bun.serve) |          개선 배수 (Speedup / Result)           |
-| :------------------------------------ | :------------------: | :--------------------------------: | :---------------------------------------------: |
-| **🚀 서버 Cold Startup**              |        664 ms        |             **189 ms**             |               **3.51x faster** ⚡               |
-| **📦 1차 Cold 번들 요청 (First Req)** | 6,393 ms _(6.86 MB)_ |      **4,675 ms** _(5.28 MB)_      |       **1.37x faster** ⚡ (번들 -1.58 MB)       |
-| **⚡ 캐시 번들 요청 (Warm GET)**      |        76 ms         |              **3 ms**              | **25.3x faster** ⚡ _(인메모리 캐시 즉각 반환)_ |
-| **🔥 HMR / Fast Refresh 왕복 지연**   |        117 ms        |             **111 ms**             |          **대등 (~11ms 순수 연산)** ⚡          |
-| **🗺️ `/symbolicate` 소스맵 역추적**   |         5 ms         |             **21 ms**              |        **실시간 응답 (1/50초 내 완결)**         |
-| **💾 프로세스 메모리 점유 (RSS)**     |       145.4 MB       |              148.8 MB              |          **대등 (안정적 메모리 유지)**          |
+| 항목 (Metric)                         |   Metro (Node.js)    | 찐빵 jjinppang (Bun.serve) |          개선 배수 (Speedup / Result)           |
+| :------------------------------------ | :------------------: | :------------------------: | :---------------------------------------------: |
+| **🚀 서버 Cold Startup**              |        664 ms        |         **189 ms**         |               **3.51x faster** ⚡               |
+| **📦 1차 Cold 번들 요청 (First Req)** | 6,393 ms _(6.86 MB)_ |  **4,675 ms** _(5.28 MB)_  |       **1.37x faster** ⚡ (번들 -1.58 MB)       |
+| **⚡ 캐시 번들 요청 (Warm GET)**      |        76 ms         |          **3 ms**          | **25.3x faster** ⚡ _(인메모리 캐시 즉각 반환)_ |
+| **🔥 HMR / Fast Refresh 왕복 지연**   |        117 ms        |         **111 ms**         |          **대등 (~11ms 순수 연산)** ⚡          |
+| **🗺️ `/symbolicate` 소스맵 역추적**   |         5 ms         |         **21 ms**          |        **실시간 응답 (1/50초 내 완결)**         |
+| **💾 프로세스 메모리 점유 (RSS)**     |       145.4 MB       |          148.8 MB          |          **대등 (안정적 메모리 유지)**          |
 
 ### DX 분석 및 핵심 인사이트:
 

@@ -37,7 +37,7 @@ export async function lintCommand(
   // If no config found, auto-generate sensible React Native default config (like next lint)
   if (!fs.existsSync(oxlintrc) && !args.config) {
     console.log(
-      `⚡ [react-native-bun-build] No .oxlintrc.json detected. Initializing default React Native config...`
+      `⚡ [jjinppang] No .oxlintrc.json detected. Initializing default React Native config...`
     );
     setupOxc(projectRoot, false, false);
   }
@@ -59,7 +59,7 @@ export async function lintCommand(
     oxlintArgs.push(targetDir);
   }
 
-  console.log(`\n⚡ [react-native-bun-build] Running linter (oxlint)...`);
+  console.log(`\n⚡ [jjinppang] Running linter (oxlint)...`);
   const result = spawnSync(cmd, oxlintArgs, {
     cwd: projectRoot,
     stdio: 'inherit',

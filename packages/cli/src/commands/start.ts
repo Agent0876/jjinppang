@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { startDevServer } from '@react-native-bun-build/core';
+import { startDevServer } from '@jjinppang/core';
 import { loadConfigFile } from '../config.js';
 import type { CliConfig, StartArguments } from '../types.js';
 import { findBunExecutable } from './bundle.js';
@@ -21,7 +21,7 @@ export async function startCommand(
   if (typeof Bun === 'undefined') {
     const bunPath = findBunExecutable();
     const currentDir = path.dirname(fileURLToPath(import.meta.url));
-    const cliBinPath = path.resolve(currentDir, '../../bin/bun-rn.js');
+    const cliBinPath = path.resolve(currentDir, '../../bin/jjinppang.js');
 
     const forwardArgs = [cliBinPath, 'start'];
     if (args.port !== undefined) forwardArgs.push('--port', String(args.port));

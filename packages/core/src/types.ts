@@ -53,13 +53,18 @@ export interface BundlerOptions {
   babel?: BabelHybridOptions;
 }
 
-export interface ReactNativeBunBuildConfig {
+export interface JjinppangConfig {
   assetExtensions?: string[];
   alias?: Record<string, string>;
   babel?: BabelHybridOptions;
   hermes?: HermesOptions;
   minify?: boolean;
 }
+
+/**
+ * Backward compatibility alias for JjinppangConfig
+ */
+export type ReactNativeBunBuildConfig = JjinppangConfig;
 
 export interface DevServerOptions {
   projectRoot: string;
