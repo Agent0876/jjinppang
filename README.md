@@ -120,13 +120,36 @@ Starts the high-performance `Bun.serve()` dev server with instant HMR and symbol
 jjinppang start
 
 # Or via standard React Native CLI
-npx react-native start
-
-# Custom port or reset cache
-jjinppang start --port 8081 --reset-cache
+# Custom port and host
+jjinppang start --port 8088 --host 0.0.0.0 --reset-cache
 ```
 
-### 2. Production Bundling (`bundle`)
+#### ⌨️ Interactive Terminal Shortcuts
+
+While `jjinppang start` is running in your terminal, interact with connected devices using single-key shortcuts:
+
+|   Key   | Action               | Description                                                                |
+| :-----: | :------------------- | :------------------------------------------------------------------------- |
+| **`r`** | **Reload App**       | Broadcasts reload command to all connected iOS/Android devices & emulators |
+| **`d`** | **Developer Menu**   | Opens in-app Developer Menu (`devMenu` packet + ADB keyevent 82)           |
+| **`i`** | **iOS Simulator**    | Launches or focuses the iOS Simulator on macOS                             |
+| **`a`** | **Android Emulator** | Configures ADB reverse socket (`tcp:8081`) for Android devices             |
+| **`c`** | **Clear Console**    | Clears the terminal screen                                                 |
+| **`q`** | **Quit Server**      | Gracefully stops the dev server and cleans up child processes              |
+
+#### 🔥 React Fast Refresh (State-Preserving HMR)
+
+`jjinppang` includes first-class React Fast Refresh integration. Component modifications update within milliseconds over WebSockets while preserving React Hook state (`useState`, `useRef`, input field values).
+
+#### 🔍 Hermes Chrome DevTools / CDP Inspector
+
+Connect Chrome DevTools or Flipper directly to Hermes:
+
+- Navigate to `chrome://inspect` in Google Chrome
+- Discover connected Hermes targets dynamically at `http://localhost:8081/json`
+- Set breakpoints, inspect console logs, and profile Hermes CPU performance in real time
+
+### 2. Standalone Production Bundler (`bundle`)
 
 Bundles the application and compiles Hermes Bytecode:
 
@@ -220,6 +243,21 @@ export default defineConfig({
     flags: ['-O'],
   },
 
+  minify: true,
+});
+```
+
+### 🌐 Expo & Metro Integration (`withJjinppang`)
+
+For projects powered by Expo or using standard `metro.config.js`, wrap your config with `withJjinppang`:
+
+```javascript
+// metro.config.js
+const { getDefaultConfig } = require('expo/metro-config');
+const { withJjinppang } = require('@jjinppang/core');
+
+const config = getDefaultConfig(__dirname);
+module.exports = withJjinppang(config, {
   minify: true,
 });
 ```
