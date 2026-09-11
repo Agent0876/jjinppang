@@ -21,6 +21,7 @@ export interface HermesOptions {
   enabled?: boolean;
   hermescPath?: string;
   flags?: string[];
+  copyJsBundle?: boolean | string;
 }
 
 export interface BabelHybridOptions {

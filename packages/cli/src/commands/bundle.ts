@@ -146,7 +146,14 @@ export async function bundleCommand(
     const sizeKb = (result.bundleSizeBytes / 1024).toFixed(2);
 
     console.log(`[react-native-bun-build] Successfully bundled in ${result.durationMs}ms!`);
-    console.log(`[react-native-bun-build] Bundle size: ${sizeKb} KB`);
+    if (result.hermesCompiled && result.jsSizeBytes) {
+      console.log(
+        `[react-native-bun-build] Minified JS size: ${(result.jsSizeBytes / 1024).toFixed(2)} KB`
+      );
+      console.log(`[react-native-bun-build] Hermes bytecode size: ${sizeKb} KB`);
+    } else {
+      console.log(`[react-native-bun-build] Bundle size: ${sizeKb} KB`);
+    }
     if (result.assetsCount > 0) {
       console.log(`[react-native-bun-build] Processed assets: ${result.assetsCount}`);
     }

@@ -14,6 +14,9 @@ export interface BundleResult {
   hermesCompiled: boolean;
   durationMs: number;
   bundleSizeBytes: number;
+  jsSizeBytes?: number;
+  hbcSizeBytes?: number;
+  jsBundleOutput?: string;
 }
 
 /**
@@ -134,11 +137,28 @@ export async function bundle(options: BundlerOptions): Promise<BundleResult> {
     copyAssetsToDestination(collectedAssets, assetsDest, options.platform, projectRoot);
   }
 
+  // Record raw JS bundle size prior to Hermes bytecode compilation
+  const jsSizeBytes = fs.statSync(bundleOutput).size;
+  let jsBundleOutput: string | undefined;
+
   // Hermes Bytecode Compilation
   let hermesCompiled = false;
   const shouldCompileHermes = !options.dev && options.hermes?.enabled !== false;
 
   if (shouldCompileHermes) {
+    // Preserve uncompiled JS bundle if copyJsBundle is enabled or by default as `${bundleOutput}.js`
+    const jsCopyPath =
+      typeof options.hermes?.copyJsBundle === 'string'
+        ? options.hermes.copyJsBundle
+        : options.hermes?.copyJsBundle !== false
+          ? `${bundleOutput}.js`
+          : undefined;
+
+    if (jsCopyPath) {
+      fs.copyFileSync(bundleOutput, jsCopyPath);
+      jsBundleOutput = jsCopyPath;
+    }
+
     hermesCompiled = compileWithHermes({
       projectRoot,
       bundleOutput,
@@ -149,6 +169,7 @@ export async function bundle(options: BundlerOptions): Promise<BundleResult> {
 
   const durationMs = Math.round(performance.now() - startTime);
   const bundleSizeBytes = fs.statSync(bundleOutput).size;
+  const hbcSizeBytes = hermesCompiled ? bundleSizeBytes : undefined;
 
   return {
     bundleOutput,
@@ -157,5 +178,8 @@ export async function bundle(options: BundlerOptions): Promise<BundleResult> {
     hermesCompiled,
     durationMs,
     bundleSizeBytes,
+    jsSizeBytes,
+    hbcSizeBytes,
+    jsBundleOutput,
   };
 }
