@@ -9,7 +9,8 @@
   },
   "workspaces": [
     "packages/*",
-    "fixtures/*"
+    "fixtures/*",
+    "MyAwesomeApp"
   ],
   "scripts": {
     "build": "bun run scripts/build.ts",

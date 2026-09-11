@@ -219,11 +219,51 @@ export async function initNewProject(
         );
       } else {
         console.log(`\n🍏 Scaffolding macOS native project (react-native-macos-init)...`);
+        const pkgJsonPath = path.join(projectDir, 'package.json');
+        let originalDeps: Record<string, string> = {};
+        let originalDevDeps: Record<string, string> = {};
+        if (fs.existsSync(pkgJsonPath)) {
+          try {
+            const currentPkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
+            originalDeps = { ...currentPkg.dependencies };
+            originalDevDeps = { ...currentPkg.devDependencies };
+          } catch {
+            // ignore
+          }
+        }
+
         const res = spawnSync('npx', ['--yes', 'react-native-macos-init'], {
           cwd: projectDir,
           stdio: 'inherit',
           shell: true,
         });
+
+        // react-native-macos-init may rewrite react-native & @react-native/* with invalid/unmatched version strings.
+        // Restore the project's valid dependencies to prevent broken package resolution.
+        if (fs.existsSync(pkgJsonPath)) {
+          try {
+            const updatedPkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
+            let fixed = false;
+            for (const key of ['react-native', '@react-native/new-app-screen']) {
+              if (originalDeps[key] && updatedPkg.dependencies?.[key] !== originalDeps[key]) {
+                updatedPkg.dependencies[key] = originalDeps[key];
+                fixed = true;
+              }
+            }
+            for (const [key, val] of Object.entries(originalDevDeps)) {
+              if (key.startsWith('@react-native/') && updatedPkg.devDependencies?.[key] !== val) {
+                updatedPkg.devDependencies[key] = val;
+                fixed = true;
+              }
+            }
+            if (fixed) {
+              fs.writeFileSync(pkgJsonPath, JSON.stringify(updatedPkg, null, 2) + '\n', 'utf8');
+            }
+          } catch {
+            // ignore
+          }
+        }
+
         if (res.status !== 0) {
           console.warn(
             `\n⚠️ react-native-macos-init completed with warnings/errors. You can review and configure macOS native files manually.`

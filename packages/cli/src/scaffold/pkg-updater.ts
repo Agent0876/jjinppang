@@ -139,7 +139,27 @@ export function updatePackageJson(
     !pkgJson.dependencies?.['react-native-bun-build'] &&
     !pkgJson.devDependencies?.['react-native-bun-build']
   ) {
-    pkgJson.devDependencies['react-native-bun-build'] = '^0.1.0';
+    const parentMonorepoPkg = path.join(projectDir, '..', 'package.json');
+    let isMonorepoWorkspace = false;
+    if (fs.existsSync(parentMonorepoPkg)) {
+      try {
+        const parentPkg = JSON.parse(fs.readFileSync(parentMonorepoPkg, 'utf8'));
+        if (parentPkg.name === 'react-native-bun-build-monorepo') {
+          isMonorepoWorkspace = true;
+          const folderName = path.basename(projectDir);
+          if (Array.isArray(parentPkg.workspaces) && !parentPkg.workspaces.includes(folderName)) {
+            parentPkg.workspaces.push(folderName);
+            fs.writeFileSync(parentMonorepoPkg, JSON.stringify(parentPkg, null, 2) + '\n', 'utf8');
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    pkgJson.devDependencies['react-native-bun-build'] = isMonorepoWorkspace
+      ? 'workspace:*'
+      : '^0.1.0';
   }
 
   // 4. Code Quality Tooling - powered by bun-rn lint & bun-rn format
