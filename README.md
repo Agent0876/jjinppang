@@ -71,12 +71,17 @@ bun-rn init MyAwesomeApp
 
 1. **Target Platforms**: Choose `iOS`, `Android`, `macOS`, `Windows`, or `All Platforms`.
 2. **Redux Toolkit**: Choose whether to install and pre-configure `@reduxjs/toolkit` and `react-redux` with a counter demo.
+3. **React Native WebView**: Choose whether to install and configure `react-native-webview` with an in-app browser demo.
+4. **Monorepo Workspace**: Choose whether to structure the project as a modern Bun monorepo (`apps/mobile` + `packages/ui` via `workspace:*`).
 
 Non-interactive flags:
 
 ```bash
-bun-rn init MyAwesomeApp --platforms all --redux
-bun-rn init MyAwesomeApp --platforms mobile --no-redux
+# Full-stack monorepo with Redux and WebView
+bun-rn init MyMonorepo --monorepo --redux --webview --platforms all
+
+# Minimal mobile app without extras
+bun-rn init MyAwesomeApp --platforms mobile --no-redux --no-webview
 ```
 
 ### 2. Add to an Existing React Native Project
