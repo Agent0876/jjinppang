@@ -10,6 +10,7 @@ export const DEFAULT_BABEL_PATTERNS = [
   /@flow/,
   /import\s+typeof/,
   /\bclass\s+[\w$]+/,
+  /\basync\s+/,
 ];
 
 export const DEFAULT_BABEL_PATH_PATTERNS = [

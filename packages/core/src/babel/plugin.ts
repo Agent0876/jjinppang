@@ -39,8 +39,8 @@ export function createBabelHybridPlugin(options: BabelHybridPluginOptions): BunP
               typeof pattern === 'string' ? filePath.includes(pattern) : pattern.test(filePath)
             ) ?? false;
           if (!isExplicitlyIncluded && !filePath.includes('react-native-reanimated')) {
-            // In node_modules, only transform if code contains ES6 class syntax (Hermes incompatible)
-            if (!/\bclass\s+[\w$]+/.test(code)) {
+            // In node_modules, only transform if code contains ES6 class or async syntax (Hermes incompatible)
+            if (!/\bclass\s+[\w$]+|\basync\s+/.test(code)) {
               return undefined;
             }
           }
