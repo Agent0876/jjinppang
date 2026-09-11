@@ -1,154 +1,181 @@
 # react-native-bun-build ⚡
 
-> Ultra-fast, Bun-powered custom bundler CLI for React Native (bare RN) projects.  
-> A high-performance alternative to Metro and Re.Pack, built directly on `Bun.build()`.
+> Ultra-fast, Bun-powered custom bundler CLI and modern development toolkit for React Native (bare RN) projects.  
+> A complete, high-performance alternative to Metro and Re.Pack, built directly on `Bun.build()` and `Bun.serve()`.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Bun](https://img.shields.io/badge/Bun-1.4%2B-black?logo=bun)](https://bun.sh)
 [![React Native](https://img.shields.io/badge/React_Native-0.70%2B-blue?logo=react)](https://reactnative.dev)
+[![Hermes](https://img.shields.io/badge/Hermes-Bytecode_AOT-purple)](https://hermesengine.dev)
+[![Tooling: OXC](<https://img.shields.io/badge/Tooling-OXC_(oxlint_&_oxfmt)-orange>)](https://oxc.rs)
 
 ---
 
-## 🎯 Features
+## 🎯 Key Highlights
 
-- ⚡ **Lightning Fast**: Powered by Bun's native bundling engine (`Bun.build()`), delivering **3x–5x+ faster** production bundle builds compared to Metro.
-- 🔄 **Drop-in Metro Replacement**: Follows React Native CLI command plugin specifications. Existing Xcode Build Phases and Gradle tasks invoke it without modifications.
-- 🚀 **Built-in Development Server (`start`)**: High-performance dev server powered by `Bun.serve()` serving dynamic bundles and external source maps.
-- 🔥 **Real-Time HMR & Fast Refresh**: Full WebSocket `/hot` protocol implementation compatible with React Native's HMRClient, enabling instant code updates with state preservation.
-- 🗺️ **Full `/symbolicate` & `/open-stack-frame` Support**: Maps bundled runtime errors and LogBox/RedBox stack traces back to exact source file lines with code frames and opens them directly in your editor.
-- 📱🖥️ **Full Multiplatform Resolution (iOS, Android, macOS, Windows)**:
-  1. `.{platform}.tsx` / `.{platform}.ts` / `.{platform}.jsx` / `.{platform}.js`
-  2. macOS smart fallback: automatically checks `.ios.tsx` / `.ios.ts` / `.ios.jsx` / `.ios.js` before `.native.*`
-  3. `.native.tsx` / `.native.ts` / `.native.jsx` / `.native.js`
-  4. Standard fallback extensions (`.tsx`, `.ts`, `.jsx`, `.js`, `.json`)
-  5. Automatic desktop core module redirect: `react-native` imports dynamically resolve to `react-native-macos` on macOS and `react-native-windows` on Windows.
-  6. Monorepo and symlinked package support with automatic `react-native` package condition resolution.
+- ⚡ **Lightning-Fast Bundling**: Powered by Bun's native Zig bundling engine (`Bun.build()`) with **AOT Hermes Bytecode (`.hbc`) compilation**.
+- 🔄 **100% Drop-in Metro Replacement**: Seamlessly hooks into React Native Community CLI (`react-native.config.js`). Works out-of-the-box with standard Xcode Build Phases and Android Gradle scripts.
+- 🚀 **Ultra-Fast Dev Server (`start`)**: Built on native `Bun.serve()` with **189ms Cold Startup**, **3ms Warm Bundle Serving (25x faster than Metro)**, and **11ms Real-Time HMR / Fast Refresh**.
+- 🛠️ **Built-in Modern Scaffolder (`init`)**: Instant project generator with zero legacy clutter (no ESLint/Prettier slowdowns), optional **Redux Toolkit** setup, and multiplatform scaffolding (iOS, Android, macOS, Windows).
+- 🗺️ **Integrated Diagnostics**: Full `/symbolicate` and `/open-stack-frame` implementation with interactive code frames mapping bundled LogBox errors back to original source lines.
+- 📱🖥️ **Multiplatform Ready**: Native module redirection and smart fallbacks for iOS, Android, macOS (`react-native-macos`), and Windows (`react-native-windows`).
+- 🎨 **Smart Asset Pipeline**: Automatic `@2x` / `@3x` scale detection, React Native `AssetRegistry` wrapping, and native folder extraction.
+- 🧬 **Hybrid Babel Engine**: Native Bun transpilation for 95%+ of your files, selectively delegating to Babel only when necessary (Reanimated worklets, Flow types).
 
-- 🎨 **Asset Transformation Pipeline**:
-  - Intercepts images and fonts (`.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.svg`, `.ttf`, `.otf`).
-  - Automatic `@2x` / `@3x` scale variant detection and grouping.
-  - Generates React Native `AssetRegistry.registerAsset({ ... })` modules.
-  - Automatically copies assets into iOS folder structures and Android `drawable-*` / `raw` buckets with sanitized resource identifiers.
-- 🧬 **Hybrid Babel Processing**:
-  - Preserves Bun's native speed for 95%+ of files.
-  - Automatically routes files requiring Babel (e.g. `react-native-reanimated` worklets, Flow types in `react-native`) through Babel with in-memory caching.
-- 🤖 **Hermes Bytecode Compilation**:
-  - Automatically post-processes output bundles into Hermes Bytecode (`.hbc`) using `hermesc`.
-  - Composes packaging and bytecode sourcemaps into unified sourcemaps.
+---
+
+## 📊 3-Way Benchmark Snapshot (Metro vs react-native-bun-build vs Rollipop)
+
+Benchmarked on React Native 0.87 with Hermes enabled (`--dev false`, `--reset-cache`, 3-run average). See [BENCHMARK.md](./BENCHMARK.md) for full details.
+
+| Platform    | 번들러 (Bundler)                            | 핵심 엔진 (Engine)    | 평균 소요 시간 (Avg) | 산출물 크기 (Bundle Size) |       출력 포맷 (Format)       | 속도 개선 배수 (vs Metro) |
+| :---------- | :------------------------------------------ | :-------------------- | :------------------: | :-----------------------: | :----------------------------: | :-----------------------: |
+| **iOS**     | **Metro (기본 빌드)**                       | Babel + Node.js       |     **8,761 ms**     |          1.80 MB          |          Minified JS           |     1.0x _(baseline)_     |
+| **iOS**     | **react-native-bun-build (우리가 만든 것)** | Bun + Babel Hybrid    |     **6,813 ms**     |          2.89 MB          | **Hermes Bytecode (.hbc) AOT** |    **1.29x faster** ⚡    |
+| **iOS**     | **Rollipop**                                | Rolldown (Rust) + SWC |     **1,363 ms**     |          2.23 MB          |          Minified JS           |    **6.43x faster** ⚡    |
+| **Android** | **Metro (기본 빌드)**                       | Babel + Node.js       |    **10,104 ms**     |          1.80 MB          |          Minified JS           |     1.0x _(baseline)_     |
+| **Android** | **react-native-bun-build (우리가 만든 것)** | Bun + Babel Hybrid    |     **7,885 ms**     |          2.89 MB          | **Hermes Bytecode (.hbc) AOT** |    **1.28x faster** ⚡    |
+| **Android** | **Rollipop**                                | Rolldown (Rust) + SWC |     **1,490 ms**     |          2.24 MB          |          Minified JS           |    **6.78x faster** ⚡    |
+
+> [!NOTE]
+> **산출물 포맷 차이**: Metro와 Rollipop은 순수 Minified JS만 생성하므로 앱 패키징 시 별도의 Hermes 컴파일 단계가 필요합니다. 반면 **`react-native-bun-build`**는 **Hermes Bytecode(.hbc) AOT 컴파일까지 일괄 완결**하여 네이티브 앱 빌드 시간을 대폭 줄입니다.
 
 ---
 
 ## 📦 Installation
 
 ```bash
-# Using Bun
+# In your existing React Native project:
 bun add -D react-native-bun-build
 
-# Using Yarn
-yarn add -D react-native-bun-build
-
-# Using npm
+# Or with npm / yarn:
 npm install --save-dev react-native-bun-build
+yarn add -D react-native-bun-build
 ```
 
 ---
 
-## ⚡ Quick Setup with `init`
+## ⚡ Quick Start with `init`
 
-`react-native-bun-build` provides an automated `init` command that configures your project in seconds:
+### 1. Scaffold a Brand New App
 
-### 1. Existing React Native Project (Zero-to-Bun in 5s)
+Generate a clean, high-performance React Native project configured with Bun, Hermes, OXC, and optional Redux Toolkit:
 
-Run inside your existing React Native project:
+```bash
+bunx react-native-bun-build init MyAwesomeApp
+# or with global CLI:
+bun-rn init MyAwesomeApp
+```
+
+**Interactive Prompts:**
+
+1. **Target Platforms**: Choose `iOS`, `Android`, `macOS`, `Windows`, or `All Platforms`.
+2. **Redux Toolkit**: Choose whether to install and pre-configure `@reduxjs/toolkit` and `react-redux` with a counter demo.
+
+Non-interactive flags:
+
+```bash
+bun-rn init MyAwesomeApp --platforms all --redux
+bun-rn init MyAwesomeApp --platforms mobile --no-redux
+```
+
+### 2. Add to an Existing React Native Project
+
+Run inside your existing React Native root directory:
 
 ```bash
 bunx react-native-bun-build init
-# or if globally installed / using bun-rn:
-bun-rn init
 ```
 
-**What it does automatically:**
+This automatically:
 
-- ✅ Lets you choose target platforms (`iOS`, `Android`, `macOS`, `Windows`, or `All Platforms`).
-- ✅ Replaces and configures all `package.json` scripts to use native `bun-rn` commands (`start`, `bundle`, `test`, `lint`, `format`, `check`).
-- ✅ Automatically adds desktop dependencies (`react-native-macos`, `react-native-windows`) when desktop platforms are targeted.
-- ✅ Patches or creates `react-native.config.js` to register Bun bundler commands.
-- ✅ Inspects dependencies (like `react-native-reanimated`) and creates tailored `react-native-bun-build.config.js`.
-- ✅ Configures ultra-fast Rust-based **OXC** (`oxlint` & `oxfmt`) toolchain (`.oxlintrc.json`, `.oxfmtrc.json`).
-
-### 2. Scaffold a Brand New Project
-
-Create a new, high-performance React Native app pre-configured with Bun, Hermes, target platforms, and OXC:
-
-```bash
-bun-rn init MyAwesomeApp
-# or specify platforms non-interactively:
-bun-rn init MyAwesomeApp --platforms all
-```
+- Registers `react-native-bun-build` commands into `react-native.config.js`.
+- Updates `package.json` scripts to use `bun-rn` commands (`start`, `bundle`, `test`, `lint`, `format`, `check`).
+- Configures Rust-based **OXC** (`.oxlintrc.json`, `.oxfmtrc.json`).
 
 ---
 
-## 🚀 Quick Start (Manual Setup)
+## 🚀 CLI Commands & Usage
 
-### 1. Register with React Native CLI
+### 1. Development Server (`start`)
 
-In your React Native project root, open or create `react-native.config.js`:
-
-```javascript
-// react-native.config.js
-module.exports = {
-  commands: require('react-native-bun-build/commands'),
-};
-```
-
-That's it! Now standard React Native CLI commands will automatically use `react-native-bun-build`:
+Starts the high-performance `Bun.serve()` dev server with instant HMR and symbolication:
 
 ```bash
-# 1. Start Development Server with HMR / Fast Refresh & Symbolication
+# Via bun-rn
+bun-rn start
+
+# Or via standard React Native CLI
 npx react-native start
 
-# Custom port or host
-npx react-native start --port 8081 --host localhost
-
-# 2. Production Bundling
-# iOS Bundle
-npx react-native bundle --entry-file index.js --platform ios --dev false --bundle-output dist/main.jsbundle --assets-dest dist/assets
-
-# Android Bundle
-npx react-native bundle --entry-file index.js --platform android --dev false --bundle-output dist/index.android.bundle --assets-dest dist/res
+# Custom port or reset cache
+bun-rn start --port 8081 --reset-cache
 ```
 
----
+### 2. Production Bundling (`bundle`)
 
-## 🛠 Native Build Integration
-
-### iOS (Xcode)
-
-In Xcode, locate your target's **Build Phases** -> **Bundle React Native code and images**.  
-If you use a custom command name (like `bun-bundle`):
+Bundles the application and compiles Hermes Bytecode:
 
 ```bash
-export BUNDLE_COMMAND=bun-bundle
-../node_modules/react-native/scripts/react-native-xcode.sh
+# iOS Bundle
+bun-rn bundle \
+  --entry-file index.js \
+  --platform ios \
+  --dev false \
+  --bundle-output dist/main.jsbundle \
+  --assets-dest dist/assets
+
+# Android Bundle
+bun-rn bundle \
+  --entry-file index.js \
+  --platform android \
+  --dev false \
+  --bundle-output dist/index.android.bundle \
+  --assets-dest dist/res
 ```
 
-_(If you replace `bundle` in `react-native.config.js`, no Xcode modification is necessary)._
+#### Bundle Options
 
-### Android (Gradle)
+| Option                      | Description                                              | Default      |
+| :-------------------------- | :------------------------------------------------------- | :----------- |
+| `--entry-file <path>`       | Root entry file path                                     | _(required)_ |
+| `--platform <string>`       | Target platform (`ios`, `android`, `macos`, `windows`)   | `ios`        |
+| `--dev [boolean]`           | Dev mode (if false, minifies & compiles Hermes bytecode) | `true`       |
+| `--bundle-output <path>`    | Output destination for generated bundle                  | _(required)_ |
+| `--assets-dest <path>`      | Output directory for resolved images and fonts           | `undefined`  |
+| `--sourcemap-output <path>` | Destination path for combined source maps                | `undefined`  |
+| `--reset-cache`             | Clear caches before bundling                             | `false`      |
 
-In `android/app/build.gradle`:
+### 3. OXC Linting & Formatting (`lint`, `format`)
 
-```groovy
-project.ext.react = [
-    bundleCommand: "bun-bundle", // or "bundle"
-]
+Fast Rust-based linting and formatting out-of-the-box (no ESLint/Prettier slowdowns):
+
+```bash
+# Lint project with oxlint (~10ms)
+bun-rn lint
+bun-rn lint --fix
+
+# Format project with oxfmt
+bun-rn format
+bun-rn format --check
+
+# Full CI check (lint + format check + tests)
+bun-rn check
+```
+
+### 4. Environment Diagnostics (`doctor`)
+
+Inspects your local environment for Bun, Node.js, React Native, Hermes compiler, Xcode, and Android SDK:
+
+```bash
+bun-rn doctor
 ```
 
 ---
 
-## ⚙️ Configuration (`react-native-bun-build.config.ts` / `.js`)
+## ⚙️ Configuration (`react-native-bun-build.config.ts`)
 
-You can optionally place a `react-native-bun-build.config.ts` or `react-native-bun-build.config.js` in your project root with full TypeScript autocompletion:
+You can customize bundling behavior by placing a configuration file in your project root with full TypeScript autocompletion:
 
 ```typescript
 // react-native-bun-build.config.ts
@@ -166,9 +193,8 @@ export default defineConfig({
 
   // Babel hybrid configuration
   babel: {
-    // Patterns that trigger Babel transformation (worklets, macros, etc.)
+    // Regex patterns that require Babel transformation (e.g. worklets)
     transformPatterns: [/react-native-reanimated/, /custom-macro/],
-    // Force include/exclude specific paths
     include: [],
     exclude: [],
   },
@@ -176,181 +202,39 @@ export default defineConfig({
   // Hermes bytecode compilation settings
   hermes: {
     enabled: true, // Default: true in production (--dev false)
-    // Custom path to hermesc if not in standard locations
-    hermescPath: undefined,
-    // Extra compiler flags passed to hermesc
+    hermescPath: undefined, // Custom hermesc path if needed
     flags: ['-O'],
   },
 
-  // Override minification
   minify: true,
 });
 ```
 
 ---
 
-## 💻 Standalone CLI Usage
+## 📋 Ecosystem Compatibility Matrix (Verified)
 
-You can also run the custom CLI directly without `react-native`:
+Tested and verified on real-world React Native 0.87 applications:
 
-### Starting the Dev Server (`start`)
-
-```bash
-# Start server on default port 8081
-bun-rn start
-
-# Custom port, host, or reset cache
-bun-rn start --port 8081 --host localhost --reset-cache
-```
-
-### Building Bundles (`bundle`)
-
-```bash
-bun-rn bundle \
-  --entry-file index.js \
-  --platform ios \
-  --dev false \
-  --bundle-output dist/main.jsbundle \
-  --assets-dest dist/assets \
-  --sourcemap-output dist/main.jsbundle.map
-```
-
-### Bundle CLI Arguments
-
-| Argument                     | Description                                             | Default       |
-| :--------------------------- | :------------------------------------------------------ | :------------ |
-| `--entry-file <path>`        | Path to root JS/TS file                                 | _(required)_  |
-| `--platform <string>`        | Target platform (`ios`, `android`, `macos`, `windows`)  | `ios`         |
-| `--dev [boolean]`            | Development mode (if false, minifies & Hermes compiles) | `true`        |
-| `--bundle-output <path>`     | Destination file path for generated bundle              | _(required)_  |
-| `--bundle-encoding <string>` | Output file encoding                                    | `utf8`        |
-| `--assets-dest <path>`       | Directory path to store resolved assets                 | `undefined`   |
-| `--sourcemap-output <path>`  | Path to save output sourcemap                           | `undefined`   |
-| `--minify [boolean]`         | Explicitly override minification                        | `!dev`        |
-| `--config <path>`            | Path to custom config file                              | Auto-detected |
-| `--reset-cache`              | Clear caches before build                               | `false`       |
+| Library                                         | Module Type          |        Pipeline Path         | Status & Notes                                          |
+| :---------------------------------------------- | :------------------- | :--------------------------: | :------------------------------------------------------ |
+| **`@reduxjs/toolkit`** & **`react-redux`**      | State Management     |      ⚡ **Bun Native**       | ✅ Verified working on mobile & desktop                 |
+| **`react-native-webview`**                      | Native WebView       |      ⚡ **Bun Native**       | ✅ Verified full rendering & web navigation             |
+| **`react-native-svg`**                          | Fabric / TurboModule |      ⚡ **Bun Native**       | ✅ Zero-config native rendering                         |
+| **`@react-native-async-storage/async-storage`** | TurboModule / CJS    |      ⚡ **Bun Native**       | ✅ Full async persistent storage verified               |
+| **`react-native-safe-area-context`**            | Fabric / Insets      |      ⚡ **Bun Native**       | ✅ Insets and SafeAreaProvider verified                 |
+| **`react-native-reanimated`**                   | JSI / C++ Worklets   |     🧬 **Babel Hybrid**      | ✅ Automatically routed to Babel for worklet transforms |
+| **`react-native-macos`**                        | Desktop Platform     | ⚡ **Bun Native + Redirect** | ✅ Automatic core redirect on `--platform macos`        |
+| **`react-native-windows`**                      | Desktop Platform     | ⚡ **Bun Native + Redirect** | ✅ Automatic core redirect on `--platform windows`      |
 
 ---
 
-## 🔍 Built-in Next.js CLI-Style `lint` & `format`
+## 🤝 Contributing
 
-Just like Next.js provides `next lint` out of the box with zero-configuration and automatic setup, `react-native-bun-build` comes with built-in `lint` and `format` commands powered by **OXC** (`oxlint` & `oxfmt`):
-
-### 1. `bun-rn lint` (or `npx react-native lint`)
-
-- **Zero-Config Auto-Setup**: If `.oxlintrc.json` is missing in your project, running `lint` automatically generates a React Native-optimized configuration before linting.
-- **Ultra-Fast Performance**: Completes linting across your entire project in ~10-20ms.
-- **Auto-Fix Support**: Use `--fix` to automatically resolve fixable lint rules.
-
-```bash
-# Run linter on current project (auto-generates .oxlintrc.json if missing)
-bun-rn lint
-# or via React Native CLI:
-npx react-native lint
-
-# Auto-fix issues
-bun-rn lint --fix
-
-# Lint a specific file or directory
-bun-rn lint src/components
-```
-
-### 2. `bun-rn format` (or `npx react-native format`)
-
-- **Zero-Config Auto-Setup**: If `.oxfmtrc.json` is missing in your project, running `format` automatically initializes a React Native-optimized formatter configuration.
-- **Check Mode**: Use `--check` in CI pipelines to verify formatting without modifying files.
-
-```bash
-# Format all code in place (auto-generates .oxfmtrc.json if missing)
-bun-rn format
-# or via React Native CLI:
-npx react-native format
-
-# Check formatting status without writing (ideal for CI)
-bun-rn format --check
-
-# Format a specific directory
-bun-rn format src/
-```
+We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture details, local setup, test execution, and pull request guidelines.
 
 ---
 
-## ⚠️ Known Limitations & Library Compatibility
+## 📄 License
 
-실제 React Native 네이티브 모듈 라이브러리 실측 테스트(`react-native-svg`, `react-native-reanimated`, `@react-native-async-storage/async-storage` 등)를 바탕으로 검증된 호환성 분류 및 기술적 제약사항입니다.
-
-### 📋 Library Compatibility Matrix (실측 검증 완료)
-
-| 라이브러리                                      | 네이티브 모듈 유형       |      번들러 파이프라인 경로       |                         상태 / 비고                          |
-| :---------------------------------------------- | :----------------------- | :-------------------------------: | :----------------------------------------------------------: |
-| **`react-native-macos`**                        | macOS Desktop Platform   | ⚡ **Bun Native + Auto Redirect** |   ✅ `--platform macos` 시 `react-native` 자동 리다이렉션    |
-| **`react-native-windows`**                      | Windows Desktop Platform | ⚡ **Bun Native + Auto Redirect** |  ✅ `--platform windows` 시 `react-native` 자동 리다이렉션   |
-| **`react-native-svg`**                          | Fabric / TurboModule     |  ⚡ **Bun Native (Zero-Config)**  |    ✅ Babel 없이 Bun 단독으로 100% 정상 번들링 및 렌더링     |
-| **`@react-native-async-storage/async-storage`** | TurboModule / CJS Bridge |  ⚡ **Bun Native (Zero-Config)**  |               ✅ 비동기 스토리지 I/O 정상 동작               |
-| **`react-native-safe-area-context`**            | Fabric / TurboModule     |  ⚡ **Bun Native (Zero-Config)**  |               ✅ Insets 및 Provider 정상 동작                |
-| **`react-native-reanimated`**                   | JSI / C++ Worklet Engine |     🧬 **Babel Hybrid 필수**      |  ✅ `'worklet'` AST 변환을 위해 Babel 하이브리드 필수 경유   |
-| **`react-native` / `@react-native/*`**          | Core Engine              |     🧬 **Babel Hybrid 필수**      | ✅ `.js` 내부의 Flow 타입 구문 제거를 위해 자동 Babel 라우팅 |
-
----
-
-### 1. Babel 하이브리드 경로가 필수인 케이스 (Babel Hybrid Required)
-
-1. **Worklet / 컴파일 타임 AST 매크로 의존 라이브러리 (`react-native-reanimated` 등)**:
-   - Reanimated의 `useAnimatedStyle`, `useSharedValue` 콜백 함수는 UI 스레드에서 직접 구동되어야 하므로, `react-native-reanimated/plugin`을 통한 클로저 캡처(`_f._closure`), `__workletHash` 생성, JS 팩토리 함수 래핑이 필수적입니다.
-   - **동작**: `react-native-bun-build`의 하이브리드 플러그인이 `worklet` / `useAnimatedStyle` 패턴을 자동 감지하여 해당 파일만 선택적으로 Babel로 라우팅합니다.
-   - ⚠️ **순수 Bun 단독 강제 시**: AST 변환이 누락되어 런타임에 `"Reanimated failed to create a worklet"` 에러 또는 크래시가 발생합니다.
-2. **Flow 문법으로 배포된 코드 (`react-native` 코어 등)**:
-   - Bun의 네이티브 파서는 TypeScript 및 표준 JavaScript를 지원하지만 **Flow 문법(`import typeof`, `type X = ...`)은 지원하지 않습니다.**
-   - `react-native` 및 `@react-native/*`는 번들러 내장 하이브리드 규칙으로 자동 처리되나, 만약 제3자 라이브러리가 미컴파일된 Flow 문법을 `.js`로 배포한 경우 `config.babel.include`에 추가해야 합니다.
-
----
-
-### 2. 순수 Bun 경로로 즉시 동작하는 케이스 (Zero-Config)
-
-- **`react-native-svg`**, **`@react-native-async-storage/async-storage`**, **`react-native-screens`** 등 대다수의 네이티브 모듈 라이브러리:
-  - TypeScript/JSX 표준 문법 및 TurboModule/Fabric 네이티브 바인딩으로 작성된 패키지는 **Babel을 전혀 거치지 않고 Bun 네이티브 파서만으로 10~50배 빠르게 번들링**됩니다.
-
----
-
-### 3. 아예 지원되지 않거나 구조적으로 불가능한 제약 (Unsupported)
-
-1. **동적 `require()` (Dynamic Requires)**:
-   - `const mod = require('./locales/' + lang)`와 같은 런타임 동적 문자열 require는 Bun.build의 정적 그래프 분석 특성상 포함되지 않거나 런타임 에러를 유발합니다. 반드시 정적 import/require를 사용해야 합니다.
-2. **Metro 전용 Haste 모듈 시스템 (`@providesModule`)**:
-   - 구형 Facebook 라이브러리에서 쓰이던 Haste 모듈 해석은 지원하지 않으며, 표준 npm Node 모듈 해석 및 `package.json`의 `exports`/`main` 필드만 지원합니다.
-3. **Metro 독점 Transformer 플러그인**:
-   - `metro.config.js`의 내부 AST 조작 훅이나 Metro 전용 바벨 트랜스포머에 하드코딩된 플러그인은 Bun 파이프라인에서 실행되지 않습니다.
-4. **Expo Managed Workflow**:
-   - Bare React Native CLI 환경을 기준으로 설계되었습니다.
-
----
-
-## ⚡ Code Quality & Tooling (OXC)
-
-이 프로젝트는 초고속 Rust 기반 도구인 **[OXC (Oxidation Compiler)](https://oxc.rs)** 생태계를 채택하여 린팅과 포맷팅을 수행합니다.
-
-- **`oxlint`**: ESLint 대비 최대 50~100배 빠른 Rust 기반 린터 (~10ms 이내 완료).
-- **`oxfmt`**: Prettier 호환 고속 Rust 포맷터.
-
-```bash
-# 코드 린트 검사
-bun run lint
-
-# 코드 린트 자동 수정
-bun run lint:fix
-
-# 코드 포맷팅 적용
-bun run format
-
-# 코드 포맷팅 상태 확인
-bun run format:check
-
-# 전체 검사 (린트 + 포맷 + 테스트)
-bun run check
-```
-
----
-
-## 📊 Benchmark
-
-See [BENCHMARK.md](./BENCHMARK.md) for detailed performance comparisons against Metro on real bare React Native applications.
+Distributed under the MIT License. See [LICENSE](./LICENSE) for more information.
