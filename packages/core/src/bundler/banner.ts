@@ -23,6 +23,63 @@ if (typeof globalThis.$RefreshReg$ === 'undefined') {
 if (typeof globalThis.$RefreshSig$ === 'undefined') {
   globalThis.$RefreshSig$ = function() { return function(type) { return type; }; };
 }
+// Fallback console methods if not defined
+if (typeof global.console === 'undefined') {
+  global.console = {};
+}
+if (typeof global.console.createTask === 'undefined') {
+  global.console.createTask = function() { return null; };
+}
+// Standard React Native ErrorUtils polyfill
+var __rnBunInGuard = 0;
+var __rnBunGlobalHandler = function(e, isFatal) {
+  var msg = e && e.message ? e.message : String(e);
+  var stack = e && e.stack ? e.stack : '';
+  if (typeof console !== 'undefined' && console.error) {
+    console.error('[BunRN] ' + (isFatal ? 'Fatal' : 'Uncaught') + ' error:', msg, stack);
+  }
+  try {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'http://localhost:8081/debug-errors', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send(JSON.stringify({ message: msg, stack: stack, isFatal: isFatal }));
+  } catch(x) {}
+};
+if (typeof global.ErrorUtils === 'undefined') {
+  global.ErrorUtils = {
+    setGlobalHandler: function(fn) { __rnBunGlobalHandler = fn; },
+    getGlobalHandler: function() { return __rnBunGlobalHandler; },
+    reportError: function(e) { __rnBunGlobalHandler(e, false); },
+    reportFatalError: function(e) { __rnBunGlobalHandler(e, true); },
+    applyWithGuard: function(fn, context, args) {
+      try {
+        __rnBunInGuard++;
+        return fn.apply(context, args);
+      } catch (e) {
+        this.reportError(e);
+      } finally {
+        __rnBunInGuard--;
+      }
+      return null;
+    },
+    applyWithGuardIfNeeded: function(fn, context, args) {
+      if (this.inGuard()) {
+        return fn.apply(context, args);
+      }
+      return this.applyWithGuard(fn, context, args);
+    },
+    inGuard: function() {
+      return !!__rnBunInGuard;
+    },
+    guard: function(fn, name, context) {
+      if (typeof fn !== 'function') return fn;
+      var self = this;
+      return function() {
+        return self.applyWithGuard(fn, context || this, arguments);
+      };
+    },
+  };
+}
 `;
 }
 

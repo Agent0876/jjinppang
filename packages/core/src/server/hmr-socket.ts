@@ -58,6 +58,11 @@ export class HMRServer {
    * Called when a new WebSocket connection is opened
    */
   handleOpen(ws: ServerWebSocket<ClientData>): void {
+    if (ws.data.clientUrl?.includes('/message')) {
+      // Packager client connection (RCTPackagerConnection / Metro packager protocol)
+      // Do not send HMR heartbeat or add to HMR broadcast clients
+      return;
+    }
     this.clients.add(ws);
     // Send immediate heartbeat to verify connection
     ws.send(JSON.stringify({ type: 'heartbeat' }));

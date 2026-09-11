@@ -207,8 +207,8 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
         console.log(`[DevServer] REQ: ${req.method} ${pathname}${url.search}`);
       }
 
-      // 1. WebSocket upgrade for /hot and /inspector/debug
-      if (pathname === '/hot' || pathname === '/inspector/debug') {
+      // 1. WebSocket upgrade for /hot, /inspector/debug, and /message (PackagerConnection)
+      if (pathname === '/hot' || pathname === '/inspector/debug' || pathname === '/message') {
         const upgraded = srv.upgrade(req, {
           data: {
             id: Math.random().toString(36).slice(2, 9),
@@ -218,6 +218,10 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
           },
         });
         if (upgraded) return undefined;
+        // If HTTP request to /message (e.g. non-WebSocket check)
+        if (pathname === '/message') {
+          return new Response(null, { status: 204 });
+        }
         return new Response('WebSocket upgrade failed', { status: 400 });
       }
 
@@ -392,10 +396,15 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
         });
       }
 
-      // 9. Message long-polling endpoint (Metro DevServerHelper compatibility)
-      // React Native native side polls this endpoint; return 204 so it retries without blocking
-      if (pathname === '/message') {
-        return new Response(null, { status: 204 });
+      // 10. Debug errors endpoint (temporary - for diagnosing white screen issues)
+      if (pathname === '/debug-errors' && req.method === 'POST') {
+        try {
+          const body = await req.json();
+          console.error(
+            `\n[DevServer] 🔴 JS ERROR from app:\n  Message: ${body.message}\n  Stack: ${body.stack || 'N/A'}\n`
+          );
+        } catch {}
+        return new Response('OK', { status: 200 });
       }
 
       return new Response('Not Found', { status: 404 });
