@@ -29,14 +29,17 @@ export function compileWithHermes(params: CompileWithHermesParams): boolean {
   const hbcOutput = `${bundleOutput}.hbc`;
   const hbcMapOutput = `${bundleOutput}.hbc.map`;
 
-  const flags: string[] = ['-emit-binary', '-out', hbcOutput, bundleOutput, '-O'];
+  const flags: string[] = ['-emit-binary', '-out', hbcOutput, bundleOutput, '-Xes6-class'];
 
   if (sourcemapOutput) {
     flags.push('-output-source-map');
   }
 
-  if (options?.flags) {
-    flags.push(...options.flags);
+  const extraFlags = options?.flags && options.flags.length > 0 ? options.flags : ['-O'];
+  for (const flag of extraFlags) {
+    if (!flags.includes(flag)) {
+      flags.push(flag);
+    }
   }
 
   const result = spawnSync(hermescPath, flags, {
@@ -45,6 +48,8 @@ export function compileWithHermes(params: CompileWithHermesParams): boolean {
   });
 
   if (result.status !== 0) {
+    if (result.error) console.error('Hermesc error:', result.error);
+    if (result.signal) console.error('Hermesc killed by signal:', result.signal);
     throw new Error(
       `[react-native-bun-build] Hermes bytecode compilation failed with status ${result.status}`
     );

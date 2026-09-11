@@ -145,8 +145,7 @@ export async function bundle(options: BundlerOptions): Promise<BundleResult> {
 
   // Hermes Bytecode Compilation
   let hermesCompiled = false;
-  const shouldCompileHermes =
-    (!options.dev && options.hermes?.enabled !== false) || options.hermes?.enabled === true;
+  const shouldCompileHermes = !options.dev && options.hermes?.enabled !== false;
 
   if (shouldCompileHermes) {
     hermesCompiled = compileWithHermes({

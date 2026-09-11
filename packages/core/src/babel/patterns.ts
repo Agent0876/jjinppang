@@ -16,6 +16,7 @@ export const DEFAULT_BABEL_PATH_PATTERNS = [
   /\/node_modules\/react-native-macos\//,
   /\/node_modules\/react-native-windows\//,
   /\/node_modules\/@react-native\//,
+  /\/node_modules\/@react-native-macos\//,
   /\/node_modules\/@react-native-windows\//,
 ];
 
