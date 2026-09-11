@@ -1,25 +1,42 @@
 import path from 'node:path';
 
 export const DEFAULT_BABEL_PATTERNS = [
+  // 1. Reanimated worklets and animation hooks
   /react-native-reanimated/,
   /['"]worklet['"]/,
-  /useAnimatedStyle/,
-  /useAnimatedProps/,
+  /useAnimated/,
   /useDerivedValue/,
   /createAnimatedComponent/,
+  /useFrameCallback/,
+  /runOn(JS|UI)/,
+
+  // 2. Flow typing (Flow syntax is not stripped by Bun in .js files)
   /@flow/,
-  /import\s+typeof/,
-  /\bclass\s+[\w$]+/,
+  /\bimport\s+type(?:of)?\b/,
+  /\btype\s+[A-Z][\w$]*\s*=/,
+
+  // 3. Hermes VM incompatible syntax (Hermes parser cannot execute these directly)
+  /\bclass\s*(\{|\bextends\b|[\w$]+)/,
   /\basync\s+/,
+
+  // 4. Styling macros & CSS-in-JS
+  /\bnativewind\b/,
+  /\bclassName\s*=/,
 ];
 
 export const DEFAULT_BABEL_PATH_PATTERNS = [
-  /\/node_modules\/react-native\//,
-  /\/node_modules\/react-native-macos\//,
-  /\/node_modules\/react-native-windows\//,
-  /\/node_modules\/@react-native\//,
-  /\/node_modules\/@react-native-macos\//,
-  /\/node_modules\/@react-native-windows\//,
+  // Core React Native & platform forks (cross-platform path separators)
+  /[\\/]node_modules[\\/]react-native[\\/]/,
+  /[\\/]node_modules[\\/]react-native-macos[\\/]/,
+  /[\\/]node_modules[\\/]react-native-windows[\\/]/,
+  /[\\/]node_modules[\\/]@react-native[\\/]/,
+  /[\\/]node_modules[\\/]@react-native-macos[\\/]/,
+  /[\\/]node_modules[\\/]@react-native-windows[\\/]/,
+
+  // Ecosystem core runtimes & libraries requiring Babel
+  /[\\/]node_modules[\\/]metro-runtime[\\/]/,
+  /[\\/]node_modules[\\/]react-native-reanimated[\\/]/,
+  /[\\/]node_modules[\\/]@react-native-community[\\/]/,
 ];
 
 /**

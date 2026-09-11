@@ -23,7 +23,8 @@ export function createBabelHybridPlugin(options: BabelHybridPluginOptions): BunP
         const filePath = args.path;
 
         // Skip other node_modules unless matched by path pattern or explicitly included
-        const isNodeModules = filePath.includes('/node_modules/');
+        const isNodeModules =
+          filePath.includes('/node_modules/') || filePath.includes('\\node_modules\\');
         const matchesDefaultPath = DEFAULT_BABEL_PATH_PATTERNS.some((p) => p.test(filePath));
 
         let code: string;
@@ -38,9 +39,9 @@ export function createBabelHybridPlugin(options: BabelHybridPluginOptions): BunP
             options.include?.some((pattern) =>
               typeof pattern === 'string' ? filePath.includes(pattern) : pattern.test(filePath)
             ) ?? false;
-          if (!isExplicitlyIncluded && !filePath.includes('react-native-reanimated')) {
-            // In node_modules, only transform if code contains ES6 class or async syntax (Hermes incompatible)
-            if (!/\bclass\s+[\w$]+|\basync\s+/.test(code)) {
+          if (!isExplicitlyIncluded) {
+            // In other node_modules, only transform if code matches Babel patterns (Hermes, Flow, macros)
+            if (!shouldTransformWithBabel(filePath, code, options)) {
               return undefined;
             }
           }
