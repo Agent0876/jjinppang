@@ -5,7 +5,7 @@ import { createResolverPlugin } from '../resolver/index.js';
 import { createAssetPlugin, copyAssetsToDestination } from '../assets/index.js';
 import { createBabelHybridPlugin } from '../babel/index.js';
 import { compileWithHermes } from '../hermes/index.js';
-import { generateVirtualEntryContent } from './banner.js';
+import { generateRuntimePrelude, generateVirtualEntryContent } from './banner.js';
 
 export interface BundleResult {
   bundleOutput: string;
@@ -22,31 +22,21 @@ export interface BundleResult {
 export async function bundle(options: BundlerOptions): Promise<BundleResult> {
   const startTime = performance.now();
 
-  const projectRoot = path.resolve(options.projectRoot);
-  const entryFile = path.isAbsolute(options.entryFile)
-    ? options.entryFile
-    : path.resolve(projectRoot, options.entryFile);
-  const bundleOutput = path.isAbsolute(options.bundleOutput)
-    ? options.bundleOutput
-    : path.resolve(projectRoot, options.bundleOutput);
-  const assetsDest = options.assetsDest
-    ? path.isAbsolute(options.assetsDest)
-      ? options.assetsDest
-      : path.resolve(projectRoot, options.assetsDest)
-    : undefined;
+  const projectRoot = path.resolve(options.projectRoot ?? process.cwd());
+  const entryFile = path.resolve(projectRoot, options.entryFile);
+  const bundleOutput = path.resolve(projectRoot, options.bundleOutput);
+  const assetsDest = options.assetsDest ? path.resolve(projectRoot, options.assetsDest) : undefined;
   const sourcemapOutput = options.sourcemapOutput
-    ? path.isAbsolute(options.sourcemapOutput)
-      ? options.sourcemapOutput
-      : path.resolve(projectRoot, options.sourcemapOutput)
+    ? path.resolve(projectRoot, options.sourcemapOutput)
     : undefined;
 
   // Ensure output directory exists
-  const outDir = path.dirname(bundleOutput);
-  if (!fs.existsSync(outDir)) {
-    fs.mkdirSync(outDir, { recursive: true });
+  const outputDir = path.dirname(bundleOutput);
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  // Create temporary virtual entry file that bootstraps React Native runtime
+  // Temporary virtual entry file to prepend InitializeCore and React Refresh
   const tempEntryDir = path.join(projectRoot, '.bun-rn-temp');
   if (!fs.existsSync(tempEntryDir)) {
     fs.mkdirSync(tempEntryDir, { recursive: true });
@@ -59,7 +49,7 @@ export async function bundle(options: BundlerOptions): Promise<BundleResult> {
   const virtualEntryContent = generateVirtualEntryContent(entryFile, options.dev);
   fs.writeFileSync(virtualEntryPath, virtualEntryContent, 'utf8');
 
-  // Plugins
+  // Track collected assets
   const collectedAssets: AssetMetadata[] = [];
   const assetPlugin = createAssetPlugin(
     {
@@ -87,6 +77,7 @@ export async function bundle(options: BundlerOptions): Promise<BundleResult> {
       entrypoints: [virtualEntryPath],
       target: 'browser',
       format: 'iife',
+      banner: generateRuntimePrelude(options.dev),
       minify: options.minify ?? !options.dev,
       sourcemap: sourcemapOutput ? 'external' : 'none',
       define: {

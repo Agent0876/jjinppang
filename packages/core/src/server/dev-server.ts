@@ -8,7 +8,7 @@ import { createResolverPlugin, clearResolverCache } from '../resolver/index.js';
 import { createAssetPlugin } from '../assets/index.js';
 import { createBabelHybridPlugin } from '../babel/index.js';
 import { Symbolicator } from '../diagnostics/index.js';
-import { generateVirtualEntryContent } from '../bundler/banner.js';
+import { generateRuntimePrelude, generateVirtualEntryContent } from '../bundler/banner.js';
 import { HMRServer, type ClientData } from './hmr-socket.js';
 
 export interface DevServerInstance {
@@ -121,6 +121,7 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
         entrypoints: [virtualEntryPath],
         target: 'browser',
         format: 'iife',
+        banner: generateRuntimePrelude(dev),
         minify,
         sourcemap: 'external',
         define: {
