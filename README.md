@@ -30,17 +30,17 @@ Benchmarked on React Native 0.87 with Hermes enabled (`--dev false`, `--reset-ca
 
 | Platform    | 번들러 (Bundler)                  | 핵심 엔진 (Engine)          | 전체 빌드 시간 (Avg) | 순수 JS 크기 (Minified JS) | Hermes 바이트코드 (.hbc) |   속도 개선 배수 (vs Metro)    |
 | :---------- | :-------------------------------- | :-------------------------- | :------------------: | :------------------------: | :----------------------: | :----------------------------: |
-| **iOS**     | **Metro (기본 빌드)**             | Babel + Node.js             |     **9,863 ms**     |          1.80 MB           |         2.32 MB          |       1.0x _(baseline)_        |
-| **iOS**     | **찐빵 (jjinppang - Cold)**       | Bun + Babel Hybrid          |     **4,479 ms**     |       **1.21 MB** ⚡       |       **1.91 MB**        |      **2.20x faster** ⚡       |
-| **iOS**     | **찐빵 (jjinppang - Warm Cache)** | Bun + Persistent Disk Cache |   **1,997 ms** ⚡    |       **1.21 MB** ⚡       |       **1.91 MB**        | **4.94x faster** ⚡ _(최고속)_ |
-| **iOS**     | **Rollipop**                      | Rolldown (Rust) + SWC       |     **2,635 ms**     |          2.23 MB           |       **1.53 MB**        |      **3.74x faster** ⚡       |
-| **Android** | **Metro (기본 빌드)**             | Babel + Node.js             |     **9,191 ms**     |          1.80 MB           |         2.33 MB          |       1.0x _(baseline)_        |
-| **Android** | **찐빵 (jjinppang - Cold)**       | Bun + Babel Hybrid          |     **4,544 ms**     |       **1.22 MB** ⚡       |       **1.91 MB**        |      **2.02x faster** ⚡       |
-| **Android** | **찐빵 (jjinppang - Warm Cache)** | Bun + Persistent Disk Cache |   **2,055 ms** ⚡    |       **1.22 MB** ⚡       |       **1.91 MB**        | **4.47x faster** ⚡ _(최고속)_ |
-| **Android** | **Rollipop**                      | Rolldown (Rust) + SWC       |     **2,667 ms**     |          2.24 MB           |       **1.54 MB**        |      **3.45x faster** ⚡       |
+| **iOS**     | **Metro (기본 빌드)**             | Babel + Node.js             |     **9,356 ms**     |          1.80 MB           |         2.32 MB          |       1.0x _(baseline)_        |
+| **iOS**     | **찐빵 (jjinppang - Cold)**       | Bun + Babel Hybrid          |     **4,487 ms**     |       **1.21 MB** ⚡       |      **1.32 MB** ⚡      |      **2.09x faster** ⚡       |
+| **iOS**     | **찐빵 (jjinppang - Warm Cache)** | Bun + Persistent Disk Cache |   **1,938 ms** ⚡    |       **1.21 MB** ⚡       |      **1.32 MB** ⚡      | **4.83x faster** ⚡ _(최고속)_ |
+| **iOS**     | **Rollipop**                      | Rolldown (Rust) + SWC       |     **2,550 ms**     |          2.23 MB           |         1.53 MB          |      **3.67x faster** ⚡       |
+| **Android** | **Metro (기본 빌드)**             | Babel + Node.js             |     **8,880 ms**     |          1.80 MB           |         2.33 MB          |       1.0x _(baseline)_        |
+| **Android** | **찐빵 (jjinppang - Cold)**       | Bun + Babel Hybrid          |     **4,369 ms**     |       **1.22 MB** ⚡       |      **1.32 MB** ⚡      |      **2.03x faster** ⚡       |
+| **Android** | **찐빵 (jjinppang - Warm Cache)** | Bun + Persistent Disk Cache |   **1,959 ms** ⚡    |       **1.22 MB** ⚡       |      **1.32 MB** ⚡      | **4.53x faster** ⚡ _(최고속)_ |
+| **Android** | **Rollipop**                      | Rolldown (Rust) + SWC       |     **2,515 ms**     |          2.24 MB           |         1.54 MB          |      **3.53x faster** ⚡       |
 
 > [!NOTE]
-> **정규화된 번들 크기 및 속도 비교**: 모든 번들러 산출물을 **1) 순수 Minified JS** 및 **2) React Native 공식 Hermes 바이트코드(.hbc)** 로 공정하게 정규화하여 교차 측정한 수치입니다. **`jjinppang`**은 영구 디스크 캐시(`node_modules/.cache/jjinppang`)를 통해 **1.9초대 빌드(4.94x 속도)**를 달성하여 롤리팝(2.6초)보다 빠르며, 순수 JS 크기(1.21 MB)에서도 3대 번들러 중 가장 가볍습니다. 또한 Hermes AOT 컴파일을 번들링 파이프라인에서 일괄 완결합니다.
+> **정규화된 번들 크기 및 속도 비교**: 모든 번들러 산출물을 **1) 순수 Minified JS** 및 **2) React Native 공식 Hermes 바이트코드(.hbc)** 로 공정하게 정규화하여 교차 측정한 수치입니다. **`jjinppang`**은 영구 디스크 캐시(`node_modules/.cache/jjinppang`)를 통해 **1.9초대 빌드(4.83x 속도)**를 달성하여 롤리팝(2.5초)보다 빠르며, 순수 JS 크기(1.21 MB)와 Hermes 바이트코드(1.32 MB) 모두 **3대 번들러 중 압도적으로 가장 작고 가볍습니다.** 또한 Hermes AOT 컴파일을 번들링 파이프라인에서 일괄 완결합니다.
 
 ---
 
