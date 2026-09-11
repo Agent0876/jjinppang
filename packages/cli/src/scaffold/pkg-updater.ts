@@ -14,6 +14,7 @@ export interface PackageJson {
 export interface UpdatePackageJsonOptions {
   oxc?: boolean;
   platforms?: TargetPlatform[];
+  rnVersion?: string;
   dryRun?: boolean;
 }
 
@@ -83,6 +84,22 @@ export function updatePackageJson(
     options.platforms && options.platforms.length > 0
       ? options.platforms
       : (['ios', 'android'] as TargetPlatform[]);
+
+  // 0. Update react-native version if specified
+  if (options.rnVersion) {
+    if (pkgJson.dependencies?.['react-native']) {
+      pkgJson.dependencies['react-native'] = options.rnVersion;
+    }
+    if (pkgJson.devDependencies?.['@react-native/babel-preset']) {
+      pkgJson.devDependencies['@react-native/babel-preset'] = options.rnVersion;
+    }
+    if (pkgJson.devDependencies?.['@react-native/metro-config']) {
+      pkgJson.devDependencies['@react-native/metro-config'] = options.rnVersion;
+    }
+    if (pkgJson.devDependencies?.['@react-native/typescript-config']) {
+      pkgJson.devDependencies['@react-native/typescript-config'] = options.rnVersion;
+    }
+  }
 
   // 1. Core Development & Bundling Scripts - powered by bun-rn
   pkgJson.scripts['start'] = 'bun-rn start';

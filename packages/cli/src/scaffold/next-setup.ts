@@ -45,6 +45,23 @@ export async function setupNextjs(
   }
 
   // 1. apps/web/package.json
+  let rnwVersion = '^0.21.2';
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2000);
+    const res = await fetch('https://registry.npmjs.org/react-native-web/latest', {
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = (await res.json()) as { version: string };
+      if (data.version) rnwVersion = `^${data.version}`;
+    }
+  } catch {
+    // fallback
+  }
+
   const webPkg = {
     name: 'web',
     version: '0.0.1',
@@ -59,15 +76,15 @@ export async function setupNextjs(
     dependencies: {
       [`@${projectNameLower}/ui`]: 'workspace:*',
       next: nextVersion,
-      react: '19.2.3',
-      'react-dom': '19.2.3',
-      'react-native-web': '^0.19.13',
+      react: '19.3.0',
+      'react-dom': '19.3.0',
+      'react-native-web': rnwVersion,
     },
     devDependencies: {
-      '@types/node': '^22.10.0',
+      '@types/node': '^22.13.0',
       '@types/react': '^19.2.0',
       '@types/react-dom': '^19.2.0',
-      typescript: '^5.7.0',
+      typescript: '^5.8.3',
     },
   };
   fs.writeFileSync(

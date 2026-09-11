@@ -22,6 +22,7 @@ export interface GenerateProjectOptions {
   redux?: boolean;
   webview?: boolean;
   monorepo?: boolean;
+  rnVersion?: string;
 }
 
 const BINARY_EXTENSIONS = new Set([
@@ -196,16 +197,17 @@ export async function generateProjectFromTemplate(options: GenerateProjectOption
   updatePackageJson(targetDir, {
     oxc,
     platforms,
+    rnVersion: options.rnVersion,
     dryRun,
   });
 
   // 6. Setup Redux Toolkit if enabled
   if (options.redux) {
-    setupRedux(targetDir, projectName, dryRun);
+    await setupRedux(targetDir, projectName, dryRun);
   }
 
   // 7. Setup React Native WebView if enabled
   if (options.webview) {
-    setupWebview(targetDir, projectName, dryRun, Boolean(options.redux));
+    await setupWebview(targetDir, projectName, dryRun, Boolean(options.redux));
   }
 }

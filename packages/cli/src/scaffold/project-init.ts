@@ -177,14 +177,14 @@ export async function initExistingProject(
   // 5. Setup Redux Toolkit if requested
   if (options.redux) {
     const projectName = path.basename(projectDir);
-    setupRedux(projectDir, projectName, dryRun);
+    await setupRedux(projectDir, projectName, dryRun);
     console.log(`  ✅ Configured Redux Toolkit (@reduxjs/toolkit & react-redux)`);
   }
 
   // 6. Setup React Native WebView if requested
   if (options.webview) {
     const projectName = path.basename(projectDir);
-    setupWebview(projectDir, projectName, dryRun, Boolean(options.redux));
+    await setupWebview(projectDir, projectName, dryRun, Boolean(options.redux));
     console.log(`  ✅ Configured React Native WebView (react-native-webview)`);
   }
 
@@ -327,6 +327,7 @@ dist/
   console.log(`⚡ Generating clean project structure with bun-rn built-in template...`);
   const platforms = parsePlatforms(options.platforms);
   const pm = (options.pm as PackageManagerType) || 'bun';
+  const rnVersion = options.version || (await resolveCompatibleReactNativeVersion(platforms));
 
   await generateProjectFromTemplate({
     projectName: appName,
@@ -340,6 +341,7 @@ dist/
     redux: Boolean(options.redux),
     webview: Boolean(options.webview),
     monorepo: isMonorepo,
+    rnVersion,
   });
 
   if (isMonorepo && !dryRun) {

@@ -9,11 +9,11 @@ export interface SetupReduxResult {
 /**
  * Configures Redux Toolkit (@reduxjs/toolkit & react-redux) with typed store and hooks.
  */
-export function setupRedux(
+export async function setupRedux(
   projectDir: string,
   projectName: string,
   dryRun = false
-): SetupReduxResult {
+): Promise<SetupReduxResult> {
   const storeDir = path.join(projectDir, 'src/store');
   const storeIndexPath = path.join(storeDir, 'index.ts');
   const storeHooksPath = path.join(storeDir, 'hooks.ts');
@@ -302,10 +302,38 @@ export default App;
   // 5. Add dependencies to package.json
   const pkgPath = path.join(projectDir, 'package.json');
   if (fs.existsSync(pkgPath)) {
+    let rtkVersion = '^2.12.0';
+    let reactReduxVersion = '^9.3.0';
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 2000);
+      const [rtkRes, rrRes] = await Promise.all([
+        fetch('https://registry.npmjs.org/@reduxjs/toolkit/latest', {
+          signal: controller.signal,
+          headers: { Accept: 'application/json' },
+        }),
+        fetch('https://registry.npmjs.org/react-redux/latest', {
+          signal: controller.signal,
+          headers: { Accept: 'application/json' },
+        }),
+      ]);
+      clearTimeout(timeout);
+      if (rtkRes.ok) {
+        const data = (await rtkRes.json()) as { version: string };
+        if (data.version) rtkVersion = `^${data.version}`;
+      }
+      if (rrRes.ok) {
+        const data = (await rrRes.json()) as { version: string };
+        if (data.version) reactReduxVersion = `^${data.version}`;
+      }
+    } catch {
+      // offline fallback to latest
+    }
+
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
     pkg.dependencies = pkg.dependencies || {};
-    pkg.dependencies['@reduxjs/toolkit'] = '^2.6.1';
-    pkg.dependencies['react-redux'] = '^9.2.0';
+    pkg.dependencies['@reduxjs/toolkit'] = rtkVersion;
+    pkg.dependencies['react-redux'] = reactReduxVersion;
     fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
   }
 

@@ -9,12 +9,12 @@ export interface SetupWebviewResult {
 /**
  * Configures react-native-webview with a typed WebView demo component and dependency.
  */
-export function setupWebview(
+export async function setupWebview(
   projectDir: string,
   projectName: string,
   dryRun = false,
   _hasRedux = false
-): SetupWebviewResult {
+): Promise<SetupWebviewResult> {
   const componentsDir = path.join(projectDir, 'src/components');
   const webviewComponentPath = path.join(componentsDir, 'WebViewDemo.tsx');
   const appPath = path.join(projectDir, 'App.tsx');
@@ -181,9 +181,26 @@ const styles = StyleSheet.create({
   // 3. Add dependency to package.json
   const pkgPath = path.join(projectDir, 'package.json');
   if (fs.existsSync(pkgPath)) {
+    let webviewVersion = '^14.0.1';
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 2000);
+      const res = await fetch('https://registry.npmjs.org/react-native-webview/latest', {
+        signal: controller.signal,
+        headers: { Accept: 'application/json' },
+      });
+      clearTimeout(timeout);
+      if (res.ok) {
+        const data = (await res.json()) as { version: string };
+        if (data.version) webviewVersion = `^${data.version}`;
+      }
+    } catch {
+      // offline fallback to latest
+    }
+
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
     pkg.dependencies = pkg.dependencies || {};
-    pkg.dependencies['react-native-webview'] = '^13.16.0';
+    pkg.dependencies['react-native-webview'] = webviewVersion;
     fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
   }
 
