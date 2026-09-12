@@ -113,7 +113,7 @@ export async function initCommand(
         continue;
       }
       if (arg.startsWith('-')) continue;
-      if (arg === 'init' || arg === 'bun-init') continue;
+      if (arg === 'init') continue;
       projectName = arg;
       break;
     }

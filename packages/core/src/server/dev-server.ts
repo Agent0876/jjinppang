@@ -282,9 +282,9 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
               }))
             : [
                 {
-                  id: 'react-native-bun-app',
+                  id: 'jjinppang-app',
                   title: 'React Native Application',
-                  description: 'Bun React Native Debug Target',
+                  description: 'jjinppang React Native Debug Target',
                   type: 'page',
                   devtoolsFrontendUrl: `devtools://devtools/bundled/js_app.html?experiments=true&v8only=true&ws=${host}:${actualPort}/inspector/debug`,
                   webSocketDebuggerUrl: `ws://${host}:${actualPort}/inspector/debug`,

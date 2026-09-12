@@ -64,7 +64,7 @@ export function resolveDesktopVersion(
 }
 
 /**
- * Updates package.json scripts and dependencies for react-native-bun-build & OXC
+ * Updates package.json scripts and dependencies for jjinppang & OXC
  */
 export function updatePackageJson(
   projectDir: string,
@@ -158,10 +158,7 @@ export function updatePackageJson(
     if (fs.existsSync(parentMonorepoPkg)) {
       try {
         const parentPkg = JSON.parse(fs.readFileSync(parentMonorepoPkg, 'utf8'));
-        if (
-          parentPkg.name === 'jjinppang-monorepo' ||
-          parentPkg.name === 'react-native-bun-build-monorepo'
-        ) {
+        if (parentPkg.name === 'jjinppang-monorepo') {
           isMonorepoWorkspace = true;
           const folderName = path.basename(projectDir);
           if (Array.isArray(parentPkg.workspaces) && !parentPkg.workspaces.includes(folderName)) {

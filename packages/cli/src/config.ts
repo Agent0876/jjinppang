@@ -7,13 +7,6 @@ export const CONFIG_FILE_NAMES = [
   'jjinppang.config.ts',
   'jjinppang.config.mjs',
   'jjinppang.config.cjs',
-  // Backward compatibility candidates:
-  'react-native-bun-build.config.js',
-  'react-native-bun-build.config.ts',
-  'react-native-bun-build.config.mjs',
-  'react-native-bun-build.config.cjs',
-  'bun-build.config.js',
-  'bun-build.config.ts',
 ];
 
 /**
@@ -41,13 +34,6 @@ export async function loadConfigFile(
 
   if (!targetPath || !fs.existsSync(targetPath)) {
     return {};
-  }
-
-  const baseName = path.basename(targetPath);
-  if (baseName.includes('react-native-bun-build') || baseName.includes('bun-build')) {
-    console.warn(
-      `[jjinppang] ⚠️ Deprecation Notice: "${baseName}" is deprecated. Please rename your configuration file to "jjinppang.config.js".`
-    );
   }
 
   try {

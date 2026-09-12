@@ -54,8 +54,7 @@ export async function formatCommand(
     oxfmtArgs.push('-c', args.config);
   }
 
-  const targetDir =
-    args.dir || argv.find((a) => !a.startsWith('-') && a !== 'format' && a !== 'bun-format');
+  const targetDir = args.dir || argv.find((a) => !a.startsWith('-') && a !== 'format');
   if (targetDir && targetDir !== '.') {
     oxfmtArgs.push(targetDir);
   }

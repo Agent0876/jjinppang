@@ -29,12 +29,10 @@ describe('Built-in Lint & Format Commands (Next.js CLI Style)', () => {
     }
   });
 
-  test('commands array exports lint, bun-lint, format, and bun-format commands', () => {
+  test('commands array exports lint and format commands', () => {
     const commandNames = commands.map((c) => c.name);
     expect(commandNames).toContain('lint');
-    expect(commandNames).toContain('bun-lint');
     expect(commandNames).toContain('format');
-    expect(commandNames).toContain('bun-format');
 
     const lintCmd = commands.find((c) => c.name === 'lint');
     expect(lintCmd?.func).toBe(lintCommand);

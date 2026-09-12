@@ -115,7 +115,7 @@ export const startParseArgsConfig = {
 export const initCommandOptions: CommandOption[] = [
   {
     name: '--existing',
-    description: 'Configure react-native-bun-build in current existing React Native project',
+    description: 'Configure jjinppang in current existing React Native project',
     default: false,
   },
   {

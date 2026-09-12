@@ -53,8 +53,7 @@ export async function lintCommand(
     oxlintArgs.push('-c', args.config);
   }
 
-  const targetDir =
-    args.dir || argv.find((a) => !a.startsWith('-') && a !== 'lint' && a !== 'bun-lint');
+  const targetDir = args.dir || argv.find((a) => !a.startsWith('-') && a !== 'lint');
   if (targetDir && targetDir !== '.') {
     oxlintArgs.push(targetDir);
   }

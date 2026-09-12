@@ -125,7 +125,7 @@ try {
 `
     : '';
 
-  return `// Auto-generated entry wrapper by react-native-bun-build
+  return `// Auto-generated entry wrapper by jjinppang
 import 'react-native/Libraries/Core/InitializeCore';
 ${refreshPreamble}
 import ${JSON.stringify(entryFile)};

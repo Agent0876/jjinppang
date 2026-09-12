@@ -8,7 +8,7 @@ import { setupOxc } from './oxc-setup.js';
 import { setupRedux } from './redux-setup.js';
 import { setupWebview } from './webview-setup.js';
 import { patchReactNativeConfig } from './rn-config-patcher.js';
-import { generateBunBuildConfig } from './bun-config-gen.js';
+import { generateJjinppangConfig } from './bun-config-gen.js';
 
 export interface GenerateProjectOptions {
   projectName: string;
@@ -160,7 +160,7 @@ export function fixAndroidPackageDirectory(targetDir: string, projectName: strin
 }
 
 /**
- * High-performance, direct template generator for react-native-bun-build.
+ * High-performance, direct template generator for jjinppang.
  * Bypasses heavy @react-native-community/cli init and guarantees a clean, ESLint/Prettier-free environment.
  */
 export async function generateProjectFromTemplate(options: GenerateProjectOptions): Promise<void> {
@@ -187,11 +187,11 @@ export async function generateProjectFromTemplate(options: GenerateProjectOption
     setupOxc(targetDir, dryRun, force);
   }
 
-  // 4. Configure react-native.config.js and react-native-bun-build.config.js
+  // 4. Configure react-native.config.js and jjinppang.config.js
   patchReactNativeConfig(targetDir, dryRun);
   const pkgPath = path.join(targetDir, 'package.json');
   const pkgJson = fs.existsSync(pkgPath) ? JSON.parse(fs.readFileSync(pkgPath, 'utf8')) : {};
-  generateBunBuildConfig(targetDir, pkgJson, dryRun, force);
+  generateJjinppangConfig(targetDir, pkgJson, dryRun, force);
 
   // 5. Update package.json scripts and platform dependencies
   updatePackageJson(targetDir, {

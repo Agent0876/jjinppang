@@ -9,9 +9,7 @@
     "directory": "packages/jjinppang"
   },
   "bin": {
-    "bun-rn": "./bin/jjinppang.js",
-    "jjinppang": "./bin/jjinppang.js",
-    "react-native-bun-build": "./bin/jjinppang.js"
+    "jjinppang": "./bin/jjinppang.js"
   },
   "files": [
     "dist",

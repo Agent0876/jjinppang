@@ -76,8 +76,3 @@ module.exports = {
 
   return { status: 'created', file: configFile };
 }
-
-/**
- * Backward compatibility alias for generateJjinppangConfig
- */
-export const generateBunBuildConfig = generateJjinppangConfig;

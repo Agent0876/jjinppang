@@ -30,12 +30,7 @@ export function getCliVersion(): string {
         if (fs.existsSync(pkgPath)) {
           try {
             const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-            if (
-              pkg.name === 'jjinppang' ||
-              pkg.name === '@jjinppang/cli' ||
-              pkg.name === 'react-native-bun-build' ||
-              pkg.name === '@react-native-bun-build/cli'
-            ) {
+            if (pkg.name === 'jjinppang' || pkg.name === '@jjinppang/cli') {
               if (pkg.version) return pkg.version;
             }
           } catch {

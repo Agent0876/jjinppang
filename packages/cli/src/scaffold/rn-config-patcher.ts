@@ -31,7 +31,7 @@ export function patchReactNativeConfig(projectDir: string, dryRun = false): Patc
   }
 
   const existingContent = fs.readFileSync(targetFile, 'utf8');
-  if (existingContent.includes('jjinppang') || existingContent.includes('react-native-bun-build')) {
+  if (existingContent.includes('jjinppang')) {
     return { status: 'already_configured', file: targetFile };
   }
 

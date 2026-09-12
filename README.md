@@ -69,9 +69,6 @@ bunx jjinppang init MyAwesomeApp
 jjinppang init MyAwesomeApp
 ```
 
-> [!TIP]
-> `bun-rn` and `react-native-bun-build` CLI command aliases are still supported as legacy aliases for backward compatibility.
-
 **Interactive Prompts:**
 
 1. **Target Platforms**: Choose `iOS`, `Android`, `macOS`, `Windows`, or `All Platforms`.

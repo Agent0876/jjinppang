@@ -210,7 +210,7 @@ export async function runDevServerBenchmark(): Promise<{
   metro: ServerBenchmarkMetrics;
   bun: ServerBenchmarkMetrics;
 }> {
-  console.log('🚀 Starting Development Server Benchmark (Metro vs react-native-bun-build)...');
+  console.log('🚀 Starting Development Server Benchmark (Metro vs jjinppang)...');
 
   // Benchmark 1: Metro on port 8082
   let metroResults: ServerBenchmarkMetrics;
@@ -234,8 +234,8 @@ export async function runDevServerBenchmark(): Promise<{
     }
   }
 
-  // Benchmark 2: react-native-bun-build on port 8081
-  const bunResults = await benchmarkServer('react-native-bun-build (Bun.serve)', 8081, () => {
+  // Benchmark 2: jjinppang on port 8081
+  const bunResults = await benchmarkServer('jjinppang (Bun.serve)', 8081, () => {
     return spawn(BUN_CLI, ['start', '--port', '8081', '--reset-cache'], {
       cwd: TEST_APP_DIR,
       stdio: ['ignore', 'pipe', 'pipe'],
@@ -309,9 +309,9 @@ if (import.meta.main) {
 
 ## 4. 개발 서버 및 HMR / DX 벤치마크 (Development Server & DX Benchmark)
 
-개발 모드(\`--dev true\`)에서 Metro와 \`react-native-bun-build\`(\`Bun.serve\`)의 개발 서버 기동, 번들 서빙, 실시간 HMR 및 스택 트레이스 심볼리케이션 성능 실측 결과입니다.
+개발 모드(\`--dev true\`)에서 Metro와 \`jjinppang\`(\`Bun.serve\`)의 개발 서버 기동, 번들 서빙, 실시간 HMR 및 스택 트레이스 심볼리케이션 성능 실측 결과입니다.
 
-| 항목 (Metric) | Metro (Node.js) | react-native-bun-build (Bun.serve) | 개선 배수 (Speedup / Savings) |
+| 항목 (Metric) | Metro (Node.js) | jjinppang (Bun.serve) | 개선 배수 (Speedup / Savings) |
 | :--- | :---: | :---: | :---: |
 | **🚀 서버 Cold Startup** | ${metro.startupMs} ms | **${bun.startupMs} ms** | **${startupSpeedup}x faster** ⚡ |
 | **📦 1차 Cold 번들 요청 (First Req)** | ${metro.coldBundleMs} ms | **${bun.coldBundleMs} ms** | **${coldSpeedup}x faster** ⚡ |

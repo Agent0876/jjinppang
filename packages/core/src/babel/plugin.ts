@@ -27,11 +27,7 @@ function getBabelInstance(projectRoot: string): typeof babelDefault {
  */
 function inferJsxLoader(filePath: string, code: string): ReturnType<typeof getLoaderForPath> {
   const loader = getLoaderForPath(filePath);
-  if (
-    loader === 'js' &&
-    code.includes('<') &&
-    (code.includes('/>') || code.includes('</'))
-  ) {
+  if (loader === 'js' && code.includes('<') && (code.includes('/>') || code.includes('</'))) {
     return 'jsx';
   }
   return loader;

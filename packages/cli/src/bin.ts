@@ -32,8 +32,8 @@ export async function runCli(): Promise<void> {
     process.exit(0);
   }
 
-  // Handle 'init' or 'bun-init' command
-  if (commandName === 'init' || commandName === 'bun-init') {
+  // Handle 'init' command
+  if (commandName === 'init') {
     const argsToParse = rawArgs.slice(1);
     const { values, positionals } = parseArgs({
       args: argsToParse,
@@ -105,8 +105,8 @@ Options:
     return;
   }
 
-  // Handle 'start' or 'bun-start' command
-  if (commandName === 'start' || commandName === 'bun-start') {
+  // Handle 'start' command
+  if (commandName === 'start') {
     const argsToParse = rawArgs.slice(1);
     const { values } = parseArgs({
       args: argsToParse,
@@ -144,8 +144,8 @@ Options:
     return;
   }
 
-  // Handle 'lint' or 'bun-lint' command
-  if (commandName === 'lint' || commandName === 'bun-lint') {
+  // Handle 'lint' command
+  if (commandName === 'lint') {
     const argsToParse = rawArgs.slice(1);
     const { values, positionals } = parseArgs({
       args: argsToParse,
@@ -179,8 +179,8 @@ Options:
     return;
   }
 
-  // Handle 'format' or 'bun-format' command
-  if (commandName === 'format' || commandName === 'bun-format') {
+  // Handle 'format' command
+  if (commandName === 'format') {
     const argsToParse = rawArgs.slice(1);
     const { values, positionals } = parseArgs({
       args: argsToParse,
@@ -214,8 +214,8 @@ Options:
     return;
   }
 
-  // Handle 'test' or 'bun-test' command
-  if (commandName === 'test' || commandName === 'bun-test') {
+  // Handle 'test' command
+  if (commandName === 'test') {
     const testArgs = rawArgs.slice(1);
     if (testArgs.includes('-h') || testArgs.includes('--help')) {
       console.log(`
@@ -247,7 +247,6 @@ Options:
   // Check if this is an unknown command
   const isBundle =
     commandName === 'bundle' ||
-    commandName === 'bun-bundle' ||
     commandName === undefined ||
     commandName.startsWith('-') ||
     rawArgs.includes('--entry-file') ||
@@ -260,9 +259,8 @@ Options:
     process.exit(1);
   }
 
-  // Handle 'bundle' or 'bun-bundle' command (or default)
-  const argsToParse =
-    commandName === 'bundle' || commandName === 'bun-bundle' ? rawArgs.slice(1) : rawArgs;
+  // Handle 'bundle' command (or default)
+  const argsToParse = commandName === 'bundle' ? rawArgs.slice(1) : rawArgs;
 
   const { values, positionals } = parseArgs({
     args: argsToParse,

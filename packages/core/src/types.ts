@@ -61,11 +61,6 @@ export interface JjinppangConfig {
   minify?: boolean;
 }
 
-/**
- * Backward compatibility alias for JjinppangConfig
- */
-export type ReactNativeBunBuildConfig = JjinppangConfig;
-
 export interface DevServerOptions {
   projectRoot: string;
   port?: number;

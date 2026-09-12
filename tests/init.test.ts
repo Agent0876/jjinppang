@@ -4,7 +4,7 @@ import path from 'node:path';
 import {
   detectPackageManager,
   patchReactNativeConfig,
-  generateBunBuildConfig,
+  generateJjinppangConfig,
   setupOxc,
   updatePackageJson,
   initExistingProject,
@@ -90,7 +90,7 @@ describe('Init Command & Project Scaffolding', () => {
     expect(secondRes.status).toBe('already_configured');
   });
 
-  test('generateBunBuildConfig detects react-native-reanimated and creates config', () => {
+  test('generateJjinppangConfig detects react-native-reanimated and creates config', () => {
     const pkgWithReanimated = {
       name: 'SampleApp',
       dependencies: {
@@ -99,7 +99,7 @@ describe('Init Command & Project Scaffolding', () => {
       },
     };
 
-    const res = generateBunBuildConfig(TEST_DIR, pkgWithReanimated, false);
+    const res = generateJjinppangConfig(TEST_DIR, pkgWithReanimated, false);
     expect(res.status).toBe('created');
     expect(fs.existsSync(res.file)).toBe(true);
 
@@ -109,7 +109,7 @@ describe('Init Command & Project Scaffolding', () => {
     expect(content).toContain('hermes');
 
     // Calling again should skip unless force: true
-    const secondRes = generateBunBuildConfig(TEST_DIR, pkgWithReanimated, false, false);
+    const secondRes = generateJjinppangConfig(TEST_DIR, pkgWithReanimated, false, false);
     expect(secondRes.status).toBe('skipped');
   });
 

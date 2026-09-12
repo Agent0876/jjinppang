@@ -6,9 +6,9 @@ export * from './scaffold/index.js';
 export * from './ui/index.js';
 export {
   defineConfig,
-  type ReactNativeBunBuildConfig,
+  type JjinppangConfig,
   type BundlerOptions,
   type BundleResult,
   type DevServerOptions,
   type DevServerInstance,
-} from '@react-native-bun-build/core';
+} from '@jjinppang/core';
