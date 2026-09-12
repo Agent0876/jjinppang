@@ -24,7 +24,7 @@
     "fixtures/TestApp/ios/**",
     "fixtures/TestApp/node_modules/**",
     "fixtures/TestApp/dist/**",
-    ".bun-rn-temp/**",
+    ".jjinppang-temp/**",
     "scratch/**",
     "bun.lock"
   ]

@@ -22,7 +22,7 @@
     "node_modules/**",
     "android/**",
     "ios/**",
-    ".bun-rn-temp/**",
+    ".jjinppang-temp/**",
     "bun.lock"
   ]
 }

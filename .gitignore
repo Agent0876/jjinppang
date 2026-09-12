@@ -113,7 +113,7 @@ dist
 .tern-port
 
 # React Native & Bun bundler artifacts
-.bun-rn-temp/
+.jjinppang-temp/
 *.bundle
 *.jsbundle
 *.hbc

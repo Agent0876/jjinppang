@@ -15,7 +15,7 @@
     "ios/**",
     "macos/**",
     "windows/**",
-    ".bun-rn-temp/**",
+    ".jjinppang-temp/**",
     "bun.lock",
     "*.bundle",
     "*.jsbundle",
