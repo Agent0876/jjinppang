@@ -23,7 +23,7 @@ const WATCH_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx', '.json', '.png',
 const IGNORED_SEGMENTS = [
   'node_modules',
   '.git',
-  '.bun-rn-temp',
+  '.jjinppang-temp',
   'dist',
   'build',
   'Pods',

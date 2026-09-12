@@ -56,8 +56,9 @@ var __rnBunGlobalHandler = function(e, isFatal) {
     console.error('[BunRN] ' + (isFatal ? 'Fatal' : 'Uncaught') + ' error:', msg, stack);
   }
   try {
+    var __debugUrl = (typeof global !== 'undefined' && global.__jjinppang_dev_url) || 'http://localhost:8081';
     var xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost:8081/debug-errors', true);
+    xhr.open('POST', __debugUrl + '/debug-errors', true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send(JSON.stringify({ message: msg, stack: stack, isFatal: isFatal }));
   } catch(x) {}

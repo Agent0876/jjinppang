@@ -40,7 +40,7 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
   const sourcemapCache = new Map<string, string>();
 
   if (options.resetCache) {
-    const tempDir = path.join(projectRoot, '.bun-rn-temp');
+    const tempDir = path.join(projectRoot, '.jjinppang-temp');
     if (fs.existsSync(tempDir)) {
       try {
         fs.rmSync(tempDir, { recursive: true, force: true });
@@ -88,7 +88,7 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
     }
 
     // Temporary virtual entry file — reuse shared generateVirtualEntryContent
-    const tempEntryDir = path.join(projectRoot, '.bun-rn-temp');
+    const tempEntryDir = path.join(projectRoot, '.jjinppang-temp');
     if (!fs.existsSync(tempEntryDir)) {
       fs.mkdirSync(tempEntryDir, { recursive: true });
     }
@@ -424,12 +424,7 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
         }
       }
 
-      // 8. Inspector device list endpoint (polled by native InspectorProxy)
-      if (pathname === '/inspector/device') {
-        return new Response(JSON.stringify(inspectorProxy.getDeviceList()), {
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
+      // Note: /inspector/device is already handled in the WebSocket upgrade block above (L223-227)
 
       return new Response('Not Found', { status: 404 });
     },

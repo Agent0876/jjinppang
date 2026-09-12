@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { JjinppangConfig, Platform } from '../types.js';
 
 export interface ExpoMetroConfig {
@@ -13,6 +16,31 @@ export interface ExpoMetroConfig {
   server?: Record<string, any>;
   watcher?: Record<string, any>;
   [key: string]: any;
+}
+
+/**
+ * Dynamically resolves the jjinppang version from the nearest package.json
+ */
+function getJjinppangVersion(): string {
+  try {
+    const currentDir = path.dirname(fileURLToPath(import.meta.url));
+    let dir = currentDir;
+    for (let i = 0; i < 5; i++) {
+      const pkgPath = path.join(dir, 'package.json');
+      if (fs.existsSync(pkgPath)) {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+        if (pkg.name === '@jjinppang/core' || pkg.name === 'jjinppang') {
+          return pkg.version || '0.1.0';
+        }
+      }
+      const parent = path.dirname(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+  } catch {
+    // fallback
+  }
+  return '0.1.0';
 }
 
 /**
@@ -63,7 +91,7 @@ export function withJjinppang<T extends ExpoMetroConfig>(
 
   // Attach jjinppang metadata to config
   (merged as any).jjinppang = {
-    version: '0.1.0',
+    version: getJjinppangVersion(),
     enabled: true,
     ...jjinppangConfig,
   };

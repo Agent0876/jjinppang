@@ -33,35 +33,30 @@ export function resolvePackageImport(
     return null;
   }
 
+  // Parse package.json once and reuse for both exports and main/react-native field resolution
+  const pkgJsonPath = path.join(pkgDir, 'package.json');
+  let pkg: Record<string, unknown> | null = null;
+  if (cachedExistsSync(pkgJsonPath)) {
+    try {
+      pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
+    } catch {
+      // ignore invalid package.json
+    }
+  }
+
   // If no subpath, check package.json exports['.'] first, then fallback to resolveDirectory
   if (!subpath) {
-    const pkgJsonPath = path.join(pkgDir, 'package.json');
-    if (cachedExistsSync(pkgJsonPath)) {
-      try {
-        const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
-        if (pkg.exports) {
-          const resolved = resolvePackageExport(pkg.exports, '.', pkgDir, platform);
-          if (resolved) return resolved;
-        }
-      } catch {
-        // ignore
-      }
+    if (pkg?.exports) {
+      const resolved = resolvePackageExport(pkg.exports, '.', pkgDir, platform);
+      if (resolved) return resolved;
     }
     return resolveDirectory(pkgDir, platform);
   }
 
   // If subpath exists, first check package.json exports
-  const pkgJsonPath = path.join(pkgDir, 'package.json');
-  if (cachedExistsSync(pkgJsonPath)) {
-    try {
-      const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
-      if (pkg.exports) {
-        const resolved = resolvePackageExport(pkg.exports, './' + subpath, pkgDir, platform);
-        if (resolved) return resolved;
-      }
-    } catch {
-      // ignore
-    }
+  if (pkg?.exports) {
+    const resolved = resolvePackageExport(pkg.exports, './' + subpath, pkgDir, platform);
+    if (resolved) return resolved;
   }
 
   // Legacy AssetRegistry fallback in React Native 0.87+

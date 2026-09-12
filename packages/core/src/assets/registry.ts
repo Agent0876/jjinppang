@@ -1,4 +1,3 @@
-import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { AssetFile, AssetMetadata } from '../types.js';
@@ -81,7 +80,7 @@ export function findAssetScaleVariants(dir: string, baseName: string, ext: strin
  */
 export function computeFileHash(filePath: string): string {
   const content = fs.readFileSync(filePath);
-  return crypto.createHash('md5').update(content).digest('hex');
+  return Bun.hash(content).toString(16);
 }
 
 /**

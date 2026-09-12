@@ -20,7 +20,7 @@ export function resolveFileWithPlatformExtensions(
   if (ext && /\.(jsx?|tsx?|json)$/i.test(ext)) {
     const basePathWithoutExt = filePath.slice(0, -ext.length);
 
-    // Build candidate extensions with deduplication
+    // Build candidate extensions: prioritize same-ext platform variant, then full priority list
     const candidateExts: string[] = [];
     const seen = new Set<string>();
 
@@ -31,25 +31,17 @@ export function resolveFileWithPlatformExtensions(
       }
     };
 
+    // Highest priority: same extension with platform/native qualifier
     addCandidate(`.${platform}${ext}`);
     if (platform === 'macos') {
       addCandidate(`.ios${ext}`);
     }
     addCandidate(`.native${ext}`);
-    addCandidate(`.${platform}.tsx`);
-    addCandidate(`.${platform}.ts`);
-    addCandidate(`.${platform}.jsx`);
-    addCandidate(`.${platform}.js`);
-    if (platform === 'macos') {
-      addCandidate('.ios.tsx');
-      addCandidate('.ios.ts');
-      addCandidate('.ios.jsx');
-      addCandidate('.ios.js');
+
+    // Then full priority list from createPlatformExtensions (deduplicates automatically)
+    for (const platformExt of extensions) {
+      addCandidate(platformExt);
     }
-    addCandidate('.native.tsx');
-    addCandidate('.native.ts');
-    addCandidate('.native.jsx');
-    addCandidate('.native.js');
 
     for (const platformExt of candidateExts) {
       const candidate = basePathWithoutExt + platformExt;

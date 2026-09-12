@@ -23,6 +23,21 @@ function getBabelInstance(projectRoot: string): typeof babelDefault {
 }
 
 /**
+ * Infers whether output code contains JSX and upgrades loader from 'js' to 'jsx' if needed.
+ */
+function inferJsxLoader(filePath: string, code: string): ReturnType<typeof getLoaderForPath> {
+  const loader = getLoaderForPath(filePath);
+  if (
+    loader === 'js' &&
+    code.includes('<') &&
+    (code.includes('/>') || code.includes('</'))
+  ) {
+    return 'jsx';
+  }
+  return loader;
+}
+
+/**
  * Creates Bun.build plugin for hybrid Babel transformation with persistent disk caching
  */
 export function createBabelHybridPlugin(options: BabelHybridPluginOptions): BunPlugin {
@@ -132,14 +147,7 @@ export function createBabelHybridPlugin(options: BabelHybridPluginOptions): BunP
           try {
             const cachedCode = await diskFile.text();
             memoryCache.set(cacheFileName, cachedCode);
-            let loader: any = getLoaderForPath(filePath);
-            if (
-              loader === 'js' &&
-              cachedCode.includes('<') &&
-              (cachedCode.includes('/>') || cachedCode.includes('</'))
-            ) {
-              loader = 'jsx';
-            }
+            const loader = inferJsxLoader(filePath, cachedCode);
             return {
               contents: cachedCode,
               loader,
@@ -172,14 +180,7 @@ export function createBabelHybridPlugin(options: BabelHybridPluginOptions): BunP
               memoryCache.set(cacheFileName, resCode);
               ensureCacheDir();
               Bun.write(diskCachePath, resCode).catch(() => {});
-              let loader: any = getLoaderForPath(filePath);
-              if (
-                loader === 'js' &&
-                resCode.includes('<') &&
-                (resCode.includes('/>') || resCode.includes('</'))
-              ) {
-                loader = 'jsx';
-              }
+              const loader = inferJsxLoader(filePath, resCode);
               return {
                 contents: resCode,
                 loader,

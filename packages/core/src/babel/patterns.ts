@@ -39,7 +39,7 @@ export const DEFAULT_BABEL_PATH_PATTERNS = [
 /**
  * Determine Bun loader for a given file extension
  */
-export function getLoaderForPath(filePath: string): string {
+export function getLoaderForPath(filePath: string): 'tsx' | 'ts' | 'jsx' | 'js' | 'json' {
   const ext = path.extname(filePath).toLowerCase();
   switch (ext) {
     case '.tsx':

@@ -1,4 +1,4 @@
-import type { Platform } from '@react-native-bun-build/core';
+import type { Platform } from '@jjinppang/core';
 
 export interface CommandOption<T = unknown> {
   name: string;
