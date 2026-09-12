@@ -51,3 +51,27 @@ jobs:
 
       - name: Run unit & integration tests
         run: bun run test
+
+  release-bundle-e2e:
+    name: Production Release Bundle (iOS & Android)
+    needs: test-matrix
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build packages
+        run: bun run build
+
+      - name: Test iOS & Android Release Bundling in TestApp
+        run: |
+          cd fixtures/TestApp
+          bun run bundle:ios
+          bun run bundle:android
