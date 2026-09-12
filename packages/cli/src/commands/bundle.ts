@@ -64,7 +64,7 @@ export async function bundleCommand(
     const currentDir = path.dirname(fileURLToPath(import.meta.url));
     const cliBinPath = path.resolve(currentDir, '../../bin/jjinppang.js');
 
-    // Build arguments list to forward to bun-rn
+    // Build arguments list to forward to jjinppang
     const forwardArgs = [cliBinPath, 'bundle'];
     if (args.entryFile) forwardArgs.push('--entry-file', args.entryFile);
     if (args.platform) forwardArgs.push('--platform', args.platform);

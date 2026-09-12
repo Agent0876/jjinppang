@@ -53,7 +53,7 @@ var __rnBunGlobalHandler = function(e, isFatal) {
   var msg = e && e.message ? e.message : String(e);
   var stack = e && e.stack ? e.stack : '';
   if (typeof console !== 'undefined' && console.error) {
-    console.error('[BunRN] ' + (isFatal ? 'Fatal' : 'Uncaught') + ' error:', msg, stack);
+    console.error('[jjinppang] ' + (isFatal ? 'Fatal' : 'Uncaught') + ' error:', msg, stack);
   }
   try {
     var __debugUrl = (typeof global !== 'undefined' && global.__jjinppang_dev_url) || 'http://localhost:8081';

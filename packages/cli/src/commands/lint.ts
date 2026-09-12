@@ -24,7 +24,7 @@ export function findOxlintExecutable(projectRoot: string): { cmd: string; prefix
 }
 
 /**
- * Command handler for `bun-rn lint` (similar to Next.js `next lint`)
+ * Command handler for `jjinppang lint` (similar to Next.js `next lint`)
  */
 export async function lintCommand(
   argv: string[],

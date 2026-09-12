@@ -70,7 +70,7 @@ jjinppang init MyAwesomeApp
 ```
 
 > [!TIP]
-> `bun-rn` and `react-native-bun-build` CLI command aliases are also fully supported for seamless backward compatibility.
+> `bun-rn` and `react-native-bun-build` CLI command aliases are still supported as legacy aliases for backward compatibility.
 
 **Interactive Prompts:**
 

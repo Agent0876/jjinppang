@@ -38,7 +38,7 @@ export function setupOxc(projectDir: string, dryRun = false, force = false): Set
       'node_modules/**',
       'android/**',
       'ios/**',
-      '.bun-rn-temp/**',
+      '.jjinppang-temp/**',
       'bun.lock',
     ],
   };
@@ -58,7 +58,7 @@ export function setupOxc(projectDir: string, dryRun = false, force = false): Set
       'node_modules/**',
       'android/**',
       'ios/**',
-      '.bun-rn-temp/**',
+      '.jjinppang-temp/**',
       'bun.lock',
       '*.bundle',
       '*.jsbundle',

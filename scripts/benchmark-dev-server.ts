@@ -13,7 +13,7 @@ interface ServerBenchmarkMetrics {
 }
 
 const TEST_APP_DIR = path.resolve(__dirname, '../fixtures/TestApp');
-const BUN_CLI = path.resolve(__dirname, '../packages/cli/bin/bun-rn.js');
+const BUN_CLI = path.resolve(__dirname, '../packages/cli/bin/jjinppang.js');
 const CONFIG_PATH = path.join(TEST_APP_DIR, 'react-native.config.js');
 const CONFIG_BAK_PATH = path.join(TEST_APP_DIR, 'react-native.config.js.bak');
 const APP_FILE = path.join(TEST_APP_DIR, 'App.tsx');

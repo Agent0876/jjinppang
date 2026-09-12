@@ -151,7 +151,7 @@ We use `@changesets/cli` for versioning and publishing packages:
 
 ## 💡 Community & Discussions
 
-- **Bug Reports**: Open an issue describing steps to reproduce, environment information (`jjinppang doctor` or `bun-rn doctor`), and minimal reproducible example.
+- **Bug Reports**: Open an issue describing steps to reproduce, environment information (`jjinppang doctor`), and minimal reproducible example.
 - **Feature Requests**: We welcome ideas! Open an issue or discussion detailing the use-case and proposal.
 
 Thank you for making `jjinppang` faster and better for the entire React Native community! 🥟🚀

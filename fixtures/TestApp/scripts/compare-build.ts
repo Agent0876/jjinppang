@@ -11,7 +11,7 @@ const projectRoot = '/Users/shinseungmin/react-native-bun-build/fixtures/TestApp
 const entryFile = path.join(projectRoot, 'index.js');
 
 // Create virtual entry
-const tempDir = path.join(projectRoot, '.bun-rn-temp');
+const tempDir = path.join(projectRoot, '.jjinppang-temp');
 fs.mkdirSync(tempDir, { recursive: true });
 const virtualEntry = path.join(tempDir, `compare-entry-${Date.now()}.js`);
 fs.writeFileSync(

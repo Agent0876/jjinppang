@@ -9,9 +9,9 @@
     "directory": "packages/cli"
   },
   "bin": {
-    "bun-rn": "bin/bun-rn.js",
+    "bun-rn": "bin/jjinppang.js",
     "jjinppang": "bin/jjinppang.js",
-    "react-native-bun-build": "bin/bun-rn.js"
+    "react-native-bun-build": "bin/jjinppang.js"
   },
   "files": [
     "dist",

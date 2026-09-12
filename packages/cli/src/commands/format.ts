@@ -24,7 +24,7 @@ export function findOxfmtExecutable(projectRoot: string): { cmd: string; prefixA
 }
 
 /**
- * Command handler for `bun-rn format`
+ * Command handler for `jjinppang format`
  */
 export async function formatCommand(
   argv: string[],
